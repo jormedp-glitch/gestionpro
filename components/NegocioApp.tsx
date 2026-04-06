@@ -1,35 +1,35 @@
-'use client'
+﻿'use client'
 import { useEffect, useState, use } from 'react'
 import { supabase } from '@/lib/supabase'
 
-// ─── CONFIG RUBROS ────────────────────────────────────────────────────────────
+// â”€â”€â”€ CONFIG RUBROS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const RUBROS: any = {
   gimnasio: {
-    label: "Gimnasio", icon: "🏋️", color: "#FF6B35", dark: "#110800", mid: "#1E0F00",
+    label: "Gimnasio", icon: "ðŸ‹ï¸", color: "#FF6B35", dark: "#110800", mid: "#1E0F00",
     entidad: "Socio", entidades: "Socios",
-    planes: ["Musculación", "Cardio", "Funcional", "Completo", "CrossFit"],
-    servicios: ["Musculación libre", "Clase de cardio", "Funcional grupal", "CrossFit", "Spinning", "Yoga"],
+    planes: ["MusculaciÃ³n", "Cardio", "Funcional", "Completo", "CrossFit"],
+    servicios: ["MusculaciÃ³n libre", "Clase de cardio", "Funcional grupal", "CrossFit", "Spinning", "Yoga"],
     duraciones: [45, 60, 90],
   },
   peluqueria: {
-    label: "Peluquería / Salón", icon: "✂️", color: "#A78BFA", dark: "#080012", mid: "#130020",
+    label: "PeluquerÃ­a / SalÃ³n", icon: "âœ‚ï¸", color: "#A78BFA", dark: "#080012", mid: "#130020",
     entidad: "Cliente", entidades: "Clientes",
     planes: ["Corte", "Color", "Alisado", "Tratamiento", "Combo VIP"],
-    servicios: ["Corte dama", "Corte caballero", "Coloración", "Mechas", "Alisado", "Tratamiento capilar", "Manicura"],
+    servicios: ["Corte dama", "Corte caballero", "ColoraciÃ³n", "Mechas", "Alisado", "Tratamiento capilar", "Manicura"],
     duraciones: [30, 45, 60, 90, 120],
   },
   veterinaria: {
-    label: "Veterinaria", icon: "🐾", color: "#34D399", dark: "#001208", mid: "#001F10",
+    label: "Veterinaria", icon: "ðŸ¾", color: "#34D399", dark: "#001208", mid: "#001F10",
     entidad: "Paciente", entidades: "Pacientes",
-    planes: ["Control básico", "Vacunas", "Plan Premium", "Cirugía", "Guardería"],
-    servicios: ["Consulta general", "Vacunación", "Cirugía", "Peluquería canina", "Ecografía", "Análisis", "Urgencia"],
+    planes: ["Control bÃ¡sico", "Vacunas", "Plan Premium", "CirugÃ­a", "GuarderÃ­a"],
+    servicios: ["Consulta general", "VacunaciÃ³n", "CirugÃ­a", "PeluquerÃ­a canina", "EcografÃ­a", "AnÃ¡lisis", "Urgencia"],
     duraciones: [20, 30, 45, 60],
   },
 }
 
 const HORAS = ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30","19:00","19:30","20:00","20:30"]
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-const DIAS_SEMANA = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"]
+const DIAS_SEMANA = ["Dom","Lun","Mar","MiÃ©","Jue","Vie","SÃ¡b"]
 
 const hoy = () => new Date().toISOString().split("T")[0]
 const formatFecha = (d: string) => { if (!d) return ""; const [y,m,dd] = d.split("-"); return `${dd}/${m}/${y}` }
@@ -43,13 +43,13 @@ const getDiasDelMes = (year: number, month: number) => ({
 
 const msgWA = {
   confirmacion: (neg: string, cli: string, serv: string, fecha: string, hora: string) =>
-    `Hola ${cli} 👋 Te confirmamos tu turno en *${neg}*:\n\n📅 *${formatFecha(fecha)}* a las *${hora}hs*\n💇 Servicio: ${serv}\n\nSi necesitás cancelar avisanos con anticipación. ¡Te esperamos! ✨`,
+    `Hola ${cli} ðŸ‘‹ Te confirmamos tu turno en *${neg}*:\n\nðŸ“… *${formatFecha(fecha)}* a las *${hora}hs*\nðŸ’‡ Servicio: ${serv}\n\nSi necesitÃ¡s cancelar avisanos con anticipaciÃ³n. Â¡Te esperamos! âœ¨`,
   demora: (neg: string, cli: string, serv: string, min: number, horaReal: string) =>
-    `Hola ${cli} 👋 Te avisamos desde *${neg}* que tu turno de *${serv}* tiene una demora de *${min} minutos*.\n\n⏰ Nuevo horario estimado: *${horaReal}hs*\n\nDisculpá las molestias, podés venir más tarde. ¡Gracias! 🙏`,
+    `Hola ${cli} ðŸ‘‹ Te avisamos desde *${neg}* que tu turno de *${serv}* tiene una demora de *${min} minutos*.\n\nâ° Nuevo horario estimado: *${horaReal}hs*\n\nDisculpÃ¡ las molestias, podÃ©s venir mÃ¡s tarde. Â¡Gracias! ðŸ™`,
   recordatorio: (neg: string, cli: string, serv: string, fecha: string, hora: string) =>
-    `Hola ${cli} 🌟 Te recordamos tu turno en *${neg}* para mañana:\n\n📅 *${formatFecha(fecha)}* a las *${hora}hs*\n💇 Servicio: ${serv}\n\n¿Confirmás? Respondé *SÍ* o avisanos si necesitás reprogramar. 😊`,
+    `Hola ${cli} ðŸŒŸ Te recordamos tu turno en *${neg}* para maÃ±ana:\n\nðŸ“… *${formatFecha(fecha)}* a las *${hora}hs*\nðŸ’‡ Servicio: ${serv}\n\nÂ¿ConfirmÃ¡s? RespondÃ© *SÃ* o avisanos si necesitÃ¡s reprogramar. ðŸ˜Š`,
   cobro: (neg: string, cli: string, cuota: string) =>
-    `Hola ${cli} 👋 Te contactamos desde *${neg}*. Tu cuota de ${cuota} está próxima a vencer. ¿Cuándo podés pasar a renovar? 😊`,
+    `Hola ${cli} ðŸ‘‹ Te contactamos desde *${neg}*. Tu cuota de ${cuota} estÃ¡ prÃ³xima a vencer. Â¿CuÃ¡ndo podÃ©s pasar a renovar? ðŸ˜Š`,
 }
 
 const abrirWA = (tel: string, msg: string) => {
@@ -58,7 +58,7 @@ const abrirWA = (tel: string, msg: string) => {
   window.open(`https://wa.me/${full}?text=${encodeURIComponent(msg)}`, "_blank")
 }
 
-// ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
+// â”€â”€â”€ COMPONENTE PRINCIPAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function NegocioApp({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
   const [negocio, setNegocio] = useState<any>(null)
@@ -78,13 +78,13 @@ export default function NegocioApp({ params }: { params: Promise<{ slug: string 
   const [demoraModal, setDemoraModal] = useState<any>(null)
   const [demoraMin, setDemoraMin] = useState(30)
 
-  // ── Cargar negocio ──
+  // â”€â”€ Cargar negocio â”€â”€
   useEffect(() => {
     supabase.from('negocios').select('*').eq('slug', slug).single()
       .then(({ data }) => { setNegocio(data); setLoading(false) })
   }, [slug])
 
-  // ── Cargar datos cuando negocio cargue ──
+  // â”€â”€ Cargar datos cuando negocio cargue â”€â”€
   useEffect(() => {
     if (!negocio) return
     cargarClientes()
@@ -109,7 +109,7 @@ export default function NegocioApp({ params }: { params: Promise<{ slug: string 
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#050508', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
-      <div style={{ textAlign: 'center' }}><div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⚡</div><p>Cargando...</p></div>
+      <div style={{ textAlign: 'center' }}><div style={{ fontSize: '2rem', marginBottom: '1rem' }}>âš¡</div><p>Cargando...</p></div>
     </div>
   )
   if (!negocio) return (
@@ -120,7 +120,7 @@ export default function NegocioApp({ params }: { params: Promise<{ slug: string 
 
   const R = RUBROS[negocio.rubro] || RUBROS.gimnasio
 
-  // ── STATS ──
+  // â”€â”€ STATS â”€â”€
   const activos = clientes.filter(c => c.estado === 'activo').length
   const vencenProx = clientes.filter(c => c.estado === 'vence_pronto').length
   const vencidos = clientes.filter(c => c.estado === 'vencido').length
@@ -131,21 +131,21 @@ export default function NegocioApp({ params }: { params: Promise<{ slug: string 
   const turnosDia = turnos.filter(t => t.fecha === diaSeleccionado).sort((a, b) => a.hora.localeCompare(b.hora))
 
   const estadoTurnoColor: any = { confirmado: "#34D399", en_espera: "#60A5FA", demorado: "#FBBF24", cancelado: "#F87171", completado: "#6B7280" }
-  const estadoTurnoLabel: any = { confirmado: "Confirmado", en_espera: "En espera", demorado: "Demorado ⚠️", cancelado: "Cancelado", completado: "Completado ✓" }
+  const estadoTurnoLabel: any = { confirmado: "Confirmado", en_espera: "En espera", demorado: "Demorado âš ï¸", cancelado: "Cancelado", completado: "Completado âœ“" }
   const estadoClienteColor: any = { activo: "#34D399", vence_pronto: "#FBBF24", vencido: "#F87171" }
   const estadoClienteLabel: any = { activo: "Activo", vence_pronto: "Vence pronto", vencido: "Vencido" }
 
-  // ── ACCIONES CLIENTES ──
+  // â”€â”€ ACCIONES CLIENTES â”€â”€
   const agregarCliente = async () => {
     const d = modalData
-    if (!d.nombre || !d.plan || !d.cuota) return showToast("Completá todos los campos", "err")
+    if (!d.nombre || !d.plan || !d.cuota) return showToast("CompletÃ¡ todos los campos", "err")
     await supabase.from('clientes').insert([{ negocio_id: negocio.id, nombre: d.nombre, telefono: d.telefono || '', plan: d.plan, cuota: Number(d.cuota), vence: d.vence || hoy(), estado: 'activo' }])
-    cargarClientes(); setModal(null); setModalData({}); showToast(`${R.entidad} agregado ✓`)
+    cargarClientes(); setModal(null); setModalData({}); showToast(`${R.entidad} agregado âœ“`)
   }
 
   const marcarPagado = async (id: string) => {
     await supabase.from('clientes').update({ estado: 'activo' }).eq('id', id)
-    cargarClientes(); showToast("Marcado como pagado ✓")
+    cargarClientes(); showToast("Marcado como pagado âœ“")
   }
 
   const eliminarCliente = async (id: string) => {
@@ -153,24 +153,24 @@ export default function NegocioApp({ params }: { params: Promise<{ slug: string 
     cargarClientes(); showToast("Eliminado")
   }
 
-  // ── ACCIONES TURNOS ──
+  // â”€â”€ ACCIONES TURNOS â”€â”€
   const agregarTurno = async () => {
     const d = modalData
-    if (!d.clienteNombre || !d.servicio || !d.fecha || !d.hora) return showToast("Completá todos los campos", "err")
+    if (!d.clienteNombre || !d.servicio || !d.fecha || !d.hora) return showToast("CompletÃ¡ todos los campos", "err")
     await supabase.from('turnos').insert([{ negocio_id: negocio.id, cliente_nombre: d.clienteNombre, telefono: d.telefono || '', servicio: d.servicio, fecha: d.fecha, hora: d.hora, duracion: Number(d.duracion || 60), estado: 'confirmado', notas: d.notas || '' }])
     cargarTurnos()
-    if (d.telefono) { abrirWA(d.telefono, msgWA.confirmacion(negocio.nombre, d.clienteNombre, d.servicio, d.fecha, d.hora)); showToast("Turno creado y WhatsApp abierto ✓") }
-    else showToast("Turno creado ✓")
+    if (d.telefono) { abrirWA(d.telefono, msgWA.confirmacion(negocio.nombre, d.clienteNombre, d.servicio, d.fecha, d.hora)); showToast("Turno creado y WhatsApp abierto âœ“") }
+    else showToast("Turno creado âœ“")
     setModal(null); setModalData({})
   }
 
   const cambiarEstadoTurno = async (id: string, estado: string) => {
     await supabase.from('turnos').update({ estado }).eq('id', id)
-    cargarTurnos(); showToast("Estado actualizado ✓")
+    cargarTurnos(); showToast("Estado actualizado âœ“")
   }
 
   const eliminarTurno = async (id: string, turno: any) => {
-    if (turno.telefono) abrirWA(turno.telefono, `Hola ${turno.cliente_nombre}, cancelamos tu turno del ${formatFecha(turno.fecha)} a las ${turno.hora}hs en *${negocio.nombre}*. Disculpá los inconvenientes 🙏`)
+    if (turno.telefono) abrirWA(turno.telefono, `Hola ${turno.cliente_nombre}, cancelamos tu turno del ${formatFecha(turno.fecha)} a las ${turno.hora}hs en *${negocio.nombre}*. DisculpÃ¡ los inconvenientes ðŸ™`)
     await supabase.from('turnos').delete().eq('id', id)
     cargarTurnos(); showToast("Turno eliminado")
   }
@@ -182,14 +182,14 @@ export default function NegocioApp({ params }: { params: Promise<{ slug: string 
     const horaReal = `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`
     abrirWA(demoraModal.telefono, msgWA.demora(negocio.nombre, demoraModal.cliente_nombre, demoraModal.servicio, demoraMin, horaReal))
     await supabase.from('turnos').update({ estado: 'demorado', notas: `Demora ${demoraMin} min` }).eq('id', demoraModal.id)
-    cargarTurnos(); setDemoraModal(null); showToast(`Demora enviada a ${demoraModal.cliente_nombre} ✓`)
+    cargarTurnos(); setDemoraModal(null); showToast(`Demora enviada a ${demoraModal.cliente_nombre} âœ“`)
   }
 
-  // ── ACCIONES GASTOS ──
+  // â”€â”€ ACCIONES GASTOS â”€â”€
   const agregarGasto = async () => {
-    if (!gastoForm.desc || !gastoForm.monto) return showToast("Completá el gasto", "err")
+    if (!gastoForm.desc || !gastoForm.monto) return showToast("CompletÃ¡ el gasto", "err")
     await supabase.from('gastos').insert([{ negocio_id: negocio.id, descripcion: gastoForm.desc, monto: Number(gastoForm.monto), fecha: gastoForm.fecha }])
-    cargarGastos(); setGastoForm({ desc: "", monto: "", fecha: hoy() }); showToast("Gasto registrado ✓")
+    cargarGastos(); setGastoForm({ desc: "", monto: "", fecha: hoy() }); showToast("Gasto registrado âœ“")
   }
 
   const eliminarGasto = async (id: string) => {
@@ -197,10 +197,10 @@ export default function NegocioApp({ params }: { params: Promise<{ slug: string 
     cargarGastos(); showToast("Eliminado")
   }
 
-  // ── IA ANÁLISIS ──
+  // â”€â”€ IA ANÃLISIS â”€â”€
   const pedirIA = async () => {
     setAiLoading(true); setAiMsg(""); setVista("ia")
-    const prompt = `Sos el asistente de gestión de "${negocio.nombre}" (${R.label}) en Tucumán, Argentina.
+    const prompt = `Sos el asistente de gestiÃ³n de "${negocio.nombre}" (${R.label}) en TucumÃ¡n, Argentina.
 
 DATOS DEL MES:
 - ${R.entidades} activos: ${activos} | Vencen pronto: ${vencenProx} | Morosos: ${vencidos}
@@ -208,14 +208,14 @@ DATOS DEL MES:
 - Turnos hoy: ${turnosHoy.length}
 - Morosos: ${clientes.filter(c => c.estado === 'vencido').map(c => `${c.nombre} (${formatARS(c.cuota)})`).join(", ") || "Ninguno"}
 
-Generá un análisis ejecutivo con:
-1. 🏥 Estado general (1-2 oraciones)
-2. ⚡ Top 3 alertas urgentes
-3. 💡 3 acciones concretas para esta semana
-4. 💰 Cuánto recuperás cobrando morosos
-5. 📈 Meta realista para el próximo mes
+GenerÃ¡ un anÃ¡lisis ejecutivo con:
+1. ðŸ¥ Estado general (1-2 oraciones)
+2. âš¡ Top 3 alertas urgentes
+3. ðŸ’¡ 3 acciones concretas para esta semana
+4. ðŸ’° CuÃ¡nto recuperÃ¡s cobrando morosos
+5. ðŸ“ˆ Meta realista para el prÃ³ximo mes
 
-Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
+RespondÃ© en espaÃ±ol, directo y Ãºtil. UsÃ¡ emojis. MÃ¡ximo 250 palabras.`
 
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -223,21 +223,21 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
         body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages: [{ role: "user", content: prompt }] })
       })
       const data = await res.json()
-      setAiMsg(data.content?.[0]?.text || "No se pudo generar el análisis.")
+      setAiMsg(data.content?.[0]?.text || "No se pudo generar el anÃ¡lisis.")
     } catch { setAiMsg("Error al conectar con la IA.") }
     setAiLoading(false)
   }
 
-  // ── CALENDARIO ──
+  // â”€â”€ CALENDARIO â”€â”€
   const { y: calY, m: calM } = calFecha
   const { first, total } = getDiasDelMes(calY, calM)
 
   const navVistas = [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "agenda", label: "Agenda", icon: "📅" },
-    { id: "clientes", label: R.entidades, icon: "👥" },
-    { id: "gastos", label: "Caja", icon: "💸" },
-    { id: "ia", label: "IA", icon: "🤖" },
+    { id: "dashboard", label: "Dashboard", icon: "ðŸ“Š" },
+    { id: "agenda", label: "Agenda", icon: "ðŸ“…" },
+    { id: "clientes", label: R.entidades, icon: "ðŸ‘¥" },
+    { id: "gastos", label: "Caja", icon: "ðŸ’¸" },
+    { id: "ia", label: "IA", icon: "ðŸ¤–" },
   ]
 
   return (
@@ -286,7 +286,7 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
           <span style={{ fontSize: "1.4rem" }}>{R.icon}</span>
           <div>
             <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: ".95rem", fontWeight: 700, color: R.color }}>{negocio.nombre}</div>
-            <div style={{ fontSize: ".65rem", color: "#444" }}>GestiónPro · {R.label}</div>
+            <div style={{ fontSize: ".65rem", color: "#444" }}>GestiÃ³nPro Â· {R.label}</div>
           </div>
         </div>
         <nav style={{ display: "flex", gap: ".15rem", flex: 1, overflowX: "auto" }}>
@@ -300,18 +300,18 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
 
       <div style={{ maxWidth: "980px", margin: "0 auto", padding: "1.5rem 1rem" }}>
 
-        {/* ════ DASHBOARD ════ */}
+        {/* â•â•â•â• DASHBOARD â•â•â•â• */}
         {vista === "dashboard" && (
           <div>
             <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.7rem", marginBottom: "1.25rem" }}>
-              Resumen — {formatFecha(hoy())}
+              Resumen â€” {formatFecha(hoy())}
             </h2>
             <div className="stats-g" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "1rem", marginBottom: "1.25rem" }}>
               {[
-                { icon: "✅", val: activos, label: R.entidades + " activos", c: "#34D399" },
-                { icon: "⚠️", val: vencenProx, label: "Vencen pronto", c: "#FBBF24" },
-                { icon: "📅", val: turnosHoy.length, label: "Turnos hoy", c: R.color },
-                { icon: "💰", val: formatARS(ingresoMes), label: "Ingreso mes", c: "#60A5FA" },
+                { icon: "âœ…", val: activos, label: R.entidades + " activos", c: "#34D399" },
+                { icon: "âš ï¸", val: vencenProx, label: "Vencen pronto", c: "#FBBF24" },
+                { icon: "ðŸ“…", val: turnosHoy.length, label: "Turnos hoy", c: R.color },
+                { icon: "ðŸ’°", val: formatARS(ingresoMes), label: "Ingreso mes", c: "#60A5FA" },
               ].map((s, i) => (
                 <div key={i} className="card" style={{ textAlign: "center" }}>
                   <div style={{ fontSize: "1.5rem", marginBottom: ".35rem" }}>{s.icon}</div>
@@ -323,7 +323,7 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
 
             {/* Flujo */}
             <div className="card" style={{ marginBottom: "1.25rem" }}>
-              <div style={{ fontSize: ".8rem", color: "#555", marginBottom: "1rem", textTransform: "uppercase", letterSpacing: ".08em" }}>💵 Flujo de caja del mes</div>
+              <div style={{ fontSize: ".8rem", color: "#555", marginBottom: "1rem", textTransform: "uppercase", letterSpacing: ".08em" }}>ðŸ’µ Flujo de caja del mes</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: ".75rem" }}>
                 {[["Ingresos", ingresoMes, "#34D399"], ["Gastos", gastosMes, "#F87171"], ["Neto", flujoNeto, flujoNeto >= 0 ? "#34D399" : "#F87171"]].map(([l, v, c]: any) => (
                   <div key={l} style={{ background: c + "10", borderRadius: "12px", padding: "1rem", textAlign: "center" }}>
@@ -337,8 +337,8 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
             {/* Turnos hoy */}
             <div className="card" style={{ marginBottom: "1.25rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                <span style={{ fontSize: ".8rem", color: "#555", textTransform: "uppercase", letterSpacing: ".08em" }}>📅 Agenda de hoy</span>
-                <button className="btn btn-p" style={{ fontSize: ".78rem", padding: ".4rem .8rem" }} onClick={() => setVista("agenda")}>Ver completa →</button>
+                <span style={{ fontSize: ".8rem", color: "#555", textTransform: "uppercase", letterSpacing: ".08em" }}>ðŸ“… Agenda de hoy</span>
+                <button className="btn btn-p" style={{ fontSize: ".78rem", padding: ".4rem .8rem" }} onClick={() => setVista("agenda")}>Ver completa â†’</button>
               </div>
               {turnosHoy.length === 0 && <p style={{ color: "#444", fontSize: ".85rem", textAlign: "center", padding: "1rem" }}>Sin turnos para hoy</p>}
               {turnosHoy.slice(0, 4).map(t => (
@@ -352,7 +352,7 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
                     <span className="badge" style={{ background: estadoTurnoColor[t.estado] + "20", color: estadoTurnoColor[t.estado] }}>{estadoTurnoLabel[t.estado]}</span>
-                    {t.telefono && <button className="btn btn-wa" style={{ padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => { setDemoraModal(t); setDemoraMin(30) }}>⏱ Demora</button>}
+                    {t.telefono && <button className="btn btn-wa" style={{ padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => { setDemoraModal(t); setDemoraMin(30) }}>â± Demora</button>}
                   </div>
                 </div>
               ))}
@@ -361,17 +361,17 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
             {/* Alertas cobro */}
             {(vencenProx > 0 || vencidos > 0) && (
               <div className="card" style={{ borderColor: "#FBBF2425", marginBottom: "1.25rem" }}>
-                <div style={{ fontSize: ".8rem", color: "#FBBF24", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: "1rem" }}>⚡ Alertas de cobro</div>
+                <div style={{ fontSize: ".8rem", color: "#FBBF24", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: "1rem" }}>âš¡ Alertas de cobro</div>
                 {clientes.filter(c => c.estado !== 'activo').map(c => (
                   <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: ".55rem 0", borderBottom: "1px solid #ffffff07" }}>
                     <div>
                       <span style={{ fontSize: ".88rem" }}>{c.nombre}</span>
-                      <span style={{ marginLeft: ".5rem", color: "#444", fontSize: ".78rem" }}>· {c.plan}</span>
+                      <span style={{ marginLeft: ".5rem", color: "#444", fontSize: ".78rem" }}>Â· {c.plan}</span>
                     </div>
                     <div style={{ display: "flex", alignItems: "center", gap: ".75rem" }}>
                       <span style={{ color: estadoClienteColor[c.estado], fontSize: ".78rem" }}>{estadoClienteLabel[c.estado]}</span>
                       <span style={{ color: R.color, fontWeight: 700, fontSize: ".88rem" }}>{formatARS(c.cuota)}</span>
-                      {c.telefono && <button className="btn btn-wa" style={{ padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => abrirWA(c.telefono, msgWA.cobro(negocio.nombre, c.nombre, formatARS(c.cuota)))}>📲 WA</button>}
+                      {c.telefono && <button className="btn btn-wa" style={{ padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => abrirWA(c.telefono, msgWA.cobro(negocio.nombre, c.nombre, formatARS(c.cuota)))}>ðŸ“² WA</button>}
                     </div>
                   </div>
                 ))}
@@ -379,20 +379,20 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
             )}
 
             <button className="btn btn-p" onClick={pedirIA} style={{ width: "100%", padding: ".9rem", fontSize: "1rem" }}>
-              🤖 Análisis completo con IA
+              ðŸ¤– AnÃ¡lisis completo con IA
             </button>
           </div>
         )}
 
-        {/* ════ AGENDA ════ */}
+        {/* â•â•â•â• AGENDA â•â•â•â• */}
         {vista === "agenda" && (
           <div className="agenda-g" style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: "1.5rem" }}>
             <div>
               <div className="card" style={{ marginBottom: "1rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                  <button className="btn btn-g" style={{ padding: ".3rem .7rem" }} onClick={() => setCalFecha(p => { const m = p.m === 0 ? 11 : p.m - 1; return { y: m === 11 ? p.y - 1 : p.y, m } })}>‹</button>
+                  <button className="btn btn-g" style={{ padding: ".3rem .7rem" }} onClick={() => setCalFecha(p => { const m = p.m === 0 ? 11 : p.m - 1; return { y: m === 11 ? p.y - 1 : p.y, m } })}>â€¹</button>
                   <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1rem", fontWeight: 700 }}>{MESES[calM]} {calY}</span>
-                  <button className="btn btn-g" style={{ padding: ".3rem .7rem" }} onClick={() => setCalFecha(p => { const m = p.m === 11 ? 0 : p.m + 1; return { y: m === 0 ? p.y + 1 : p.y, m } })}>›</button>
+                  <button className="btn btn-g" style={{ padding: ".3rem .7rem" }} onClick={() => setCalFecha(p => { const m = p.m === 11 ? 0 : p.m + 1; return { y: m === 0 ? p.y + 1 : p.y, m } })}>â€º</button>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: ".2rem", marginBottom: ".5rem" }}>
                   {DIAS_SEMANA.map(d => <div key={d} style={{ textAlign: "center", fontSize: ".65rem", color: "#444", padding: ".25rem 0" }}>{d}</div>)}
@@ -410,7 +410,7 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
                 </div>
               </div>
               <div className="card">
-                <div style={{ fontSize: ".75rem", color: "#555", marginBottom: ".75rem" }}>📊 {formatFecha(diaSeleccionado)}</div>
+                <div style={{ fontSize: ".75rem", color: "#555", marginBottom: ".75rem" }}>ðŸ“Š {formatFecha(diaSeleccionado)}</div>
                 <div style={{ fontSize: "1.5rem", fontWeight: 700, color: R.color, fontFamily: "'Cormorant Garamond',serif" }}>{turnosDia.length}</div>
                 <div style={{ fontSize: ".8rem", color: "#666", marginBottom: ".75rem" }}>turnos agendados</div>
                 <button className="btn btn-p" style={{ width: "100%", padding: ".6rem" }} onClick={() => { setModal("turno"); setModalData({ fecha: diaSeleccionado }) }}>+ Nuevo turno</button>
@@ -419,7 +419,7 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
 
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.3rem" }}>Turnos · {formatFecha(diaSeleccionado)}</h3>
+                <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.3rem" }}>Turnos Â· {formatFecha(diaSeleccionado)}</h3>
               </div>
               {HORAS.map(h => {
                 const turno = turnosDia.find(t => t.hora === h || t.hora?.startsWith(h))
@@ -435,16 +435,16 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
                                 <span style={{ fontWeight: 600, fontSize: ".92rem" }}>{turno.cliente_nombre}</span>
                                 <span className="badge" style={{ background: estadoTurnoColor[turno.estado] + "20", color: estadoTurnoColor[turno.estado] }}>{estadoTurnoLabel[turno.estado]}</span>
                               </div>
-                              <div style={{ fontSize: ".8rem", color: "#777", marginTop: ".2rem" }}>{turno.servicio} · {turno.duracion}min</div>
-                              {turno.notas && <div style={{ fontSize: ".75rem", color: "#FBBF24", marginTop: ".25rem" }}>📝 {turno.notas}</div>}
+                              <div style={{ fontSize: ".8rem", color: "#777", marginTop: ".2rem" }}>{turno.servicio} Â· {turno.duracion}min</div>
+                              {turno.notas && <div style={{ fontSize: ".75rem", color: "#FBBF24", marginTop: ".25rem" }}>ðŸ“ {turno.notas}</div>}
                             </div>
                             <div style={{ display: "flex", gap: ".4rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
                               {turno.telefono && <>
-                                <button className="btn btn-wa" style={{ padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => abrirWA(turno.telefono, msgWA.recordatorio(negocio.nombre, turno.cliente_nombre, turno.servicio, turno.fecha, turno.hora))}>📲 Recordar</button>
-                                <button className="btn" style={{ background: "#FBBF2415", color: "#FBBF24", border: "1px solid #FBBF2430", padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => { setDemoraModal(turno); setDemoraMin(30) }}>⏱ Demora</button>
+                                <button className="btn btn-wa" style={{ padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => abrirWA(turno.telefono, msgWA.recordatorio(negocio.nombre, turno.cliente_nombre, turno.servicio, turno.fecha, turno.hora))}>ðŸ“² Recordar</button>
+                                <button className="btn" style={{ background: "#FBBF2415", color: "#FBBF24", border: "1px solid #FBBF2430", padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => { setDemoraModal(turno); setDemoraMin(30) }}>â± Demora</button>
                               </>}
-                              {turno.estado !== "completado" && <button className="btn" style={{ background: "#34D39915", color: "#34D399", border: "1px solid #34D39930", padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => cambiarEstadoTurno(turno.id, "completado")}>✓ Listo</button>}
-                              <button className="btn" style={{ background: "#F8717115", color: "#F87171", border: "none", padding: ".3rem .5rem", fontSize: ".72rem" }} onClick={() => eliminarTurno(turno.id, turno)}>✕</button>
+                              {turno.estado !== "completado" && <button className="btn" style={{ background: "#34D39915", color: "#34D399", border: "1px solid #34D39930", padding: ".3rem .6rem", fontSize: ".72rem" }} onClick={() => cambiarEstadoTurno(turno.id, "completado")}>âœ“ Listo</button>}
+                              <button className="btn" style={{ background: "#F8717115", color: "#F87171", border: "none", padding: ".3rem .5rem", fontSize: ".72rem" }} onClick={() => eliminarTurno(turno.id, turno)}>âœ•</button>
                             </div>
                           </div>
                         </div>
@@ -461,7 +461,7 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
           </div>
         )}
 
-        {/* ════ CLIENTES ════ */}
+        {/* â•â•â•â• CLIENTES â•â•â•â• */}
         {vista === "clientes" && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
@@ -476,30 +476,30 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
                 <div key={c.id} className="row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto auto auto auto", gap: ".5rem", alignItems: "center" }}>
                   <div>
                     <div style={{ fontSize: ".88rem", fontWeight: 500 }}>{c.nombre}</div>
-                    {c.telefono && <div style={{ fontSize: ".72rem", color: "#444" }}>📱 {c.telefono}</div>}
+                    {c.telefono && <div style={{ fontSize: ".72rem", color: "#444" }}>ðŸ“± {c.telefono}</div>}
                   </div>
                   <div style={{ fontSize: ".82rem", color: "#888" }}>{c.plan}</div>
                   <div style={{ fontSize: ".88rem", color: R.color, fontWeight: 700 }}>{formatARS(c.cuota)}</div>
                   <div style={{ fontSize: ".78rem", color: "#666" }}>{formatFecha(c.vence)}</div>
                   <span className="badge" style={{ background: estadoClienteColor[c.estado] + "20", color: estadoClienteColor[c.estado] }}>{estadoClienteLabel[c.estado]}</span>
                   <div style={{ display: "flex", gap: ".35rem" }}>
-                    {c.estado !== "activo" && <button className="btn" style={{ background: "#34D39915", color: "#34D399", border: "1px solid #34D39930", padding: ".3rem .55rem", fontSize: ".72rem" }} onClick={() => marcarPagado(c.id)}>✓ Pagó</button>}
-                    {c.telefono && <button className="btn btn-wa" style={{ padding: ".3rem .55rem", fontSize: ".72rem" }} onClick={() => abrirWA(c.telefono, msgWA.cobro(negocio.nombre, c.nombre, formatARS(c.cuota)))}>📲</button>}
-                    <button className="btn" style={{ background: "#F8717115", color: "#F87171", border: "none", padding: ".3rem .5rem", fontSize: ".72rem" }} onClick={() => eliminarCliente(c.id)}>✕</button>
+                    {c.estado !== "activo" && <button className="btn" style={{ background: "#34D39915", color: "#34D399", border: "1px solid #34D39930", padding: ".3rem .55rem", fontSize: ".72rem" }} onClick={() => marcarPagado(c.id)}>âœ“ PagÃ³</button>}
+                    {c.telefono && <button className="btn btn-wa" style={{ padding: ".3rem .55rem", fontSize: ".72rem" }} onClick={() => abrirWA(c.telefono, msgWA.cobro(negocio.nombre, c.nombre, formatARS(c.cuota)))}>ðŸ“²</button>}
+                    <button className="btn" style={{ background: "#F8717115", color: "#F87171", border: "none", padding: ".3rem .5rem", fontSize: ".72rem" }} onClick={() => eliminarCliente(c.id)}>âœ•</button>
                   </div>
                 </div>
               ))}
-              {clientes.length === 0 && <div style={{ padding: "2.5rem", textAlign: "center", color: "#333" }}>Sin {R.entidades.toLowerCase()} todavía</div>}
+              {clientes.length === 0 && <div style={{ padding: "2.5rem", textAlign: "center", color: "#333" }}>Sin {R.entidades.toLowerCase()} todavÃ­a</div>}
             </div>
           </div>
         )}
 
-        {/* ════ GASTOS ════ */}
+        {/* â•â•â•â• GASTOS â•â•â•â• */}
         {vista === "gastos" && (
           <div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.7rem", marginBottom: "1.25rem" }}>💸 Caja del Negocio</h2>
+            <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.7rem", marginBottom: "1.25rem" }}>ðŸ’¸ Caja del Negocio</h2>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginBottom: "1.25rem" }}>
-              {[["💚 Ingresos", ingresoMes, "#34D399"], ["🔴 Gastos", gastosMes, "#F87171"], [flujoNeto >= 0 ? "✅ Neto" : "⚠️ Neto", flujoNeto, flujoNeto >= 0 ? "#34D399" : "#F87171"]].map(([l, v, c]: any) => (
+              {[["ðŸ’š Ingresos", ingresoMes, "#34D399"], ["ðŸ”´ Gastos", gastosMes, "#F87171"], [flujoNeto >= 0 ? "âœ… Neto" : "âš ï¸ Neto", flujoNeto, flujoNeto >= 0 ? "#34D399" : "#F87171"]].map(([l, v, c]: any) => (
                 <div key={l} className="card" style={{ textAlign: "center" }}>
                   <div style={{ color: c, fontSize: "1.3rem", fontWeight: 700, fontFamily: "'Cormorant Garamond',serif" }}>{formatARS(v)}</div>
                   <div style={{ color: "#555", fontSize: ".75rem", marginTop: ".25rem" }}>{l}</div>
@@ -508,7 +508,7 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
             </div>
             <div className="card" style={{ marginBottom: "1.25rem" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 140px 120px auto", gap: ".75rem", alignItems: "end" }}>
-                <input className="inp" placeholder="Descripción (alquiler, luz, insumos...)" value={gastoForm.desc} onChange={e => setGastoForm({ ...gastoForm, desc: e.target.value })} />
+                <input className="inp" placeholder="DescripciÃ³n (alquiler, luz, insumos...)" value={gastoForm.desc} onChange={e => setGastoForm({ ...gastoForm, desc: e.target.value })} />
                 <input className="inp" type="number" placeholder="Monto $" value={gastoForm.monto} onChange={e => setGastoForm({ ...gastoForm, monto: e.target.value })} />
                 <input className="inp" type="date" value={gastoForm.fecha} onChange={e => setGastoForm({ ...gastoForm, fecha: e.target.value })} />
                 <button className="btn btn-p" onClick={agregarGasto} style={{ whiteSpace: "nowrap" }}>+ Agregar</button>
@@ -524,7 +524,7 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                     <span style={{ color: "#F87171", fontWeight: 700 }}>- {formatARS(g.monto)}</span>
-                    <button className="btn" style={{ background: "#F8717115", color: "#F87171", border: "none", padding: ".25rem .5rem", fontSize: ".72rem" }} onClick={() => eliminarGasto(g.id)}>✕</button>
+                    <button className="btn" style={{ background: "#F8717115", color: "#F87171", border: "none", padding: ".25rem .5rem", fontSize: ".72rem" }} onClick={() => eliminarGasto(g.id)}>âœ•</button>
                   </div>
                 </div>
               ))}
@@ -532,32 +532,32 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
           </div>
         )}
 
-        {/* ════ IA ════ */}
+        {/* â•â•â•â• IA â•â•â•â• */}
         {vista === "ia" && (
           <div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.7rem", marginBottom: "1.25rem" }}>🤖 Análisis con IA</h2>
+            <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.7rem", marginBottom: "1.25rem" }}>ðŸ¤– AnÃ¡lisis con IA</h2>
             <div style={{ display: "flex", gap: ".75rem", marginBottom: "1.25rem" }}>
-              <button className="btn btn-p" onClick={pedirIA}>📊 Generar análisis</button>
+              <button className="btn btn-p" onClick={pedirIA}>ðŸ“Š Generar anÃ¡lisis</button>
               {aiMsg && <button className="btn btn-g" onClick={() => setAiMsg("")}>Limpiar</button>}
             </div>
             <div className="card">
-              {aiLoading && <div style={{ textAlign: "center", padding: "3rem" }}><div style={{ fontSize: "2.5rem", marginBottom: "1rem" }} className="pulse">🤖</div><p style={{ color: "#555" }}>Analizando tu negocio...</p></div>}
-              {!aiLoading && !aiMsg && <div style={{ textAlign: "center", padding: "3rem" }}><div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📊</div><p style={{ color: "#555" }}>Hacé click en "Generar análisis" para que la IA analice tu negocio</p></div>}
+              {aiLoading && <div style={{ textAlign: "center", padding: "3rem" }}><div style={{ fontSize: "2.5rem", marginBottom: "1rem" }} className="pulse">ðŸ¤–</div><p style={{ color: "#555" }}>Analizando tu negocio...</p></div>}
+              {!aiLoading && !aiMsg && <div style={{ textAlign: "center", padding: "3rem" }}><div style={{ fontSize: "3rem", marginBottom: "1rem" }}>ðŸ“Š</div><p style={{ color: "#555" }}>HacÃ© click en "Generar anÃ¡lisis" para que la IA analice tu negocio</p></div>}
               {!aiLoading && aiMsg && <div className="ia-text">{aiMsg}</div>}
             </div>
           </div>
         )}
       </div>
 
-      {/* ════ MODAL TURNO ════ */}
+      {/* â•â•â•â• MODAL TURNO â•â•â•â• */}
       {modal === "turno" && (
         <div className="modal-bg" onClick={e => e.target === e.currentTarget && setModal(null)}>
           <div className="modal">
-            <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.3rem", marginBottom: "1.25rem" }}>📅 Nuevo Turno</h3>
+            <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.3rem", marginBottom: "1.25rem" }}>ðŸ“… Nuevo Turno</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: ".75rem" }}>
               <input className="inp" placeholder="Nombre del cliente" value={modalData.clienteNombre || ""} onChange={e => setModalData({ ...modalData, clienteNombre: e.target.value })} list="cli-list" />
               <datalist id="cli-list">{clientes.map(c => <option key={c.id} value={c.nombre} />)}</datalist>
-              <input className="inp" placeholder="Teléfono (para WhatsApp)" value={modalData.telefono || ""} onChange={e => setModalData({ ...modalData, telefono: e.target.value })} />
+              <input className="inp" placeholder="TelÃ©fono (para WhatsApp)" value={modalData.telefono || ""} onChange={e => setModalData({ ...modalData, telefono: e.target.value })} />
               <select className="inp" value={modalData.servicio || ""} onChange={e => setModalData({ ...modalData, servicio: e.target.value })}>
                 <option value="">Seleccionar servicio</option>
                 {R.servicios.map((s: string) => <option key={s} value={s}>{s}</option>)}
@@ -581,7 +581,7 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
               <input className="inp" placeholder="Notas (opcional)" value={modalData.notas || ""} onChange={e => setModalData({ ...modalData, notas: e.target.value })} />
             </div>
             <div style={{ marginTop: ".5rem", padding: ".75rem", background: "#25D36610", borderRadius: "10px", border: "1px solid #25D36630" }}>
-              <div style={{ fontSize: ".75rem", color: "#25D366" }}>📲 Si ingresás el teléfono, se abrirá WhatsApp con el mensaje de confirmación automáticamente.</div>
+              <div style={{ fontSize: ".75rem", color: "#25D366" }}>ðŸ“² Si ingresÃ¡s el telÃ©fono, se abrirÃ¡ WhatsApp con el mensaje de confirmaciÃ³n automÃ¡ticamente.</div>
             </div>
             <div style={{ display: "flex", gap: ".75rem", marginTop: "1.25rem", justifyContent: "flex-end" }}>
               <button className="btn btn-g" onClick={() => setModal(null)}>Cancelar</button>
@@ -591,14 +591,14 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
         </div>
       )}
 
-      {/* ════ MODAL CLIENTE ════ */}
+      {/* â•â•â•â• MODAL CLIENTE â•â•â•â• */}
       {modal === "cliente" && (
         <div className="modal-bg" onClick={e => e.target === e.currentTarget && setModal(null)}>
           <div className="modal">
             <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.3rem", marginBottom: "1.25rem" }}>+ Nuevo {R.entidad}</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: ".75rem" }}>
               <input className="inp" placeholder={`Nombre del ${R.entidad.toLowerCase()}`} value={modalData.nombre || ""} onChange={e => setModalData({ ...modalData, nombre: e.target.value })} />
-              <input className="inp" placeholder="Teléfono (para WhatsApp)" value={modalData.telefono || ""} onChange={e => setModalData({ ...modalData, telefono: e.target.value })} />
+              <input className="inp" placeholder="TelÃ©fono (para WhatsApp)" value={modalData.telefono || ""} onChange={e => setModalData({ ...modalData, telefono: e.target.value })} />
               <select className="inp" value={modalData.plan || ""} onChange={e => setModalData({ ...modalData, plan: e.target.value })}>
                 <option value="">Seleccionar plan</option>
                 {R.planes.map((p: string) => <option key={p} value={p}>{p}</option>)}
@@ -617,17 +617,17 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
         </div>
       )}
 
-      {/* ════ MODAL DEMORA ════ */}
+      {/* â•â•â•â• MODAL DEMORA â•â•â•â• */}
       {demoraModal && (
         <div className="modal-bg" onClick={e => e.target === e.currentTarget && setDemoraModal(null)}>
           <div className="modal" style={{ maxWidth: "400px" }}>
             <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: ".5rem" }}>⏱️</div>
+              <div style={{ fontSize: "2.5rem", marginBottom: ".5rem" }}>â±ï¸</div>
               <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: "1.2rem" }}>Avisar demora</h3>
-              <p style={{ color: "#666", fontSize: ".85rem", marginTop: ".25rem" }}>{demoraModal.cliente_nombre} · {demoraModal.hora}hs</p>
+              <p style={{ color: "#666", fontSize: ".85rem", marginTop: ".25rem" }}>{demoraModal.cliente_nombre} Â· {demoraModal.hora}hs</p>
             </div>
             <div style={{ marginBottom: "1.25rem" }}>
-              <label style={{ fontSize: ".8rem", color: "#888", display: "block", marginBottom: ".5rem" }}>¿Cuántos minutos de demora?</label>
+              <label style={{ fontSize: ".8rem", color: "#888", display: "block", marginBottom: ".5rem" }}>Â¿CuÃ¡ntos minutos de demora?</label>
               <div style={{ display: "flex", gap: ".5rem", flexWrap: "wrap" }}>
                 {[15, 20, 30, 45, 60].map(m => (
                   <button key={m} className="btn" style={{ background: demoraMin === m ? R.color : "#ffffff10", color: demoraMin === m ? "#000" : "#aaa", border: "none", padding: ".5rem 1rem" }} onClick={() => setDemoraMin(m)}>{m} min</button>
@@ -635,11 +635,11 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
               </div>
             </div>
             <div style={{ background: "#25D36610", border: "1px solid #25D36630", borderRadius: "10px", padding: ".85rem", marginBottom: "1.25rem", fontSize: ".8rem", color: "#25D366" }}>
-              📲 Se abrirá WhatsApp con el aviso de demora para {demoraModal.cliente_nombre}
+              ðŸ“² Se abrirÃ¡ WhatsApp con el aviso de demora para {demoraModal.cliente_nombre}
             </div>
             <div style={{ display: "flex", gap: ".75rem", justifyContent: "flex-end" }}>
               <button className="btn btn-g" onClick={() => setDemoraModal(null)}>Cancelar</button>
-              <button className="btn btn-wa" style={{ padding: ".6rem 1.25rem" }} onClick={enviarDemora}>📲 Enviar por WhatsApp</button>
+              <button className="btn btn-wa" style={{ padding: ".6rem 1.25rem" }} onClick={enviarDemora}>ðŸ“² Enviar por WhatsApp</button>
             </div>
           </div>
         </div>
@@ -654,6 +654,8 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
     </div>
   )
 }
-/ /   v 2  
- / /   d e p l o y   f i x  
+/ /   v 2 
+ 
+ / /   d e p l o y   f i x 
+ 
  
