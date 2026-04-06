@@ -654,8 +654,4 @@ RespondÃ© en espaÃ±ol, directo y Ãºtil. UsÃ¡ emojis. MÃ¡ximo 250 palab
     </div>
   )
 }
-/ /   v 2 
- 
- / /   d e p l o y   f i x 
- 
- 
+
