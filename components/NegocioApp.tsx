@@ -654,3 +654,5 @@ Respondé en español, directo y útil. Usá emojis. Máximo 250 palabras.`
     </div>
   )
 }
+/ /   v 2  
+ 
