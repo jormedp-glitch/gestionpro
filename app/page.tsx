@@ -37,6 +37,7 @@ export default function AdminPanel() {
               <option value="gimnasio">Gimnasio</option>
               <option value="peluqueria">Peluqueria</option>
               <option value="veterinaria">Veterinaria</option>
+              <option value="servicio_tecnico">Servicio Técnico</option>
             </select>
             <button onClick={crearNegocio} style={{ background: '#FF6B35', color: '#000', border: 'none', borderRadius: '8px', padding: '0.65rem 1.5rem', cursor: 'pointer', fontWeight: 700 }}>Crear</button>
           </div>

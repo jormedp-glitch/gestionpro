@@ -35,8 +35,8 @@ export default function NegocioPage({ params }: { params: Promise<{ slug: string
   if (loading) return <div style={{minHeight:'100vh',background:'#050508',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'sans-serif'}}><p>Cargando...</p></div>
   if (!negocio) return <div style={{minHeight:'100vh',background:'#050508',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'sans-serif'}}><p>No encontrado</p></div>
 
-  const color = negocio.rubro === 'peluqueria' ? '#A78BFA' : negocio.rubro === 'veterinaria' ? '#34D399' : '#FF6B35'
-  const icon = negocio.rubro === 'peluqueria' ? '✂️' : negocio.rubro === 'veterinaria' ? '🐾' : '🏋️'
+  const color = negocio.rubro === 'peluqueria' ? '#A78BFA' : negocio.rubro === 'veterinaria' ? '#34D399' : negocio.rubro === 'servicio_tecnico' ? '#60A5FA' : '#FF6B35'
+  const icon = negocio.rubro === 'peluqueria' ? '✂️' : negocio.rubro === 'veterinaria' ? '🐾' : negocio.rubro === 'servicio_tecnico' ? '🔧' : '🏋️'
   const activos = clientes.filter(c => c.estado === 'activo').length
   const ingresoMes = clientes.filter(c => c.estado !== 'vencido').reduce((s,c) => s + Number(c.cuota||0), 0)
   const mesActual = new Date().toISOString().slice(0,7)
@@ -75,11 +75,22 @@ export default function NegocioPage({ params }: { params: Promise<{ slug: string
       <div style={{background:'#13131A',borderBottom:`1px solid ${color}20`,padding:'0 1.25rem',display:'flex',alignItems:'center',gap:'1rem',minHeight:'56px',flexWrap:'wrap' as any}}>
         <span style={{fontSize:'1.3rem'}}>{icon}</span>
         <span style={{color,fontWeight:700}}>{negocio.nombre}</span>
-        <nav style={{display:'flex',gap:'.25rem',flex:1,overflowX:'auto' as any}}>
-          {[['dashboard','📊 Dashboard'],['agenda','📅 Agenda'],['clientes','👥 Clientes'],['gastos','💸 Caja'],].map(([v,l]) => (
-            <button key={v} onClick={() => setVista(v)} style={{background:vista===v?color+'20':'none',color:vista===v?color:'#666',border:'none',cursor:'pointer',padding:'.5rem .9rem',borderRadius:'8px',fontSize:'.82rem',fontFamily:'sans-serif'}}>{l}</button>
-          ))}
-        </nav>
+<nav style={{display:'flex',gap:'.25rem',flex:1,overflowX:'auto' as any}}>
+  {negocio.rubro === 'servicio_tecnico' ? (
+    <>
+      <button onClick={() => setVista('dashboard')} style={{background:vista==='dashboard'?color+'20':'none',color:vista==='dashboard'?color:'#666',border:'none',cursor:'pointer',padding:'.5rem .9rem',borderRadius:'8px',fontSize:'.82rem',fontFamily:'sans-serif'}}>📊 Dashboard</button>
+      <a href={'/' + slug + '/reparaciones'} style={{color:'#60A5FA',padding:'.5rem .9rem',borderRadius:'8px',fontSize:'.82rem',textDecoration:'none',display:'inline-flex',alignItems:'center',background:'#60A5FA20'}}>🔧 Reparaciones</a>
+      <button onClick={() => setVista('gastos')} style={{background:vista==='gastos'?color+'20':'none',color:vista==='gastos'?color:'#666',border:'none',cursor:'pointer',padding:'.5rem .9rem',borderRadius:'8px',fontSize:'.82rem',fontFamily:'sans-serif'}}>💸 Caja</button>
+    </>
+  ) : (
+    <>
+      {[['dashboard','📊 Dashboard'],['agenda','📅 Agenda'],['clientes','👥 Clientes'],['gastos','💸 Caja']].map(([v,l]) => (
+        <button key={v} onClick={() => setVista(v)} style={{background:vista===v?color+'20':'none',color:vista===v?color:'#666',border:'none',cursor:'pointer',padding:'.5rem .9rem',borderRadius:'8px',fontSize:'.82rem',fontFamily:'sans-serif'}}>{l}</button>
+      ))}
+      <a href={'/' + slug + '/reparaciones'} style={{color:'#666',padding:'.5rem .9rem',borderRadius:'8px',fontSize:'.82rem',textDecoration:'none',display:'inline-flex',alignItems:'center'}}>🔧 Reparaciones</a>
+    </>
+  )}
+</nav>
       </div>
 
       <div style={{maxWidth:'960px',margin:'0 auto',padding:'1.5rem 1rem'}}>
