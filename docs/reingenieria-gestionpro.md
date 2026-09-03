@@ -71,7 +71,7 @@ Principios:
 
 **Criterios de aceptación**: sin login no se puede crear ni leer datos; dos negocios no se ven entre sí; la página de seguimiento pública funciona solo con token válido.
 
-### FASE 2 — Arquitectura y dominio (3–5 días) — riesgo: Medio
+### FASE 2 — Arquitectura y dominio (3–5 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-03, SDD `fase2-arquitectura`, verify PASS with warnings; PRs pendientes de creación al cierre del ciclo)
 
 - Reorganización por dominios:
   - `app/(auth)/login` · `app/page.tsx` (admin, protegido) · `app/[slug]/` (app del negocio, protegido) · `app/[slug]/seguimiento/[orden]` (público con token)
@@ -206,7 +206,7 @@ Inventario completo, facturación AFIP, RR. HH., multi-idioma, app nativa (PWA a
 | D-03 | Auth: email+password vs OTP (¿magic link o código por celular?)                              | Los dueños suelen no usar email; evaluar según D-01                                                                                                                        | ⏳ Abierta                                                                          | —          |
 | D-04 | Seguimiento público: ¿visible presupuesto/precio o solo estado?                              | Depende de regla de negocio por rubro                                                                                                                                      | ⏳ Abierta                                                                          | —          |
 | D-05 | ¿`sin_reparacion` es terminal o puede pasar a `entregado`?                                   | La máquina de estados final la define la operación real del taller                                                                                                         | ✅ Adoptada — `sin_reparacion` es terminal (Fase 2, spec R1)                        | 2026-09-03 |
-| D-06 | UI: primitivos propios estilo shadcn/ui vs. sistema de diseño enterprise (Chameleon/Mercury) | Depende de la ambición de producto (D-01)                                                                                                                                  | ⏳ Abierta                                                                          | —          |
+| D-06 | UI: primitivos propios estilo shadcn/ui vs. sistema de diseño enterprise (Chameleon/Mercury) | Depende de la ambición de producto (D-01)                                                                                                                                  | ⏳ Abierta — primitivas UI → Fase 5                                                 | —          |
 | D-07 | Plataforma de pagos del abono: Mercado Pago vs Stripe                                        | Mercado Pago es de facto en Argentina; Stripe multi-país                                                                                                                   | ⏳ Abierta                                                                          | —          |
 | D-08 | Alcance del self-service del cliente final (reservar y/o pagar en línea vs. solo consultar)  | Define buena parte del alcance de la capa cliente                                                                                                                          | ✅ Adoptada — consultar + reservar; pagos por fuera (el profe cobra y marca pagado) | 2026-09-02 |
 
