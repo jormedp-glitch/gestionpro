@@ -51,7 +51,7 @@ Principios:
 > Cada fase tiene su propio PR (o cadena de PRs), criterios de aceptación y verificación independiente.
 > Estimación: rango de trabajo de equipo chico; no incluye la fase 6 (producto, opcional).
 
-### FASE 0 — Cimientos del proceso (1–2 días) — riesgo: Bajo
+### FASE 0 — Cimientos del proceso (1–2 días) — riesgo: Bajo — ✅ IMPLEMENTADA (2026-09-02, SDD `fase0-cimientos`, verify PASS)
 
 - ESLint (`eslint.config.mjs` con `typescript-eslint` + plugins de Next) + Prettier + scripts `lint` / `format` / `typecheck`.
 - Husky + lint-staged (pre-commit) + conventional commits (ya se usan; se automatizan).
