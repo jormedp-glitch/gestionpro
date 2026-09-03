@@ -85,7 +85,7 @@ Principios:
 
 **Criterios de aceptación**: consultas de dominio en un solo lugar; las páginas usan los módulos de dominio; derrocar `any` de las nuevas capas.
 
-### FASE 3 — Datos (2–3 días) — riesgo: Medio
+### FASE 3 — Datos (2–3 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-03, SDD `fase3-datos`, verify PASS con runtime-pending SQL; PRs pendientes de creación al cierre del ciclo)
 
 - Migraciones versionadas en `supabase/migrations/`: schema inicial (negocios, clientes, turnos, gastos, equipos, historial, repuestos, miembros), enums o checks de estado, constraints (`monto >= 0`, FK con cascada, unicidades).
 - Ejecutado en producción con `supabase db push` / CI.
