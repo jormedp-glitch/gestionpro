@@ -9,21 +9,14 @@
 // props y los tipos via `import type` (se borra en compilación).
 
 import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/types/database.types";
 
-/** Turno de la agenda (columnas usadas por la app). */
-export interface Turno {
-  id: string;
-  negocio_id: string;
-  cliente_nombre: string;
-  telefono: string | null;
-  servicio: string;
-  fecha: string;
-  hora: string;
-  duracion: number;
-  estado: string;
-  notas: string | null;
-  created_at: string;
-}
+/**
+ * Turno de la agenda — fila real de la tabla `turnos` (types/database.types.ts,
+ * snapshot PRE-rollout). `duracion` y `estado` son nullables en la DB; los
+ * client components los renderizan con ReactNode (aceptan null).
+ */
+export type Turno = Tables<"turnos">;
 
 /** Turnos del negocio (R8: lectura con el cliente server). */
 export async function getTurnosDeNegocio(negocioId: string): Promise<Turno[]> {

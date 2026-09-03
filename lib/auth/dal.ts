@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/types/database.types";
 
 /**
  * Capa de acceso a datos con verificación de sesión y membresía (fase 1, WU-2).
@@ -7,13 +8,16 @@ import { createClient } from "@/lib/supabase/server";
  * optimista; la aplicación real la hace el DAL + RLS).
  */
 
-export type Negocio = {
-  id: string;
-  nombre: string;
-  slug: string;
-  rubro: string;
-  created_at: string;
-};
+/**
+ * Negocio del panel — fila real de la tabla `negocios` (types/database.types.ts,
+ * snapshot PRE-rollout), recortada a las columnas que usa la app.
+ * `activo` y `telefono_admin` quedan fuera del Pick: columnas legacy sin uso
+ * (spec D3, documentado).
+ */
+export type Negocio = Pick<
+  Tables<"negocios">,
+  "id" | "nombre" | "slug" | "rubro" | "created_at"
+>;
 
 /** Usuario de la sesión actual (server), o null si no hay sesión. */
 export async function getSessionUser() {

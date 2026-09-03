@@ -35,7 +35,14 @@ export const CATEGORIAS_EQUIPO = [
 
 export type CategoriaEquipo = (typeof CATEGORIAS_EQUIPO)[number];
 
-/** Equipo en el taller (antes lib/types-reparaciones, R12). */
+/**
+ * Equipo en el taller (antes lib/types-reparaciones, R12).
+ * NO adopta `Tables<"equipos">` (types/database.types.ts): el snapshot
+ * PRE-rollout carece de `acceso_token` y la nullability de estado/fecha_ingreso
+ * genera churn en el feature; las interfaces Equipo/Historial/Repuesto siguen
+ * hand-written hasta la regeneración post-rollout.
+ * // TODO fase 5: adopt Database types after regenerating post-rollout
+ */
 export interface Equipo {
   id: string;
   negocio_id: string;

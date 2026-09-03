@@ -9,16 +9,14 @@
 // props y los tipos via `import type` (se borra en compilación).
 
 import { createClient } from "@/lib/supabase/server";
+import type { Tables } from "@/types/database.types";
 
-/** Gasto del negocio (columnas usadas por la app). */
-export interface Gasto {
-  id: string;
-  negocio_id: string;
-  descripcion: string;
-  monto: number;
-  fecha: string | null;
-  created_at: string;
-}
+/**
+ * Gasto del negocio — fila real de la tabla `gastos` (types/database.types.ts,
+ * snapshot PRE-rollout). `fecha` es NOT NULL en la DB; `created_at` y
+ * `negocio_id` son nullables (fidelidad al schema real).
+ */
+export type Gasto = Tables<"gastos">;
 
 /** Gastos del negocio (R8: lectura con el cliente server). */
 export async function getGastosDeNegocio(negocioId: string): Promise<Gasto[]> {
