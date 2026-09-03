@@ -14,7 +14,12 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
    cp .env.example .env.local
    ```
 
-   Then fill in the Supabase credentials in `.env.local`.
+   Then fill in the Supabase credentials in `.env.local`:
+
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+   ```
 
 3. Run the development server:
 
@@ -23,6 +28,22 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
    ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Login
+
+Access is protected: routes redirect to `/login?next=...` when there is no session.
+
+To enable login on your Supabase project:
+
+1. In the Supabase dashboard, enable the **Email** provider under
+   Authentication → Providers (email + password sign-in).
+2. Create the first user under Authentication → Users (Add user).
+3. Add the app origin to Authentication → URL Configuration (e.g.
+   `http://localhost:3000` for local development).
+
+Then log in with that email and password at `/login`. After a successful login you
+land back on the page you tried to open (`next`); logout is wired through the auth
+actions and destroys the session.
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
