@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, use } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { logout } from "@/lib/auth/actions";
 
 export default function NegocioPage({
   params,
@@ -340,6 +341,23 @@ export default function NegocioPage({
             </>
           )}
         </nav>
+        <form action={logout}>
+          <button
+            type="submit"
+            style={{
+              background: "transparent",
+              border: "1px solid #ffffff18",
+              color: "#888",
+              borderRadius: "8px",
+              padding: ".5rem .9rem",
+              fontSize: ".82rem",
+              cursor: "pointer",
+              fontFamily: "sans-serif",
+            }}
+          >
+            Salir
+          </button>
+        </form>
       </div>
 
       <div
