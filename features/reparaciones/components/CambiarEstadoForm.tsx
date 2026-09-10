@@ -5,9 +5,10 @@
 // muestra transiciones inválidas y la Server Action las rechaza igualmente.
 // Estados terminales (entregado, sin_reparacion — D-05) no ofrecen opciones.
 // Migrado a tokens/primitivas (fase5-ui P7): select nativo → primitiva Select
-// (Radix, operable por teclado REQ-UP-2). GOTCHA #203: Radix no emite campo
-// FormData → hidden input `nuevo_estado` preserva el contrato de submit de la
-// Server Action `cambiarEstado` (sin él, zod rechazaría siempre con error).
+// (Radix, operable por teclado REQ-UP-2). GOTCHA (discovery 203): Radix no emite
+// campo FormData → hidden input `nuevo_estado` preserva el contrato de submit
+// de la Server Action `cambiarEstado` (sin él, zod rechazaría siempre con
+// error).
 
 "use client";
 
@@ -67,7 +68,7 @@ export function CambiarEstadoForm({
         <form action={formAction} className="space-y-2">
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="equipo_id" value={equipoId} />
-          {/* #203: Radix Select no participa en FormData → hidden input
+          {/* 203: Radix Select no participa en FormData → hidden input
               con el mismo name preserva el contrato de la Server Action. */}
           <input type="hidden" name="nuevo_estado" value={nuevoEstado} />
           <Select value={nuevoEstado} onValueChange={setNuevoEstado}>
