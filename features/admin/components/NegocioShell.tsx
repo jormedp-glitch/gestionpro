@@ -170,7 +170,6 @@ export function NegocioShell({
             negocioNombre={negocio.nombre}
             turnos={turnos}
             hoy={hoy}
-            color={color}
             onNuevoTurno={() => abrirTurno(hoy)}
             showToast={showToast}
           />
@@ -206,7 +205,6 @@ export function NegocioShell({
       {modal === "turno" && (
         <NuevoTurnoModal
           slug={slug}
-          color={color}
           fechaInicial={modalData.fecha || hoy}
           onClose={() => setModal(null)}
           onToast={showToast}

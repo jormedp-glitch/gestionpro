@@ -3,7 +3,11 @@
 // Modal de alta de turno (client component). El formulario envía los datos a
 // la Server Action `crearTurno` (R9); al confirmarse cierra el modal, avisa
 // con toast y abre WhatsApp con el mensaje de confirmación (R3/R4). Mismos
-// campos y comportamiento que el modal original del monolito.
+// campos y comportamiento que el modal original del monolito. Migrado a la
+// primitiva Dialog + Select (fase5-ui P6): focus trap + ESC + aria-modal de
+// fábrica (REQ-UP-2); cierre por overlay/ESC via onOpenChange; hora con la
+// primitiva Select (teclado, REQ-UP-2); cero estilos inline (REQ-TT-3); el
+// color por prop se eliminó (tokens).
 
 "use client";
 
@@ -11,6 +15,16 @@ import { useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
 import { crearTurno } from "@/features/turnos/actions/turnos";
 import type { TurnoActionResult } from "@/features/turnos/actions/turnos";
+import { Button } from "@/lib/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/lib/ui/dialog";
+import { Input } from "@/lib/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/lib/ui/select";
 
 interface FormularioTurno {
   clienteNombre: string;
@@ -51,13 +65,11 @@ const HORAS = [
 
 export function NuevoTurnoModal({
   slug,
-  color,
   fechaInicial,
   onClose,
   onToast,
 }: {
   slug: string;
-  color: string;
   fechaInicial: string;
   onClose: () => void;
   onToast: (msg: string) => void;
@@ -95,94 +107,56 @@ export function NuevoTurnoModal({
   }, [state, onToast, onClose]);
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "#000000AA",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 100,
-        padding: "1rem",
-      }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div
-        style={{
-          background: "#13131A",
-          border: "1px solid #ffffff12",
-          borderRadius: "22px",
-          padding: "1.75rem",
-          width: "100%",
-          maxWidth: "480px",
-        }}
-      >
-        <h3
-          style={{
-            fontFamily: "serif",
-            fontSize: "1.3rem",
-            marginBottom: "1.25rem",
-          }}
-        >
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[480px] p-7">
+        <DialogTitle className="font-serif text-[1.3rem]">
           📅 Nuevo Turno
-        </h3>
-        <form
-          action={formAction}
-          style={{ display: "flex", flexDirection: "column", gap: ".75rem" }}
-        >
+        </DialogTitle>
+        <form action={formAction} className="flex flex-col gap-3">
           <input type="hidden" name="slug" value={slug} />
-          <input
-            style={inp}
+          <input type="hidden" name="hora" value={form.hora} />
+          <Input
             placeholder="Nombre del cliente"
             name="cliente_nombre"
             value={form.clienteNombre}
             onChange={(e) => setCampo("clienteNombre", e.target.value)}
           />
-          <input
-            style={inp}
+          <Input
             placeholder="Teléfono (WhatsApp)"
             name="telefono"
             value={form.telefono}
             onChange={(e) => setCampo("telefono", e.target.value)}
           />
-          <input
-            style={inp}
+          <Input
             placeholder="Servicio"
             name="servicio"
             value={form.servicio}
             onChange={(e) => setCampo("servicio", e.target.value)}
           />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: ".75rem",
-            }}
-          >
-            <input
-              style={inp}
+          <div className="grid grid-cols-2 gap-3">
+            <Input
               type="date"
               name="fecha"
               value={form.fecha}
               onChange={(e) => setCampo("fecha", e.target.value)}
             />
-            <select
-              style={inp}
-              name="hora"
+            <Select
               value={form.hora}
-              onChange={(e) => setCampo("hora", e.target.value)}
+              onValueChange={(v) => setCampo("hora", v)}
             >
-              <option value="">Hora</option>
-              {HORAS.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger>
+                <SelectValue placeholder="Hora" />
+              </SelectTrigger>
+              <SelectContent>
+                {HORAS.map((h) => (
+                  <SelectItem key={h} value={h}>
+                    {h}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <input
-            style={inp}
+          <Input
             placeholder="Notas (opcional)"
             name="notas"
             value={form.notas}
@@ -190,71 +164,29 @@ export function NuevoTurnoModal({
           />
 
           {!state.ok && state.error && (
-            <p
-              style={{
-                color: "#F87171",
-                fontSize: ".82rem",
-                margin: 0,
-              }}
-            >
-              {state.error}
-            </p>
+            <p className="m-0 text-sm text-red-400">{state.error}</p>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              gap: ".75rem",
-              marginTop: "1.25rem",
-              justifyContent: "flex-end",
-            }}
-          >
-            <button
+          <div className="mt-5 flex justify-end gap-3">
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              style={{
-                background: "transparent",
-                border: "1px solid #ffffff18",
-                color: "#888",
-                borderRadius: "10px",
-                padding: ".6rem 1.1rem",
-                cursor: "pointer",
-                fontFamily: "sans-serif",
-              }}
+              className="rounded-[10px]"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="accent"
               disabled={pending}
-              style={{
-                background: color,
-                color: "#000",
-                border: "none",
-                borderRadius: "10px",
-                padding: ".6rem 1.5rem",
-                cursor: "pointer",
-                fontWeight: 700,
-                fontFamily: "sans-serif",
-              }}
+              className="rounded-[10px] font-bold"
             >
               {pending ? "Guardando..." : "Guardar"}
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
-
-const inp: React.CSSProperties = {
-  background: "#ffffff08",
-  border: "1px solid #ffffff15",
-  color: "#fff",
-  borderRadius: "10px",
-  padding: ".7rem 1rem",
-  fontSize: ".88rem",
-  outline: "none",
-  fontFamily: "sans-serif",
-  width: "100%",
-};

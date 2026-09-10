@@ -4,7 +4,9 @@
 // el Server Component (R8) y filtra por fecha de hoy, igual que la vista
 // original del monolito. Las escrituras (completar) pasan por la Server
 // Action (R9); demora/recordatorio solo abren WhatsApp con los builders del
-// dominio (R3/R4, sin fetch del cliente).
+// dominio (R3/R4, sin fetch del cliente). Migrado a primitivas lib/ui +
+// tokens (fase5-ui P6): cero estilos inline (REQ-TT-3); EmptyState cuando no
+// hay turnos para hoy (REQ-FS-2); el color por prop se eliminó (tokens).
 
 "use client";
 
@@ -15,6 +17,9 @@ import type { TurnoActionResult } from "@/features/turnos/actions/turnos";
 import { mensajeDemora, mensajeRecordatorioTurno } from "@/lib/domain/mensajes";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { formatFecha } from "@/lib/domain/formato";
+import { Button } from "@/lib/ui/button";
+import { Card } from "@/lib/ui/card";
+import { EmptyState } from "@/lib/ui/empty-state";
 import type { Turno } from "@/features/turnos/data/turnos";
 
 /** Hora + 30 min (misma lógica que la vista original, demora fija de 30'). */
@@ -57,16 +62,7 @@ function CompletarTurnoBoton({
       <input type="hidden" name="turno_id" value={turnoId} />
       <button
         type="submit"
-        style={{
-          background: "#34D39915",
-          border: "1px solid #34D39930",
-          color: "#34D399",
-          borderRadius: "8px",
-          padding: ".3rem .6rem",
-          cursor: "pointer",
-          fontSize: ".75rem",
-          fontFamily: "sans-serif",
-        }}
+        className="cursor-pointer rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-400"
       >
         ✓ Listo
       </button>
@@ -79,7 +75,6 @@ export function TurnosAgenda({
   negocioNombre,
   turnos,
   hoy,
-  color,
   onNuevoTurno,
   showToast,
 }: {
@@ -87,7 +82,6 @@ export function TurnosAgenda({
   negocioNombre: string;
   turnos: Turno[];
   hoy: string;
-  color: string;
   onNuevoTurno: () => void;
   showToast: (msg: string) => void;
 }) {
@@ -97,88 +91,44 @@ export function TurnosAgenda({
 
   return (
     <div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "1.25rem",
-        }}
-      >
-        <h2 style={{ fontFamily: "serif", fontSize: "1.6rem" }}>
+      <div className="mb-5 flex items-center justify-between">
+        <h2 className="font-serif text-[1.6rem]">
           📅 Agenda — {formatFecha(hoy)}
         </h2>
-        <button
+        <Button
+          variant="accent"
           onClick={onNuevoTurno}
-          style={{
-            background: color,
-            color: "#000",
-            border: "none",
-            borderRadius: "10px",
-            padding: ".6rem 1.2rem",
-            cursor: "pointer",
-            fontWeight: 700,
-            fontFamily: "sans-serif",
-          }}
+          className="rounded-[10px] font-bold"
         >
           + Nuevo turno
-        </button>
+        </Button>
       </div>
-      <div
-        style={{
-          background: "#ffffff06",
-          border: "1px solid #ffffff0C",
-          borderRadius: "16px",
-          padding: "0",
-          overflow: "hidden",
-        }}
-      >
+      <Card className="overflow-hidden p-0">
         {turnosHoy.length === 0 && (
-          <p
-            style={{
-              padding: "2rem",
-              textAlign: "center",
-              color: "#444",
-            }}
-          >
-            Sin turnos para hoy
-          </p>
+          <EmptyState
+            title="Sin turnos para hoy"
+            action={
+              <Button variant="accent" onClick={onNuevoTurno}>
+                + Nuevo turno
+              </Button>
+            }
+          />
         )}
         {turnosHoy.map((t) => {
           const telefono = t.telefono;
           return (
             <div
               key={t.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "1rem",
-                borderBottom: "1px solid #ffffff07",
-              }}
+              className="flex items-center justify-between border-b border-border/60 px-4 py-4"
             >
               <div>
-                <span
-                  style={{
-                    color,
-                    fontWeight: 700,
-                    marginRight: ".75rem",
-                  }}
-                >
-                  {t.hora}
-                </span>
-                <span style={{ fontWeight: 500 }}>{t.cliente_nombre}</span>
-                <span
-                  style={{
-                    color: "#666",
-                    marginLeft: ".5rem",
-                    fontSize: ".85rem",
-                  }}
-                >
+                <span className="mr-3 font-bold text-accent">{t.hora}</span>
+                <span className="font-medium">{t.cliente_nombre}</span>
+                <span className="ml-2 text-sm text-muted-foreground">
                   · {t.servicio} ({t.duracion}min)
                 </span>
               </div>
-              <div style={{ display: "flex", gap: ".5rem" }}>
+              <div className="flex gap-2">
                 {telefono && (
                   <button
                     onClick={() => {
@@ -191,16 +141,7 @@ export function TurnosAgenda({
                         "_blank",
                       );
                     }}
-                    style={{
-                      background: "#FBBF2415",
-                      border: "1px solid #FBBF2430",
-                      color: "#FBBF24",
-                      borderRadius: "8px",
-                      padding: ".3rem .6rem",
-                      cursor: "pointer",
-                      fontSize: ".75rem",
-                      fontFamily: "sans-serif",
-                    }}
+                    className="cursor-pointer rounded-lg border border-amber-400/25 bg-amber-400/10 px-2.5 py-1 text-xs text-amber-400"
                   >
                     ⏱ Demora
                   </button>
@@ -221,16 +162,7 @@ export function TurnosAgenda({
                         "_blank",
                       )
                     }
-                    style={{
-                      background: "#25D36615",
-                      border: "1px solid #25D36630",
-                      color: "#25D366",
-                      borderRadius: "8px",
-                      padding: ".3rem .6rem",
-                      cursor: "pointer",
-                      fontSize: ".75rem",
-                      fontFamily: "sans-serif",
-                    }}
+                    className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-500"
                   >
                     📲 Recordar
                   </button>
@@ -244,7 +176,7 @@ export function TurnosAgenda({
             </div>
           );
         })}
-      </div>
+      </Card>
     </div>
   );
 }
