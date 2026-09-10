@@ -3,12 +3,20 @@
 // Listado de reparaciones (client component). Recibe los equipos ya leídos
 // en el Server Component (R8) y hace el filtrado local por estado/búsqueda,
 // con los 9 estados desde lib/domain (R1: esperando_aprobacion ya no falta).
+// Migrado a tokens/primitivas (fase5-ui P7): cero clases de paleta cruda
+// (text-gray-*, bg-white → tokens), EmptyState en lista vacía (REQ-FS-2) y
+// primitivas lib/ui (Input, Badge, buttonVariants).
 
 "use client";
 
 import { useState } from "react";
 import { ESTADOS, ESTADOS_CONTADORES } from "@/lib/domain/estados-reparacion";
 import { formatARS } from "@/lib/domain/formato";
+import { Badge } from "@/lib/ui/badge";
+import { buttonVariants } from "@/lib/ui/button";
+import { EmptyState } from "@/lib/ui/empty-state";
+import { Input } from "@/lib/ui/input";
+import { cn } from "@/lib/ui/utils";
 import type { EquipoConCliente } from "@/features/reparaciones/data/reparaciones";
 
 function diasEnTaller(f: string) {
@@ -51,59 +59,56 @@ export function ReparacionesLista({
   }
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="mx-auto max-w-6xl p-4">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">🔧 Reparaciones</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-2xl font-bold">🔧 Reparaciones</h1>
+          <p className="text-sm text-muted-foreground">
             {equipos.length} equipos en total
           </p>
         </div>
         <a
           href={"/" + slug + "/reparaciones/nuevo"}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+          className={cn(buttonVariants({ variant: "accent" }), "rounded-lg")}
         >
           + Nueva reparación
         </a>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 mb-6">
+      <div className="mb-6 grid grid-cols-4 gap-2">
         {ESTADOS_CONTADORES.map((val) => {
           const est = ESTADOS.find((e) => e.valor === val)!;
+          const activo = filtroEstado === val;
           return (
             <button
               key={val}
               type="button"
-              onClick={() =>
-                setFiltroEstado(filtroEstado === val ? "todos" : val)
-              }
-              className={
-                "rounded-xl p-3 text-center border-2 transition " +
-                (filtroEstado === val
-                  ? "border-blue-500 shadow-md "
-                  : "border-transparent ") +
-                est.color
-              }
+              onClick={() => setFiltroEstado(activo ? "todos" : val)}
+              className={cn(
+                "rounded-xl border-2 p-3 text-center transition",
+                activo ? "border-accent shadow-md" : "border-transparent",
+                est.color,
+              )}
             >
               <div className="text-2xl font-bold">{contarEstado(val)}</div>
-              <div className="text-xs mt-1 leading-tight">{est.etiqueta}</div>
+              <div className="mt-1 text-xs leading-tight">{est.etiqueta}</div>
             </button>
           );
         })}
       </div>
 
-      <div className="flex gap-2 mb-4">
-        <input
+      <div className="mb-4 flex gap-2">
+        <Input
           type="text"
           placeholder="Buscar por N° orden, cliente, marca..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="flex-1"
         />
         <select
           value={filtroEstado}
           onChange={(e) => setFiltroEstado(e.target.value)}
-          className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
           <option value="todos">Todos los estados</option>
           {ESTADOS.map((e) => (
@@ -115,11 +120,25 @@ export function ReparacionesLista({
       </div>
 
       {equiposFiltrados.length === 0 ? (
-        <div className="text-center text-gray-400 py-16">
-          {equipos.length === 0
-            ? "¡Todavía no hay reparaciones! Ingresá la primera."
-            : "No hay equipos que coincidan."}
-        </div>
+        equipos.length === 0 ? (
+          <EmptyState
+            title="¡Todavía no hay reparaciones!"
+            description="Ingresá la primera."
+            action={
+              <a
+                href={"/" + slug + "/reparaciones/nuevo"}
+                className={cn(
+                  buttonVariants({ variant: "accent" }),
+                  "rounded-lg",
+                )}
+              >
+                + Nueva reparación
+              </a>
+            }
+          />
+        ) : (
+          <EmptyState title="No hay equipos que coincidan." />
+        )
       ) : (
         <div className="space-y-2">
           {equiposFiltrados.map((equipo) => {
@@ -129,55 +148,52 @@ export function ReparacionesLista({
               <a
                 key={equipo.id}
                 href={"/" + slug + "/reparaciones/" + equipo.id}
-                className="block bg-white border rounded-xl p-4 hover:shadow-md transition hover:border-blue-300"
+                className="block rounded-xl border border-border bg-card p-4 transition hover:border-accent/50 hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono font-bold text-blue-700 text-sm">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-sm font-bold text-accent">
                         {equipo.numero_orden}
                       </span>
-                      <span
-                        className={
-                          "text-xs px-2 py-0.5 rounded-full " +
-                          estadoInfo?.color
-                        }
+                      <Badge
+                        className={cn("border-transparent", estadoInfo?.color)}
                       >
                         {estadoInfo?.etiqueta}
-                      </span>
+                      </Badge>
                       {equipo.estado === "listo_para_retirar" && (
-                        <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full animate-pulse">
+                        <span className="animate-pulse rounded-full bg-green-500 px-2 py-0.5 text-xs text-white">
                           ¡Listo!
                         </span>
                       )}
                     </div>
-                    <div className="mt-1 text-gray-800 font-medium">
+                    <div className="mt-1 font-medium">
                       {equipo.categoria}
                       {equipo.marca ? " · " + equipo.marca : ""}
                       {equipo.modelo ? " " + equipo.modelo : ""}
                     </div>
-                    <div className="text-sm text-gray-500 mt-0.5">
+                    <div className="mt-0.5 text-sm text-muted-foreground">
                       👤 {equipo.clientes?.nombre || "Sin cliente"}
                       {equipo.tecnico_asignado
                         ? " · 🔧 " + equipo.tecnico_asignado
                         : ""}
                     </div>
-                    <div className="text-sm text-gray-400 mt-0.5 truncate">
+                    <div className="mt-0.5 truncate text-sm text-muted-foreground">
                       {equipo.problema_reportado}
                     </div>
                   </div>
-                  <div className="text-right shrink-0">
+                  <div className="shrink-0 text-right">
                     <div className={"text-sm " + colorDias(dias)}>
                       {dias === 0 ? "Hoy" : dias + "d"}
                     </div>
                     {equipo.precio_final != null && (
-                      <div className="text-sm font-bold text-gray-700 mt-1">
+                      <div className="mt-1 text-sm font-bold">
                         {formatARS(equipo.precio_final)}
                       </div>
                     )}
                     {equipo.presupuesto != null &&
                       equipo.precio_final == null && (
-                        <div className="text-sm text-yellow-600 mt-1">
+                        <div className="mt-1 text-sm text-yellow-600">
                           {formatARS(equipo.presupuesto)}
                         </div>
                       )}
