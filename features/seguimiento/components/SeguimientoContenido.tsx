@@ -13,6 +13,9 @@
 // Único cambio de fuente: ESTADOS y ORDEN_FLUJO vienen de lib/domain (R1).
 // ORDEN_FLUJO de 8 pasos corrige el bug indexActual=-1 para
 // esperando_aprobacion/aprobado (antes no aparecían en el progreso).
+// Migrado a tokens/primitivas (fase5-ui P7): cero clases de paleta cruda
+// (text-gray-*, bg-white → tokens), EmptyState en el estado sin datos
+// (enlace vencido, REQ-FS-2 seguimiento), estado → primitiva Badge.
 
 "use client";
 
@@ -22,6 +25,9 @@ import { supabase } from "@/lib/supabase/client";
 import { ESTADOS, ORDEN_FLUJO } from "@/lib/domain/estados-reparacion";
 import type { EstadoReparacion } from "@/lib/domain/estados-reparacion";
 import { formatFechaHora } from "@/lib/domain/formato";
+import { Badge } from "@/lib/ui/badge";
+import { EmptyState } from "@/lib/ui/empty-state";
+import { cn } from "@/lib/ui/utils";
 
 // D-11: el token es la capacidad de acceso; [orden] es solo informativo.
 // Formato UUID canónico; cualquier otro valor cae directo a enlace vencido.
@@ -54,9 +60,9 @@ interface SeguimientoPublico {
 
 export function CargandoReparacion() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-gray-400 text-center">
-        <div className="text-4xl mb-2">🔍</div>
+    <div className="flex min-h-screen items-center justify-center bg-muted/40">
+      <div className="text-center text-muted-foreground">
+        <div className="mb-2 text-4xl">🔍</div>
         <p>Consultando el estado de la reparación...</p>
       </div>
     </div>
@@ -109,17 +115,12 @@ export function SeguimientoContenido() {
 
   if (enlaceVencido)
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow p-8 text-center max-w-sm w-full">
-          <div className="text-5xl mb-4">🔗</div>
-          <h1 className="text-xl font-bold text-gray-800 mb-2">
-            Enlace no válido
-          </h1>
-          <p className="text-gray-500 text-sm">
-            Este enlace de seguimiento no es válido o ya no está disponible.
-            Solicite uno nuevo en el taller.
-          </p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+        <EmptyState
+          className="w-full max-w-sm"
+          title="🔗 Enlace no válido"
+          description="Este enlace de seguimiento no es válido o ya no está disponible. Solicite uno nuevo en el taller."
+        />
       </div>
     );
 
@@ -132,58 +133,61 @@ export function SeguimientoContenido() {
   const esSinReparacion = equipo.estado === "sin_reparacion";
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-lg mx-auto space-y-4">
+    <div className="min-h-screen bg-muted/40 p-4">
+      <div className="mx-auto max-w-lg space-y-4">
         {/* HEADER */}
-        <div className="text-center pt-6 pb-2">
-          <div className="text-3xl mb-1">🔧</div>
-          <h1 className="text-xl font-bold text-gray-800">
+        <div className="pt-6 pb-2 text-center">
+          <div className="mb-1 text-3xl">🔧</div>
+          <h1 className="text-xl font-bold">
             {equipo.negocio_nombre || "Servicio Técnico"}
           </h1>
-          <p className="text-gray-400 text-sm">Seguimiento de reparación</p>
+          <p className="text-sm text-muted-foreground">
+            Seguimiento de reparación
+          </p>
         </div>
 
         {/* ESTADO PRINCIPAL */}
         <div
-          className={
-            "rounded-2xl p-6 text-center shadow-sm " +
-            (esListo
+          className={cn(
+            "rounded-2xl p-6 text-center shadow-sm",
+            esListo
               ? "bg-green-500"
               : esSinReparacion
                 ? "bg-red-100"
                 : esEntregado
                   ? "bg-green-100"
-                  : "bg-white")
-          }
+                  : "bg-card",
+          )}
         >
-          <div className="text-5xl mb-3">{estadoInfo?.icono}</div>
-          <div className="font-mono text-sm font-bold mb-1 opacity-60">
+          <div className="mb-3 text-5xl">{estadoInfo?.icono}</div>
+          <div className="mb-1 font-mono text-sm font-bold opacity-60">
             {equipo.numero_orden}
           </div>
           <h2
-            className={
-              "text-2xl font-bold mb-2 " +
-              (esListo ? "text-white" : "text-gray-800")
-            }
+            className={cn(
+              "mb-2 text-2xl font-bold",
+              esListo ? "text-white" : "",
+            )}
           >
             {estadoInfo?.etiqueta}
           </h2>
           <p
-            className={
-              "text-sm " + (esListo ? "text-green-100" : "text-gray-500")
-            }
+            className={cn(
+              "text-sm",
+              esListo ? "text-green-100" : "text-muted-foreground",
+            )}
           >
             {equipo.categoria}
             {equipo.marca ? " · " + equipo.marca : ""}
             {equipo.modelo ? " " + equipo.modelo : ""}
           </p>
           {esListo && (
-            <div className="mt-4 bg-white bg-opacity-20 rounded-xl p-3">
-              <p className="text-white font-semibold">
+            <div className="mt-4 rounded-xl bg-card/20 p-3">
+              <p className="font-semibold text-white">
                 Su equipo está listo para retirar.
               </p>
               {equipo.precio_final && (
-                <p className="text-green-100 text-sm mt-1">
+                <p className="mt-1 text-sm text-green-100">
                   Total a abonar: $
                   {Number(equipo.precio_final).toLocaleString("es-AR")}
                 </p>
@@ -191,8 +195,8 @@ export function SeguimientoContenido() {
             </div>
           )}
           {esSinReparacion && (
-            <div className="mt-4 bg-red-50 rounded-xl p-3">
-              <p className="text-red-700 text-sm">
+            <div className="mt-4 rounded-xl bg-red-50 p-3">
+              <p className="text-sm text-red-700">
                 No fue posible realizar la reparación. Puede pasar a retirar su
                 equipo sin costo.
               </p>
@@ -202,8 +206,8 @@ export function SeguimientoContenido() {
 
         {/* PROGRESO */}
         {!esSinReparacion && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-600 mb-4">
+          <div className="rounded-2xl bg-card p-4 shadow-sm">
+            <h3 className="mb-4 text-sm font-semibold text-muted-foreground">
               Progreso
             </h3>
             <div className="space-y-3">
@@ -214,31 +218,31 @@ export function SeguimientoContenido() {
                 return (
                   <div key={val} className="flex items-center gap-3">
                     <div
-                      className={
-                        "w-7 h-7 rounded-full flex items-center justify-center text-sm shrink-0 font-bold " +
-                        (completado
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold",
+                        completado
                           ? "bg-green-500 text-white"
                           : actual
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-100 text-gray-400")
-                      }
+                            ? "bg-accent text-accent-foreground"
+                            : "bg-muted text-muted-foreground",
+                      )}
                     >
                       {completado ? "✓" : actual ? "●" : "○"}
                     </div>
                     <span
-                      className={
-                        "text-sm " +
-                        (actual
-                          ? "font-bold text-blue-700"
+                      className={cn(
+                        "text-sm",
+                        actual
+                          ? "font-bold text-accent"
                           : completado
                             ? "text-green-700"
-                            : "text-gray-400")
-                      }
+                            : "text-muted-foreground",
+                      )}
                     >
                       {est.etiqueta}
                     </span>
                     {actual && (
-                      <span className="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">
+                      <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs text-accent">
                         Actual
                       </span>
                     )}
@@ -250,52 +254,44 @@ export function SeguimientoContenido() {
         )}
 
         {/* DETALLE */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-600 mb-3">
+        <div className="rounded-2xl bg-card p-4 shadow-sm">
+          <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
             Detalle del equipo
           </h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-400">Cliente</span>
-              <span className="text-gray-800 font-medium">
-                {equipo.cliente_nombre}
-              </span>
+              <span className="text-muted-foreground">Cliente</span>
+              <span className="font-medium">{equipo.cliente_nombre}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-400">Ingreso</span>
-              <span className="text-gray-800">
-                {formatFechaHora(equipo.fecha_ingreso)}
-              </span>
+              <span className="text-muted-foreground">Ingreso</span>
+              <span>{formatFechaHora(equipo.fecha_ingreso)}</span>
             </div>
             {equipo.fecha_estimada_entrega && !esEntregado && (
               <div className="flex justify-between">
-                <span className="text-gray-400">Entrega estimada</span>
-                <span className="text-gray-800">
-                  {equipo.fecha_estimada_entrega}
-                </span>
+                <span className="text-muted-foreground">Entrega estimada</span>
+                <span>{equipo.fecha_estimada_entrega}</span>
               </div>
             )}
             {equipo.fecha_entrega && (
               <div className="flex justify-between">
-                <span className="text-gray-400">Entregado el</span>
-                <span className="text-gray-800">
-                  {formatFechaHora(equipo.fecha_entrega)}
-                </span>
+                <span className="text-muted-foreground">Entregado el</span>
+                <span>{formatFechaHora(equipo.fecha_entrega)}</span>
               </div>
             )}
-            <div className="pt-2 border-t">
-              <span className="text-gray-400 block mb-1">
+            <div className="border-t border-border/60 pt-2">
+              <span className="mb-1 block text-muted-foreground">
                 Problema reportado
               </span>
-              <span className="text-gray-700">{equipo.problema_reportado}</span>
+              <span>{equipo.problema_reportado}</span>
             </div>
           </div>
         </div>
 
         {/* HISTORIAL */}
         {equipo.historial.length > 0 && (
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-gray-600 mb-3">
+          <div className="rounded-2xl bg-card p-4 shadow-sm">
+            <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
               Historial de actualizaciones
             </h3>
             <div className="space-y-3">
@@ -304,24 +300,20 @@ export function SeguimientoContenido() {
                 return (
                   <div key={h.fecha + h.estado_nuevo} className="flex gap-3">
                     <div className="flex flex-col items-center">
-                      <div className="w-2 h-2 rounded-full bg-blue-400 mt-1.5 shrink-0"></div>
-                      <div className="w-0.5 bg-gray-100 flex-1 mt-1"></div>
+                      <div className="mt-1.5 size-2 shrink-0 rounded-full bg-accent"></div>
+                      <div className="mt-1 w-0.5 flex-1 bg-border/60"></div>
                     </div>
                     <div className="flex-1 pb-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span
-                          className={
-                            "text-xs px-2 py-0.5 rounded-full " + est?.color
-                          }
-                        >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className={cn("border-transparent", est?.color)}>
                           {est?.etiqueta}
-                        </span>
-                        <span className="text-xs text-gray-400">
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
                           {formatFechaHora(h.fecha)}
                         </span>
                       </div>
                       {h.comentario && (
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="mt-1 text-sm text-muted-foreground">
                           {h.comentario}
                         </p>
                       )}
@@ -333,8 +325,8 @@ export function SeguimientoContenido() {
           </div>
         )}
 
-        <div className="text-center pb-8">
-          <p className="text-xs text-gray-400">
+        <div className="pb-8 text-center">
+          <p className="text-xs text-muted-foreground">
             Esta página se actualiza con el estado de su reparación.
           </p>
         </div>
