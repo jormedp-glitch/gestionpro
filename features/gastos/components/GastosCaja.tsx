@@ -3,7 +3,10 @@
 // Caja / gastos (client component). Recibe los gastos ya leídos en el Server
 // Component (R8) y los totales del mes calculados en el shell. Las escrituras
 // (agregar/eliminar) pasan por Server Actions (R9). Los campos del form son
-// uncontrolled: React 19 los resetea solos tras una acción exitosa.
+// uncontrolled: React 19 los resetea solos tras una acción exitosa. Migrado a
+// primitivas lib/ui + tokens (fase5-ui P6): cero estilos inline (REQ-TT-3);
+// EmptyState cuando no hay gastos (REQ-FS-2); el color por prop se eliminó
+// (tokens; KPIs con mapeo discovery #200 exacto a Tailwind 4).
 
 "use client";
 
@@ -12,6 +15,11 @@ import { useActionState } from "react";
 import { agregarGasto, eliminarGasto } from "@/features/gastos/actions/gastos";
 import type { GastoActionResult } from "@/features/gastos/actions/gastos";
 import { formatARS, formatFecha } from "@/lib/domain/formato";
+import { Button } from "@/lib/ui/button";
+import { Card } from "@/lib/ui/card";
+import { EmptyState } from "@/lib/ui/empty-state";
+import { Input } from "@/lib/ui/input";
+import { cn } from "@/lib/ui/utils";
 import type { Gasto } from "@/features/gastos/data/gastos";
 
 /** Botón "✕": elimina el gasto vía Server Action y avisa con toast. */
@@ -45,16 +53,7 @@ function EliminarGastoBoton({
       <input type="hidden" name="gasto_id" value={gastoId} />
       <button
         type="submit"
-        style={{
-          background: "#F8717115",
-          color: "#F87171",
-          border: "none",
-          borderRadius: "8px",
-          padding: ".25rem .5rem",
-          cursor: "pointer",
-          fontSize: ".72rem",
-          fontFamily: "sans-serif",
-        }}
+        className="cursor-pointer rounded-lg border-none bg-red-400/10 px-2 py-1 text-xs text-red-400"
       >
         ✕
       </button>
@@ -68,7 +67,6 @@ export function GastosCaja({
   ingresoMes,
   gastosMes,
   hoy,
-  color,
   showToast,
 }: {
   slug: string;
@@ -76,7 +74,6 @@ export function GastosCaja({
   ingresoMes: number;
   gastosMes: number;
   hoy: string;
-  color: string;
   showToast: (msg: string) => void;
 }) {
   const [state, formAction] = useActionState(agregarGasto, {
@@ -96,159 +93,60 @@ export function GastosCaja({
 
   const neto = ingresoMes - gastosMes;
   const kpis: Array<[string, string, string]> = [
-    [formatARS(ingresoMes), "Ingresos", "#34D399"],
-    [formatARS(gastosMes), "Gastos", "#F87171"],
-    [formatARS(neto), "Neto", neto >= 0 ? "#34D399" : "#F87171"],
+    [formatARS(ingresoMes), "Ingresos", "text-emerald-400"],
+    [formatARS(gastosMes), "Gastos", "text-red-400"],
+    [formatARS(neto), "Neto", neto >= 0 ? "text-emerald-400" : "text-red-400"],
   ];
 
   return (
     <div>
-      <h2
-        style={{
-          fontFamily: "serif",
-          fontSize: "1.6rem",
-          marginBottom: "1.25rem",
-        }}
-      >
-        💸 Caja
-      </h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "1rem",
-          marginBottom: "1.25rem",
-        }}
-      >
+      <h2 className="mb-5 font-serif text-[1.6rem]">💸 Caja</h2>
+      <div className="mb-5 grid grid-cols-3 gap-4">
         {kpis.map(([valor, etiqueta, c], i) => (
-          <div
-            key={i}
-            style={{
-              background: "#ffffff06",
-              border: "1px solid #ffffff0C",
-              borderRadius: "16px",
-              padding: "1.25rem",
-              textAlign: "center",
-            }}
-          >
-            <div
-              style={{
-                color: c,
-                fontSize: "1.3rem",
-                fontWeight: 700,
-                fontFamily: "serif",
-              }}
-            >
+          <Card key={i} className="p-5 text-center">
+            <div className={cn("font-serif text-[1.3rem] font-bold", c)}>
               {valor}
             </div>
-            <div
-              style={{
-                color: "#555",
-                fontSize: ".75rem",
-                marginTop: ".25rem",
-              }}
-            >
-              {etiqueta}
-            </div>
-          </div>
+            <div className="mt-1 text-xs text-muted-foreground">{etiqueta}</div>
+          </Card>
         ))}
       </div>
-      <div
-        style={{
-          background: "#ffffff06",
-          border: "1px solid #ffffff0C",
-          borderRadius: "16px",
-          padding: "1.4rem",
-          marginBottom: "1.25rem",
-        }}
-      >
+      <Card className="mb-5 p-6">
         <form
           action={formAction}
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 140px 120px auto",
-            gap: ".75rem",
-            alignItems: "end",
-          }}
+          className="grid grid-cols-[1fr_140px_120px_auto] items-end gap-3"
         >
           <input type="hidden" name="slug" value={slug} />
-          <input style={inp} placeholder="Descripción" name="descripcion" />
-          <input style={inp} type="number" placeholder="Monto $" name="monto" />
-          <input style={inp} type="date" name="fecha" defaultValue={hoy} />
-          <button
+          <Input placeholder="Descripción" name="descripcion" />
+          <Input type="number" placeholder="Monto $" name="monto" />
+          <Input type="date" name="fecha" defaultValue={hoy} />
+          <Button
             type="submit"
-            style={{
-              background: color,
-              color: "#000",
-              border: "none",
-              borderRadius: "10px",
-              padding: ".7rem 1.2rem",
-              cursor: "pointer",
-              fontWeight: 700,
-              whiteSpace: "nowrap",
-              fontFamily: "sans-serif",
-            }}
+            variant="accent"
+            className="h-10 whitespace-nowrap rounded-[10px] font-bold"
           >
             + Agregar
-          </button>
+          </Button>
         </form>
         {!state.ok && state.error && (
-          <p
-            style={{
-              color: "#F87171",
-              fontSize: ".82rem",
-              margin: ".75rem 0 0",
-            }}
-          >
-            {state.error}
-          </p>
+          <p className="mt-3 text-sm text-red-400">{state.error}</p>
         )}
-      </div>
-      <div
-        style={{
-          background: "#ffffff06",
-          border: "1px solid #ffffff0C",
-          borderRadius: "16px",
-          padding: "0",
-          overflow: "hidden",
-        }}
-      >
-        {gastos.length === 0 && (
-          <p
-            style={{
-              padding: "2rem",
-              textAlign: "center",
-              color: "#444",
-            }}
-          >
-            Sin gastos
-          </p>
-        )}
+      </Card>
+      <Card className="overflow-hidden p-0">
+        {gastos.length === 0 && <EmptyState title="Sin gastos" />}
         {gastos.map((g) => (
           <div
             key={g.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: ".8rem 1rem",
-              borderBottom: "1px solid #ffffff07",
-            }}
+            className="flex items-center justify-between border-b border-border/60 px-4 py-3"
           >
             <div>
-              <div style={{ fontSize: ".88rem" }}>{g.descripcion}</div>
-              <div style={{ fontSize: ".72rem", color: "#444" }}>
+              <div className="text-sm">{g.descripcion}</div>
+              <div className="text-xs text-muted-foreground">
                 {formatFecha(g.fecha || "")}
               </div>
             </div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "1rem",
-              }}
-            >
-              <span style={{ color: "#F87171", fontWeight: 700 }}>
+            <div className="flex items-center gap-4">
+              <span className="font-bold text-red-400">
                 - {formatARS(g.monto)}
               </span>
               <EliminarGastoBoton
@@ -259,19 +157,7 @@ export function GastosCaja({
             </div>
           </div>
         ))}
-      </div>
+      </Card>
     </div>
   );
 }
-
-const inp: React.CSSProperties = {
-  background: "#ffffff08",
-  border: "1px solid #ffffff15",
-  color: "#fff",
-  borderRadius: "10px",
-  padding: ".7rem 1rem",
-  fontSize: ".88rem",
-  outline: "none",
-  fontFamily: "sans-serif",
-  width: "100%",
-};
