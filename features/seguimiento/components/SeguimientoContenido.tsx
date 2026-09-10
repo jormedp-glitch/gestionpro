@@ -14,7 +14,7 @@
 // ORDEN_FLUJO de 8 pasos corrige el bug indexActual=-1 para
 // esperando_aprobacion/aprobado (antes no aparecían en el progreso).
 // Migrado a tokens/primitivas (fase5-ui P7): cero clases de paleta cruda
-// (text-gray-*, bg-white → tokens), EmptyState en el estado sin datos
+// (neutros → tokens), EmptyState en el estado sin datos
 // (enlace vencido, REQ-FS-2 seguimiento), estado → primitiva Badge.
 
 "use client";
@@ -230,6 +230,7 @@ export function SeguimientoContenido() {
                       {completado ? "✓" : actual ? "●" : "○"}
                     </div>
                     <span
+                      aria-current={actual ? "step" : undefined}
                       className={cn(
                         "text-sm",
                         actual

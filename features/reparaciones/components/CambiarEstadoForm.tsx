@@ -57,7 +57,7 @@ export function CambiarEstadoForm({
         <button
           type="button"
           onClick={() => setMostrar(!mostrar)}
-          className="rounded-lg bg-muted px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted/80"
+          className="rounded-lg bg-muted px-3 py-1 text-sm text-muted-foreground transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {mostrar ? "Cancelar" : "Cambiar"}
         </button>
@@ -88,8 +88,9 @@ export function CambiarEstadoForm({
           <textarea
             name="comentario"
             placeholder="Comentario (opcional)..."
+            aria-label="Comentario (opcional)"
             rows={2}
-            className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
           {!state.ok && state.error && (
             <p className="text-sm text-red-400">{state.error}</p>

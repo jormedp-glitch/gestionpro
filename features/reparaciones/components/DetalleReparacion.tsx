@@ -7,7 +7,7 @@
 // dominio (R2) y el WhatsApp de los links wa.me se arma con
 // lib/domain/mensajes + wa.ts (R3/R4).
 // Migrado a tokens/primitivas (fase5-ui P7): cero clases de paleta cruda
-// (text-gray-*, bg-white → tokens), inputs nativos → primitiva Input, estado
+// (neutros → tokens), inputs nativos → primitiva Input, estado
 // → primitiva Badge. Colores semánticos (verde/amarillo/rojo de estado,
 // WhatsApp) se conservan como clases de paleta (sin token en la paleta).
 
@@ -89,6 +89,7 @@ export function DetalleReparacion({
         <button
           type="button"
           onClick={() => router.back()}
+          aria-label="Volver"
           className="text-xl text-muted-foreground hover:text-foreground"
         >
           ←
@@ -224,7 +225,7 @@ export function DetalleReparacion({
             <button
               type="button"
               onClick={() => setMostrarPresupuesto(!mostrarPresupuesto)}
-              className="rounded-lg bg-yellow-100 px-3 py-1.5 text-sm text-yellow-700 transition-colors hover:bg-yellow-200"
+              className="rounded-lg bg-yellow-100 px-3 py-1.5 text-sm text-yellow-700 transition-colors hover:bg-yellow-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               + Cargar presupuesto
             </button>
@@ -234,7 +235,7 @@ export function DetalleReparacion({
               <button
                 type="button"
                 onClick={() => setMostrarPrecioFinal(!mostrarPrecioFinal)}
-                className="rounded-lg bg-green-100 px-3 py-1.5 text-sm text-green-700 transition-colors hover:bg-green-200"
+                className="rounded-lg bg-green-100 px-3 py-1.5 text-sm text-green-700 transition-colors hover:bg-green-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 ✓ Marcar entregado y cobrado
               </button>
@@ -253,19 +254,21 @@ export function DetalleReparacion({
               type="number"
               name="monto"
               placeholder="Monto $"
+              aria-label="Monto del presupuesto"
               className="flex-1"
             />
             <button
               type="submit"
               disabled={presupuestoPending}
-              className="rounded-lg bg-yellow-500 px-4 py-2 text-sm text-white transition-colors hover:bg-yellow-600 disabled:opacity-50"
+              className="rounded-lg bg-yellow-500 px-4 py-2 text-sm text-white transition-colors hover:bg-yellow-600 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {presupuestoPending ? "..." : "Enviar por WA"}
             </button>
             <button
               type="button"
               onClick={() => setMostrarPresupuesto(false)}
-              className="px-2 text-muted-foreground hover:text-foreground"
+              aria-label="Cancelar"
+              className="px-2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               ✕
             </button>
@@ -287,19 +290,21 @@ export function DetalleReparacion({
               type="number"
               name="precio_final"
               placeholder="Precio final cobrado $"
+              aria-label="Precio final cobrado"
               className="flex-1"
             />
             <button
               type="submit"
               disabled={entregadoPending}
-              className="rounded-lg bg-green-500 px-4 py-2 text-sm text-white transition-colors hover:bg-green-600 disabled:opacity-50"
+              className="rounded-lg bg-green-500 px-4 py-2 text-sm text-white transition-colors hover:bg-green-600 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {entregadoPending ? "..." : "Confirmar"}
             </button>
             <button
               type="button"
               onClick={() => setMostrarPrecioFinal(false)}
-              className="px-2 text-muted-foreground hover:text-foreground"
+              aria-label="Cancelar"
+              className="px-2 text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               ✕
             </button>
@@ -317,7 +322,7 @@ export function DetalleReparacion({
           <button
             type="button"
             onClick={() => setMostrarRepuesto(!mostrarRepuesto)}
-            className="rounded-lg bg-accent/15 px-3 py-1 text-sm text-accent transition-colors hover:bg-accent/25"
+            className="rounded-lg bg-accent/15 px-3 py-1 text-sm text-accent transition-colors hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             + Agregar
           </button>
@@ -335,18 +340,26 @@ export function DetalleReparacion({
               name="descripcion"
               required
               placeholder="Descripción del repuesto *"
+              aria-label="Descripción del repuesto"
             />
             <div className="grid grid-cols-3 gap-2">
-              <Input type="number" name="costo" placeholder="Costo $" />
+              <Input
+                type="number"
+                name="costo"
+                placeholder="Costo $"
+                aria-label="Costo"
+              />
               <Input
                 type="number"
                 name="precio_cobrado"
                 placeholder="Precio cobrado $"
+                aria-label="Precio cobrado"
               />
               <Input
                 type="number"
                 name="cantidad"
                 placeholder="Cant."
+                aria-label="Cantidad"
                 defaultValue="1"
               />
             </div>
@@ -398,7 +411,8 @@ export function DetalleReparacion({
                   <input type="hidden" name="repuesto_id" value={r.id} />
                   <button
                     type="submit"
-                    className="ml-2 text-red-400 hover:text-red-600"
+                    aria-label={"Eliminar repuesto " + r.descripcion}
+                    className="ml-2 text-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     ✕
                   </button>
