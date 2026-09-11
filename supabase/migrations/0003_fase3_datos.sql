@@ -56,7 +56,7 @@ begin
     from public.equipos
    where numero_orden !~ '^[0-9]+$';
   if v_no_numericos > 0 then
-    raise exception 'ABORTADO 0003: % equipo(s) con numero_orden no numérico — normalice (ej. '0001') y reintente (no se modificó nada)',
+    raise exception 'ABORTADO 0003: % equipo(s) con numero_orden no numérico — normalice (ej. ''0001'') y reintente (no se modificó nada)',
       v_no_numericos;
   end if;
 
@@ -246,11 +246,11 @@ create unique index uq_equipos_negocio_orden on public.equipos (negocio_id, nume
 -- ---------------------------------------------------------------------------
 -- 7) Índices del plan (F3-1-05) — nombres exactos del diseño
 -- ---------------------------------------------------------------------------
-create index idx_turnos_negocio_fecha     on public.turnos (negocio_id, fecha);
-create index idx_clientes_negocio         on public.clientes (negocio_id);
-create index idx_historial_equipo         on public.reparaciones_historial (equipo_id);
-create index idx_equipos_numero_orden     on public.equipos (numero_orden);
-create index idx_equipos_negocio_created  on public.equipos (negocio_id, created_at);
+create index if not exists idx_turnos_negocio_fecha     on public.turnos (negocio_id, fecha);
+create index if not exists idx_clientes_negocio         on public.clientes (negocio_id);
+create index if not exists idx_historial_equipo         on public.reparaciones_historial (equipo_id);
+create index if not exists idx_equipos_numero_orden     on public.equipos (numero_orden);
+create index if not exists idx_equipos_negocio_created  on public.equipos (negocio_id, created_at);
 
 -- ---------------------------------------------------------------------------
 -- 8) CHECKs de negocio (F3-1-06, D-06) — VALID directo: tablas chicas y el

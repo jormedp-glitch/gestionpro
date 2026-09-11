@@ -114,6 +114,12 @@ declare
   v1 text;
   v2 text;
 begin
+  -- contador inicial: como rol privilegiado (authenticated no tiene acceso
+  -- directo a negocio_orden_contadores; D-01)
+  select coalesce(ultimo, 0) into v_before
+    from public.negocio_orden_contadores
+   where negocio_id = :'tenant'::uuid;
+
   perform set_config('request.jwt.claim.sub', :'owner', true);
   perform set_config(
     'request.jwt.claims',
@@ -121,10 +127,6 @@ begin
     true
   );
   set local role authenticated;
-
-  select coalesce(ultimo, 0) into v_before
-    from public.negocio_orden_contadores
-   where negocio_id = :'tenant'::uuid;
 
   select public.generar_numero_orden(:'tenant'::uuid) into v1;
   select public.generar_numero_orden(:'tenant'::uuid) into v2;
@@ -135,6 +137,8 @@ begin
   if cast(v2 as int) <> v_before + 2 then
     raise exception 'FALLO RPC: 2da llamada devolvió % (esperaba %)', v2, lpad((v_before + 2)::text, 4, '0');
   end if;
+
+  reset role;
 
   select coalesce(ultimo, 0) into v_after
     from public.negocio_orden_contadores
