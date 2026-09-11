@@ -6,7 +6,7 @@
 // detalle. Clientes y categorías llegan como props desde el Server Component
 // (R8): el cliente nuevo se crea dentro de la acción.
 // Migrado a tokens/primitivas (fase5-ui P7): cero clases de paleta cruda
-// (text-gray-*, bg-white → tokens), inputs nativos → primitiva Input,
+// (neutros → tokens), inputs nativos → primitiva Input,
 // botón primario → primitiva Button accent. El select de categoría se
 // conserva nativo (validación `required` + contrato FormData intactos).
 
@@ -137,6 +137,7 @@ export function NuevaReparacionForm({
         <button
           type="button"
           onClick={() => router.back()}
+          aria-label="Volver"
           className="text-xl text-muted-foreground hover:text-foreground"
         >
           ←
@@ -160,6 +161,7 @@ export function NuevaReparacionForm({
             <Input
               type="text"
               placeholder="Buscar cliente existente o escribir nombre nuevo..."
+              aria-label="Buscar o crear cliente"
               value={clienteBusqueda}
               onChange={(e) => {
                 setClienteBusqueda(e.target.value);
@@ -200,6 +202,7 @@ export function NuevaReparacionForm({
               <Input
                 type="tel"
                 placeholder="Teléfono / WhatsApp"
+                aria-label="Teléfono o WhatsApp del cliente nuevo"
                 value={form.cliente_telefono}
                 onChange={(e) => {
                   setCampo("cliente_telefono", e.target.value);
@@ -230,6 +233,7 @@ export function NuevaReparacionForm({
               <button
                 type="button"
                 onClick={limpiarCliente}
+                aria-label="Cambiar cliente"
                 className="text-xs text-accent/80 hover:text-accent"
               >
                 cambiar
@@ -244,15 +248,19 @@ export function NuevaReparacionForm({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-              <label className="mb-1 block text-xs text-muted-foreground">
+              <label
+                htmlFor="categoria"
+                className="mb-1 block text-xs text-muted-foreground"
+              >
                 Categoría *
               </label>
               <select
                 name="categoria"
+                id="categoria"
                 required
                 value={form.categoria}
                 onChange={(e) => setCampo("categoria", e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 <option value="">Seleccioná una categoría...</option>
                 {categorias.map((c) => (
@@ -264,12 +272,16 @@ export function NuevaReparacionForm({
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-muted-foreground">
+              <label
+                htmlFor="marca"
+                className="mb-1 block text-xs text-muted-foreground"
+              >
                 Marca
               </label>
               <Input
                 type="text"
                 name="marca"
+                id="marca"
                 placeholder="ej: Samsung, HP, Sony"
                 value={form.marca}
                 onChange={(e) => setCampo("marca", e.target.value)}
@@ -277,12 +289,16 @@ export function NuevaReparacionForm({
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-muted-foreground">
+              <label
+                htmlFor="modelo"
+                className="mb-1 block text-xs text-muted-foreground"
+              >
                 Modelo
               </label>
               <Input
                 type="text"
                 name="modelo"
+                id="modelo"
                 placeholder="ej: Galaxy A54, Pavilion"
                 value={form.modelo}
                 onChange={(e) => setCampo("modelo", e.target.value)}
@@ -290,12 +306,16 @@ export function NuevaReparacionForm({
             </div>
 
             <div className="col-span-2">
-              <label className="mb-1 block text-xs text-muted-foreground">
+              <label
+                htmlFor="numero-serie"
+                className="mb-1 block text-xs text-muted-foreground"
+              >
                 N° de Serie / IMEI
               </label>
               <Input
                 type="text"
                 name="numero_serie"
+                id="numero-serie"
                 placeholder="Opcional"
                 value={form.numero_serie}
                 onChange={(e) => setCampo("numero_serie", e.target.value)}
@@ -312,19 +332,24 @@ export function NuevaReparacionForm({
             name="problema_reportado"
             required
             placeholder="Describí el problema que reporta el cliente..."
+            aria-label="Problema reportado"
             value={form.problema_reportado}
             onChange={(e) => setCampo("problema_reportado", e.target.value)}
             rows={3}
-            className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
 
           <div className="mt-3">
-            <label className="mb-1 block text-xs text-muted-foreground">
+            <label
+              htmlFor="accesorios"
+              className="mb-1 block text-xs text-muted-foreground"
+            >
               Accesorios entregados
             </label>
             <Input
               type="text"
               name="accesorios"
+              id="accesorios"
               placeholder="ej: cargador, funda, caja original"
               value={form.accesorios}
               onChange={(e) => setCampo("accesorios", e.target.value)}
@@ -338,12 +363,16 @@ export function NuevaReparacionForm({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-xs text-muted-foreground">
+              <label
+                htmlFor="tecnico-asignado"
+                className="mb-1 block text-xs text-muted-foreground"
+              >
                 Técnico asignado
               </label>
               <Input
                 type="text"
                 name="tecnico_asignado"
+                id="tecnico-asignado"
                 placeholder="Opcional"
                 value={form.tecnico_asignado}
                 onChange={(e) => setCampo("tecnico_asignado", e.target.value)}
@@ -351,12 +380,16 @@ export function NuevaReparacionForm({
             </div>
 
             <div>
-              <label className="mb-1 block text-xs text-muted-foreground">
+              <label
+                htmlFor="fecha-estimada"
+                className="mb-1 block text-xs text-muted-foreground"
+              >
                 Entrega estimada
               </label>
               <Input
                 type="date"
                 name="fecha_estimada_entrega"
+                id="fecha-estimada"
                 value={form.fecha_estimada_entrega}
                 onChange={(e) =>
                   setCampo("fecha_estimada_entrega", e.target.value)
@@ -365,18 +398,22 @@ export function NuevaReparacionForm({
             </div>
 
             <div className="col-span-2">
-              <label className="mb-1 block text-xs text-muted-foreground">
+              <label
+                htmlFor="notas-internas"
+                className="mb-1 block text-xs text-muted-foreground"
+              >
                 Notas internas
               </label>
               <textarea
                 name="observaciones_internas"
+                id="notas-internas"
                 placeholder="Notas solo visibles para el técnico..."
                 value={form.observaciones_internas}
                 onChange={(e) =>
                   setCampo("observaciones_internas", e.target.value)
                 }
                 rows={2}
-                className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
             </div>
           </div>
