@@ -10,3 +10,5 @@ export * from "./card";
 export * from "./table";
 export * from "./skeleton";
 export * from "./empty-state";
+export * from "./input";
+export * from "./select";
