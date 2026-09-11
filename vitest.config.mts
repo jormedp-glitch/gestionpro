@@ -1,6 +1,14 @@
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  // Alias "@/*" (tsconfig paths) para que vitest resuelva imports de app/ y
+  // components/ (p. ej. los tests de estados de framework, P4).
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL(".", import.meta.url)),
+    },
+  },
   test: {
     projects: [
       {
@@ -16,7 +24,11 @@ export default defineConfig({
         test: {
           name: "jsdom",
           environment: "jsdom",
-          include: ["lib/ui/**/*.test.{ts,tsx}", "features/**/*.test.{ts,tsx}"],
+          include: [
+            "lib/ui/**/*.test.{ts,tsx}",
+            "features/**/*.test.{ts,tsx}",
+            "components/**/*.test.{ts,tsx}",
+          ],
           setupFiles: ["vitest.setup.ts"],
         },
       },
