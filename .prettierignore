@@ -5,3 +5,5 @@ node_modules/
 package-lock.json
 types/database.types.ts
 .atl/
+test-results/
+playwright-report/
