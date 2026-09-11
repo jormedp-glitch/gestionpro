@@ -95,7 +95,7 @@ Principios:
 
 **Criterios de aceptación**: `database.types.ts` generado y usado; migraciones aplicables desde cero en un entorno nuevo.
 
-### FASE 4 — Calidad y CI (2–3 días) — riesgo: Bajo
+### FASE 4 — Calidad y CI (2–3 días) — riesgo: Bajo — ✅ IMPLEMENTADA (2026-09-10, SDD `fase4-calidad`, verify PASS with warnings; PRs pendientes de creación al cierre del ciclo)
 
 - Vitest + Testing Library: tests de máquina de estados (todas las transiciones válidas e inválidas), generación de orden, mensajes WhatsApp, formatos (ARS/fechas).
 - Playwright smoke: login → crear negocio → crear turno → seguimiento público con token.
