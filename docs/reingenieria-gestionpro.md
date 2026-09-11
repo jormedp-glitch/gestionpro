@@ -104,7 +104,7 @@ Principios:
 
 **Criterios de aceptación**: el CI bloquea un PR con lint/typecheck/test fallando; suite de dominio verde.
 
-### FASE 5 — UI / UX (3–5 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-10, SDD `fase5-ui`, apply P1–P8; verify/archive pendientes; PRs al cierre del ciclo)
+### FASE 5 — UI / UX (3–5 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-10, SDD `fase5-ui`, apply P1–P9; verify PASS (2026-09-11; 15/15 req · 25/25 escenarios; CRITICAL e2e resuelto en P9); archivada (2026-09-11); PRs al cierre del ciclo)
 
 - Primitivos propios en `lib/ui/` (base shadcn/ui sobre Radix + Tailwind 4, `cva` + `clsx` + `tailwind-merge`): Button, Input, Select, Card, Dialog, Toast, Badge, Table, EmptyState, Skeleton — 10 con barrel `index.ts` y tests RTL (Dialog con focus trap + ESC + `aria-modal`, Select operable por teclado con anuncio, Toast en `aria-live` con botón accesible).
 - Tema unificado con tokens: paleta clara en `globals.css` (`@theme inline`), acento por rubro vía `html[data-rubro]` + `RUBRO_ACCENT` espejo para el favicon (ImageResponse); **0 estilos inline** en `app/` y `features/` (grep `style={|React.CSSProperties` = 0; 11 componentes migrados).
