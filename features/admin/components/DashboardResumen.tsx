@@ -10,6 +10,9 @@
 import { mensajeCobro } from "@/lib/domain/mensajes";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { formatARS, formatFecha } from "@/lib/domain/formato";
+import { Button } from "@/lib/ui/button";
+import { Card } from "@/lib/ui/card";
+import { cn } from "@/lib/ui/utils";
 import type { Turno } from "@/features/turnos/data/turnos";
 import type { Cliente } from "@/features/clientes/data/clientes";
 
@@ -20,7 +23,6 @@ export function DashboardResumen({
   ingresoMes,
   gastosMes,
   hoy,
-  color,
   negocioNombre,
   onNuevoTurno,
 }: {
@@ -30,7 +32,6 @@ export function DashboardResumen({
   ingresoMes: number;
   gastosMes: number;
   hoy: string;
-  color: string;
   negocioNombre: string;
   onNuevoTurno: () => void;
 }) {
@@ -38,155 +39,65 @@ export function DashboardResumen({
   const clientesConAdeuda = clientes.filter((c) => c.estado !== "activo");
 
   const kpis: Array<[string, string, string, string]> = [
-    [String(activos), "✅", "Activos", "#34D399"],
-    [String(turnosHoy.length), "📅", "Turnos hoy", color],
-    [formatARS(ingresoMes), "💰", "Ingreso mes", "#60A5FA"],
-    [formatARS(neto), "📊", "Neto mes", neto >= 0 ? "#34D399" : "#F87171"],
+    [String(activos), "✅", "Activos", "text-emerald-400"],
+    [String(turnosHoy.length), "📅", "Turnos hoy", "text-accent"],
+    [formatARS(ingresoMes), "💰", "Ingreso mes", "text-blue-400"],
+    [
+      formatARS(neto),
+      "📊",
+      "Neto mes",
+      neto >= 0 ? "text-emerald-400" : "text-red-400",
+    ],
   ];
 
   return (
     <div>
-      <h2
-        style={{
-          fontFamily: "serif",
-          fontSize: "1.6rem",
-          marginBottom: "1.25rem",
-        }}
-      >
+      <h2 className="mb-5 font-serif text-[1.6rem]">
         Resumen — {formatFecha(hoy)}
       </h2>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4,1fr)",
-          gap: "1rem",
-          marginBottom: "1.25rem",
-        }}
-      >
+      <div className="mb-5 grid grid-cols-4 gap-4">
         {kpis.map(([v, i, l, c]) => (
-          <div
-            key={l}
-            style={{
-              background: "#ffffff06",
-              border: "1px solid #ffffff0C",
-              borderRadius: "16px",
-              padding: "1.25rem",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: "1.5rem", marginBottom: ".35rem" }}>
-              {i}
-            </div>
-            <div
-              style={{
-                fontSize: "1.4rem",
-                fontWeight: 700,
-                color: c,
-                fontFamily: "serif",
-              }}
-            >
+          <Card key={l} className="p-5 text-center">
+            <div className="mb-1 text-2xl">{i}</div>
+            <div className={cn("font-serif text-[1.4rem] font-bold", c)}>
               {v}
             </div>
-            <div
-              style={{
-                fontSize: ".72rem",
-                color: "#555",
-                marginTop: ".2rem",
-              }}
-            >
-              {l}
-            </div>
-          </div>
+            <div className="mt-0.5 text-xs text-muted-foreground">{l}</div>
+          </Card>
         ))}
       </div>
-      <div
-        style={{
-          background: "#ffffff06",
-          border: "1px solid #ffffff0C",
-          borderRadius: "16px",
-          padding: "1.4rem",
-          marginBottom: "1.25rem",
-        }}
-      >
-        <div
-          style={{
-            fontSize: ".8rem",
-            color: "#555",
-            marginBottom: "1rem",
-            textTransform: "uppercase",
-            letterSpacing: ".08em",
-          }}
-        >
+      <Card className="mb-5 p-6">
+        <div className="mb-4 text-xs uppercase tracking-wider text-muted-foreground">
           📅 Turnos de hoy
         </div>
         {turnosHoy.length === 0 && (
-          <p
-            style={{
-              color: "#444",
-              textAlign: "center",
-              padding: "1rem",
-            }}
-          >
+          <p className="py-4 text-center text-muted-foreground">
             Sin turnos para hoy
           </p>
         )}
         {turnosHoy.map((t) => (
           <div
             key={t.id}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: ".6rem 0",
-              borderBottom: "1px solid #ffffff07",
-            }}
+            className="flex items-center justify-between border-b border-border/60 py-2.5"
           >
             <div>
-              <span style={{ color, fontWeight: 700, marginRight: ".75rem" }}>
-                {t.hora}
-              </span>
+              <span className="mr-3 font-bold text-accent">{t.hora}</span>
               {t.cliente_nombre} · {t.servicio}
             </div>
-            <span style={{ fontSize: ".78rem", color: "#34D399" }}>
-              {t.estado}
-            </span>
+            <span className="text-xs text-emerald-400">{t.estado}</span>
           </div>
         ))}
-        <button
+        <Button
+          variant="accent"
           onClick={onNuevoTurno}
-          style={{
-            marginTop: "1rem",
-            background: color,
-            color: "#000",
-            border: "none",
-            borderRadius: "8px",
-            padding: ".6rem 1.2rem",
-            cursor: "pointer",
-            fontWeight: 700,
-            fontFamily: "sans-serif",
-          }}
+          className="mt-4 font-bold"
         >
           + Nuevo turno hoy
-        </button>
-      </div>
+        </Button>
+      </Card>
       {clientesConAdeuda.length > 0 && (
-        <div
-          style={{
-            background: "#ffffff06",
-            border: "1px solid #FBBF2425",
-            borderRadius: "16px",
-            padding: "1.4rem",
-          }}
-        >
-          <div
-            style={{
-              fontSize: ".8rem",
-              color: "#FBBF24",
-              marginBottom: "1rem",
-              textTransform: "uppercase",
-              letterSpacing: ".08em",
-            }}
-          >
+        <Card className="border-amber-400/25 p-6">
+          <div className="mb-4 text-xs uppercase tracking-wider text-amber-400">
             ⚡ Alertas de cobro
           </div>
           {clientesConAdeuda.map((c) => {
@@ -194,25 +105,13 @@ export function DashboardResumen({
             return (
               <div
                 key={c.id}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: ".55rem 0",
-                  borderBottom: "1px solid #ffffff07",
-                }}
+                className="flex items-center justify-between border-b border-border/60 py-2.5"
               >
                 <span>
                   {c.nombre} · {c.plan}
                 </span>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: ".75rem",
-                  }}
-                >
-                  <span style={{ color, fontWeight: 700 }}>
+                <div className="flex items-center gap-3">
+                  <span className="font-bold text-accent">
                     {formatARS(c.cuota)}
                   </span>
                   {telefono && (
@@ -226,16 +125,7 @@ export function DashboardResumen({
                           "_blank",
                         )
                       }
-                      style={{
-                        background: "#25D36615",
-                        border: "1px solid #25D36630",
-                        color: "#25D366",
-                        borderRadius: "8px",
-                        padding: ".3rem .6rem",
-                        cursor: "pointer",
-                        fontSize: ".72rem",
-                        fontFamily: "sans-serif",
-                      }}
+                      className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-500"
                     >
                       📲 WA
                     </button>
@@ -244,7 +134,7 @@ export function DashboardResumen({
               </div>
             );
           })}
-        </div>
+        </Card>
       )}
     </div>
   );

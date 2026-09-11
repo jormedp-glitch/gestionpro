@@ -17,19 +17,16 @@ import { NuevoTurnoModal } from "@/features/turnos/components/NuevoTurnoModal";
 import { ClientesLista } from "@/features/clientes/components/ClientesLista";
 import { NuevoClienteModal } from "@/features/clientes/components/NuevoClienteModal";
 import { GastosCaja } from "@/features/gastos/components/GastosCaja";
+import { accentPorRubro } from "@/lib/ui/theme";
+import { toast, Toaster } from "@/lib/ui/toast";
+import { Button } from "@/lib/ui/button";
+import { cn } from "@/lib/ui/utils";
 import type { Negocio } from "@/lib/auth/dal";
 import type { Cliente } from "@/features/clientes/data/clientes";
 import type { Turno } from "@/features/turnos/data/turnos";
 import type { Gasto } from "@/features/gastos/data/gastos";
 
 type Vista = "dashboard" | "agenda" | "clientes" | "gastos";
-
-function colorRubro(rubro: string): string {
-  if (rubro === "peluqueria") return "#A78BFA";
-  if (rubro === "veterinaria") return "#34D399";
-  if (rubro === "servicio_tecnico") return "#60A5FA";
-  return "#FF6B35";
-}
 
 function iconoRubro(rubro: string): string {
   if (rubro === "peluqueria") return "✂️";
@@ -64,14 +61,14 @@ export function NegocioShell({
   const [vista, setVista] = useState<Vista>("dashboard");
   const [modal, setModal] = useState<null | "turno" | "cliente">(null);
   const [modalData, setModalData] = useState<{ fecha?: string }>({});
-  const [toast, setToast] = useState<string | null>(null);
 
-  const color = colorRubro(negocio.rubro);
+  // Acento del rubro (D4): coincide con var(--accent) que setea el island por
+  // data-rubro; se pasa a los features (P6) que aún consumen el color por prop.
+  const color = accentPorRubro(negocio.rubro);
   const icon = iconoRubro(negocio.rubro);
 
   const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
+    toast(msg, { duration: 3000 });
   };
 
   const abrirTurno = (fecha?: string) => {
@@ -79,74 +76,37 @@ export function NegocioShell({
     setModal("turno");
   };
 
-  const estiloTab = (activo: boolean): React.CSSProperties => ({
-    background: activo ? color + "20" : "none",
-    color: activo ? color : "#666",
-    border: "none",
-    cursor: "pointer",
-    padding: ".5rem .9rem",
-    borderRadius: "8px",
-    fontSize: ".82rem",
-    fontFamily: "sans-serif",
-  });
+  const estiloTab = (activo: boolean) =>
+    cn(
+      "cursor-pointer rounded-lg border-none px-3.5 py-2 text-xs transition-colors",
+      activo
+        ? "bg-accent/15 font-medium text-accent"
+        : "bg-transparent text-muted-foreground",
+    );
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#0A0A0F",
-        fontFamily: "sans-serif",
-        color: "#fff",
-      }}
-    >
-      <div
-        style={{
-          background: "#13131A",
-          borderBottom: `1px solid ${color}20`,
-          padding: "0 1.25rem",
-          display: "flex",
-          alignItems: "center",
-          gap: "1rem",
-          minHeight: "56px",
-          flexWrap: "wrap",
-        }}
-      >
-        <span style={{ fontSize: "1.3rem" }}>{icon}</span>
-        <span style={{ color, fontWeight: 700 }}>{negocio.nombre}</span>
-        <nav
-          style={{
-            display: "flex",
-            gap: ".25rem",
-            flex: 1,
-            overflowX: "auto",
-          }}
-        >
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="flex min-h-14 flex-wrap items-center gap-4 border-b border-accent/15 bg-card px-5">
+        <span className="text-[1.3rem]">{icon}</span>
+        <span className="font-bold text-accent">{negocio.nombre}</span>
+        <nav className="flex flex-1 gap-1 overflow-x-auto">
           {negocio.rubro === "servicio_tecnico" ? (
             <>
               <button
                 onClick={() => setVista("dashboard")}
-                style={estiloTab(vista === "dashboard")}
+                className={estiloTab(vista === "dashboard")}
               >
                 📊 Dashboard
               </button>
               <a
                 href={"/" + slug + "/reparaciones"}
-                style={{
-                  color: "#60A5FA",
-                  padding: ".5rem .9rem",
-                  borderRadius: "8px",
-                  fontSize: ".82rem",
-                  textDecoration: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  background: "#60A5FA20",
-                }}
+                className="inline-flex items-center rounded-lg bg-accent/15 px-3.5 py-2 text-xs text-accent no-underline"
               >
                 🔧 Reparaciones
               </a>
               <button
                 onClick={() => setVista("gastos")}
-                style={estiloTab(vista === "gastos")}
+                className={estiloTab(vista === "gastos")}
               >
                 💸 Caja
               </button>
@@ -164,22 +124,14 @@ export function NegocioShell({
                 <button
                   key={v}
                   onClick={() => setVista(v)}
-                  style={estiloTab(vista === v)}
+                  className={estiloTab(vista === v)}
                 >
                   {l}
                 </button>
               ))}
               <a
                 href={"/" + slug + "/reparaciones"}
-                style={{
-                  color: "#666",
-                  padding: ".5rem .9rem",
-                  borderRadius: "8px",
-                  fontSize: ".82rem",
-                  textDecoration: "none",
-                  display: "inline-flex",
-                  alignItems: "center",
-                }}
+                className="inline-flex items-center rounded-lg px-3.5 py-2 text-xs text-muted-foreground no-underline"
               >
                 🔧 Reparaciones
               </a>
@@ -187,27 +139,18 @@ export function NegocioShell({
           )}
         </nav>
         <form action={logout}>
-          <button
+          <Button
             type="submit"
-            style={{
-              background: "transparent",
-              border: "1px solid #ffffff18",
-              color: "#888",
-              borderRadius: "8px",
-              padding: ".5rem .9rem",
-              fontSize: ".82rem",
-              cursor: "pointer",
-              fontFamily: "sans-serif",
-            }}
+            variant="outline"
+            size="sm"
+            className="text-muted-foreground"
           >
             Salir
-          </button>
+          </Button>
         </form>
       </div>
 
-      <div
-        style={{ maxWidth: "960px", margin: "0 auto", padding: "1.5rem 1rem" }}
-      >
+      <div className="mx-auto max-w-[960px] px-4 py-6">
         {vista === "dashboard" && (
           <DashboardResumen
             clientes={clientes}
@@ -216,7 +159,6 @@ export function NegocioShell({
             ingresoMes={ingresoMes}
             gastosMes={gastosMes}
             hoy={hoy}
-            color={color}
             negocioNombre={negocio.nombre}
             onNuevoTurno={() => abrirTurno(hoy)}
           />
@@ -281,23 +223,7 @@ export function NegocioShell({
         />
       )}
 
-      {toast && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: "1.5rem",
-            right: "1.5rem",
-            background: "#13131A",
-            border: "1px solid #ffffff15",
-            borderRadius: "12px",
-            padding: ".7rem 1.2rem",
-            fontSize: ".85rem",
-            zIndex: 200,
-          }}
-        >
-          {toast}
-        </div>
-      )}
+      <Toaster />
     </div>
   );
 }
