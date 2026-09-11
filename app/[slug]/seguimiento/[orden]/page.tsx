@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 
 const ESTADOS = [
@@ -70,53 +70,87 @@ const ORDEN_FLUJO = [
   "entregado",
 ];
 
-export default function SeguimientoPage() {
-  const params = useParams();
-  const orden = params.orden as string;
-  const slug = params.slug as string;
+// D-11: el token es la capacidad de acceso; [orden] es solo informativo.
+// Formato UUID canónico; cualquier otro valor cae directo a enlace vencido.
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-  const [equipo, setEquipo] = useState<any>(null);
-  const [historial, setHistorial] = useState<any[]>([]);
-  const [negocio, setNegocio] = useState<any>(null);
+interface HistorialPublico {
+  estado_nuevo: string;
+  fecha: string;
+  comentario: string | null;
+}
+
+// Contrato de la allowlist de obtener_seguimiento_publico (spec, Domain 3).
+interface SeguimientoPublico {
+  estado: string;
+  numero_orden: string;
+  categoria: string;
+  marca: string | null;
+  modelo: string | null;
+  problema_reportado: string;
+  fecha_ingreso: string;
+  fecha_estimada_entrega: string | null;
+  fecha_entrega: string | null;
+  presupuesto: number | null;
+  precio_final: number | null;
+  cliente_nombre: string | null;
+  negocio_nombre: string | null;
+  historial: HistorialPublico[];
+}
+
+function CargandoReparacion() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-gray-400 text-center">
+        <div className="text-4xl mb-2">🔍</div>
+        <p>Consultando el estado de la reparación...</p>
+      </div>
+    </div>
+  );
+}
+
+function SeguimientoContenido() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+
+  const [equipo, setEquipo] = useState<SeguimientoPublico | null>(null);
   const [cargando, setCargando] = useState(true);
-  const [noEncontrado, setNoEncontrado] = useState(false);
+  const [enlaceVencido, setEnlaceVencido] = useState(false);
 
   useEffect(() => {
-    cargarDatos();
-  }, [orden]);
+    let activo = true;
 
-  async function cargarDatos() {
-    setCargando(true);
+    async function cargarDatos() {
+      // D-11 (sin gracia): sin token o con formato inválido → enlace vencido.
+      if (!token || !UUID_REGEX.test(token)) {
+        setEnlaceVencido(true);
+        setCargando(false);
+        return;
+      }
 
-    const { data: eq, error } = await supabase
-      .from("equipos")
-      .select("*, clientes(nombre)")
-      .eq("numero_orden", orden)
-      .single();
+      const { data } = await supabase.rpc("obtener_seguimiento_publico", {
+        p_token: token,
+      });
+      if (!activo) return;
 
-    if (error || !eq) {
-      setNoEncontrado(true);
+      const fila = (Array.isArray(data) ? data[0] : data) as
+        SeguimientoPublico | undefined;
+
+      if (!fila) {
+        // Token desconocido o revocado → enlace vencido, sin datos.
+        setEnlaceVencido(true);
+      } else {
+        setEquipo(fila);
+      }
       setCargando(false);
-      return;
     }
-    setEquipo(eq);
 
-    const { data: hist } = await supabase
-      .from("reparaciones_historial")
-      .select("*")
-      .eq("equipo_id", eq.id)
-      .order("fecha", { ascending: true });
-    setHistorial(hist || []);
-
-    const { data: neg } = await supabase
-      .from("negocios")
-      .select("nombre")
-      .eq("id", eq.negocio_id)
-      .single();
-    setNegocio(neg);
-
-    setCargando(false);
-  }
+    cargarDatos();
+    return () => {
+      activo = false;
+    };
+  }, [token]);
 
   function formatFecha(f: string) {
     return new Date(f).toLocaleString("es-AR", {
@@ -128,30 +162,25 @@ export default function SeguimientoPage() {
     });
   }
 
-  if (cargando)
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-400 text-center">
-          <div className="text-4xl mb-2">🔍</div>
-          <p>Buscando tu reparación...</p>
-        </div>
-      </div>
-    );
+  if (cargando) return <CargandoReparacion />;
 
-  if (noEncontrado)
+  if (enlaceVencido)
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow p-8 text-center max-w-sm w-full">
-          <div className="text-5xl mb-4">🔍</div>
+          <div className="text-5xl mb-4">🔗</div>
           <h1 className="text-xl font-bold text-gray-800 mb-2">
-            Orden no encontrada
+            Enlace no válido
           </h1>
           <p className="text-gray-500 text-sm">
-            Verificá el número de orden o contactá al técnico.
+            Este enlace de seguimiento no es válido o ya no está disponible.
+            Solicite uno nuevo en el taller.
           </p>
         </div>
       </div>
     );
+
+  if (!equipo) return null;
 
   const estadoInfo = ESTADOS.find((e) => e.valor === equipo.estado);
   const indexActual = ORDEN_FLUJO.indexOf(equipo.estado);
@@ -166,7 +195,7 @@ export default function SeguimientoPage() {
         <div className="text-center pt-6 pb-2">
           <div className="text-3xl mb-1">🔧</div>
           <h1 className="text-xl font-bold text-gray-800">
-            {negocio?.nombre || "Servicio Técnico"}
+            {equipo.negocio_nombre || "Servicio Técnico"}
           </h1>
           <p className="text-gray-400 text-sm">Seguimiento de reparación</p>
         </div>
@@ -208,7 +237,7 @@ export default function SeguimientoPage() {
           {esListo && (
             <div className="mt-4 bg-white bg-opacity-20 rounded-xl p-3">
               <p className="text-white font-semibold">
-                ¡Tu equipo está listo para retirar!
+                Su equipo está listo para retirar.
               </p>
               {equipo.precio_final && (
                 <p className="text-green-100 text-sm mt-1">
@@ -221,7 +250,7 @@ export default function SeguimientoPage() {
           {esSinReparacion && (
             <div className="mt-4 bg-red-50 rounded-xl p-3">
               <p className="text-red-700 text-sm">
-                No fue posible realizar la reparación. Podés pasar a retirar tu
+                No fue posible realizar la reparación. Puede pasar a retirar su
                 equipo sin costo.
               </p>
             </div>
@@ -286,7 +315,7 @@ export default function SeguimientoPage() {
             <div className="flex justify-between">
               <span className="text-gray-400">Cliente</span>
               <span className="text-gray-800 font-medium">
-                {equipo.clientes?.nombre}
+                {equipo.cliente_nombre}
               </span>
             </div>
             <div className="flex justify-between">
@@ -321,16 +350,16 @@ export default function SeguimientoPage() {
         </div>
 
         {/* HISTORIAL */}
-        {historial.length > 0 && (
+        {equipo.historial.length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-600 mb-3">
               Historial de actualizaciones
             </h3>
             <div className="space-y-3">
-              {[...historial].reverse().map((h) => {
+              {[...equipo.historial].reverse().map((h) => {
                 const est = ESTADOS.find((e) => e.valor === h.estado_nuevo);
                 return (
-                  <div key={h.id} className="flex gap-3">
+                  <div key={h.fecha + h.estado_nuevo} className="flex gap-3">
                     <div className="flex flex-col items-center">
                       <div className="w-2 h-2 rounded-full bg-blue-400 mt-1.5 shrink-0"></div>
                       <div className="w-0.5 bg-gray-100 flex-1 mt-1"></div>
@@ -363,10 +392,18 @@ export default function SeguimientoPage() {
 
         <div className="text-center pb-8">
           <p className="text-xs text-gray-400">
-            Esta página se actualiza con el estado de tu reparación.
+            Esta página se actualiza con el estado de su reparación.
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SeguimientoPage() {
+  return (
+    <Suspense fallback={<CargandoReparacion />}>
+      <SeguimientoContenido />
+    </Suspense>
   );
 }

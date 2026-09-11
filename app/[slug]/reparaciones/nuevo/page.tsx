@@ -143,7 +143,7 @@ export default function NuevaReparacionPage() {
           observaciones_internas: form.observaciones_internas.trim() || null,
           estado: "recibido",
         })
-        .select()
+        .select("id, acceso_token")
         .single();
 
       if (errorEquipo) throw errorEquipo;
@@ -162,7 +162,7 @@ export default function NuevaReparacionPage() {
       const telefono = form.cliente_telefono.trim();
       if (telefono) {
         const equipoNombre = `${form.categoria}${form.marca ? " " + form.marca : ""}${form.modelo ? " " + form.modelo : ""}`;
-        const linkSeguimiento = `${window.location.origin}/${slug}/seguimiento/${numeroOrden}`;
+        const linkSeguimiento = `${window.location.origin}/${slug}/seguimiento/${numeroOrden}?token=${equipo.acceso_token}`;
         const mensaje = MENSAJES_WHATSAPP.ingreso(
           form.cliente_nombre || "cliente",
           equipoNombre,
