@@ -181,7 +181,6 @@ export function NegocioShell({
             slug={slug}
             clientes={clientes}
             negocioNombre={negocio.nombre}
-            color={color}
             icon={icon}
             onNuevoCliente={() => {
               setModalData({});
@@ -217,7 +216,6 @@ export function NegocioShell({
       {modal === "cliente" && (
         <NuevoClienteModal
           slug={slug}
-          color={color}
           onClose={() => setModal(null)}
           onToast={showToast}
         />

@@ -3,7 +3,9 @@
 // Modal de alta de cliente (client component). El formulario envía los datos
 // a la Server Action `agregarCliente` (R9); al confirmarse cierra el modal y
 // avisa con toast. Mismos campos y comportamiento que el modal original del
-// monolito.
+// monolito. Migrado a la primitiva Dialog (fase5-ui P6): focus trap + ESC +
+// aria-modal de fábrica (REQ-UP-2); cierre por overlay/ESC via onOpenChange;
+// cero estilos inline (REQ-TT-3); el color por prop se eliminó (tokens).
 
 "use client";
 
@@ -11,6 +13,9 @@ import { useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
 import { agregarCliente } from "@/features/clientes/actions/clientes";
 import type { ClienteActionResult } from "@/features/clientes/actions/clientes";
+import { Button } from "@/lib/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/lib/ui/dialog";
+import { Input } from "@/lib/ui/input";
 
 interface FormularioCliente {
   nombre: string;
@@ -22,12 +27,10 @@ interface FormularioCliente {
 
 export function NuevoClienteModal({
   slug,
-  color,
   onClose,
   onToast,
 }: {
   slug: string;
-  color: string;
   onClose: () => void;
   onToast: (msg: string) => void;
 }) {
@@ -62,78 +65,39 @@ export function NuevoClienteModal({
   }, [state, onToast, onClose]);
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "#000000AA",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 100,
-        padding: "1rem",
-      }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div
-        style={{
-          background: "#13131A",
-          border: "1px solid #ffffff12",
-          borderRadius: "22px",
-          padding: "1.75rem",
-          width: "100%",
-          maxWidth: "480px",
-        }}
-      >
-        <h3
-          style={{
-            fontFamily: "serif",
-            fontSize: "1.3rem",
-            marginBottom: "1.25rem",
-          }}
-        >
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[480px] p-7">
+        <DialogTitle className="font-serif text-[1.3rem]">
           + Nuevo Cliente
-        </h3>
-        <form
-          action={formAction}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: ".75rem",
-          }}
-        >
+        </DialogTitle>
+        <form action={formAction} className="flex flex-col gap-3">
           <input type="hidden" name="slug" value={slug} />
-          <input
-            style={inp}
+          <Input
             placeholder="Nombre"
             name="nombre"
             value={form.nombre}
             onChange={(e) => setCampo("nombre", e.target.value)}
           />
-          <input
-            style={inp}
+          <Input
             placeholder="Teléfono (WhatsApp)"
             name="telefono"
             value={form.telefono}
             onChange={(e) => setCampo("telefono", e.target.value)}
           />
-          <input
-            style={inp}
+          <Input
             placeholder="Plan (ej: Musculación, Corte, etc.)"
             name="plan"
             value={form.plan}
             onChange={(e) => setCampo("plan", e.target.value)}
           />
-          <input
-            style={inp}
+          <Input
             type="number"
             placeholder="Cuota mensual ($)"
             name="cuota"
             value={form.cuota}
             onChange={(e) => setCampo("cuota", e.target.value)}
           />
-          <input
-            style={inp}
+          <Input
             type="date"
             name="vence"
             value={form.vence}
@@ -141,71 +105,29 @@ export function NuevoClienteModal({
           />
 
           {!state.ok && state.error && (
-            <p
-              style={{
-                color: "#F87171",
-                fontSize: ".82rem",
-                margin: 0,
-              }}
-            >
-              {state.error}
-            </p>
+            <p className="m-0 text-sm text-red-400">{state.error}</p>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              gap: ".75rem",
-              marginTop: "1.25rem",
-              justifyContent: "flex-end",
-            }}
-          >
-            <button
+          <div className="mt-5 flex justify-end gap-3">
+            <Button
               type="button"
+              variant="outline"
               onClick={onClose}
-              style={{
-                background: "transparent",
-                border: "1px solid #ffffff18",
-                color: "#888",
-                borderRadius: "10px",
-                padding: ".6rem 1.1rem",
-                cursor: "pointer",
-                fontFamily: "sans-serif",
-              }}
+              className="rounded-[10px]"
             >
               Cancelar
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="accent"
               disabled={pending}
-              style={{
-                background: color,
-                color: "#000",
-                border: "none",
-                borderRadius: "10px",
-                padding: ".6rem 1.5rem",
-                cursor: "pointer",
-                fontWeight: 700,
-                fontFamily: "sans-serif",
-              }}
+              className="rounded-[10px] font-bold"
             >
               {pending ? "Guardando..." : "Guardar"}
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
-
-const inp: React.CSSProperties = {
-  background: "#ffffff08",
-  border: "1px solid #ffffff15",
-  color: "#fff",
-  borderRadius: "10px",
-  padding: ".7rem 1rem",
-  fontSize: ".88rem",
-  outline: "none",
-  fontFamily: "sans-serif",
-  width: "100%",
-};
