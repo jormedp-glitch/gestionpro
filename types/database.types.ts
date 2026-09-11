@@ -1,22 +1,3 @@
-// ============================================================================
-// types/database.types.ts — SNAPSHOT PRE-ROLLOUT (fase 3, SDD)
-// ----------------------------------------------------------------------------
-// Generado con: supabase gen types typescript --project-id qjawdjzaokffhiqnixcx --schema public
-// (CLI 2.116.0, 2026-09-03). Es el schema REAL LEGACY de producción:
-//
-//   - Las migraciones 0001/0002/0003 NO están aplicadas todavía.
-//     Por eso NO aparecen: negocio_miembros, equipos.acceso_token,
-//     negocio_orden_contadores, ni las functions crear_negocio_con_owner /
-//     obtener_seguimiento_publico (solo existe generar_numero_orden).
-//   - Incluye las 10+ tablas cf_* de OTRA app del mismo proyecto (NO tocar).
-//   - estado / categoria son string (sin enums); numero_orden es text.
-//
-// REGENERAR OBLIGATORIO después del rollout (0001 → 0002 → 0003 en prod):
-//   supabase gen types typescript --project-id qjawdjzaokffhiqnixcx --schema public
-//   > types/database.types.ts
-// El snapshot commiteado hoy es la base de fidelidad del escenario D3 (spec).
-// ============================================================================
-
 export type Json =
   | string
   | number
@@ -33,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      _fase3_duplicates_log: {
+        Row: {
+          id: string
+          negocio_id: string
+          numero_orden: string
+          ocurrencia: number
+          snapshot_at: string
+        }
+        Insert: {
+          id: string
+          negocio_id: string
+          numero_orden: string
+          ocurrencia: number
+          snapshot_at?: string
+        }
+        Update: {
+          id?: string
+          negocio_id?: string
+          numero_orden?: string
+          ocurrencia?: number
+          snapshot_at?: string
+        }
+        Relationships: []
+      }
       cf_alumnos: {
         Row: {
           altura_cm: number | null
@@ -557,6 +562,7 @@ export type Database = {
       }
       equipos: {
         Row: {
+          acceso_token: string
           accesorios: string | null
           categoria: string
           cliente_id: string | null
@@ -579,6 +585,7 @@ export type Database = {
           tecnico_asignado: string | null
         }
         Insert: {
+          acceso_token?: string
           accesorios?: string | null
           categoria: string
           cliente_id?: string | null
@@ -601,6 +608,7 @@ export type Database = {
           tecnico_asignado?: string | null
         }
         Update: {
+          acceso_token?: string
           accesorios?: string | null
           categoria?: string
           cliente_id?: string | null
@@ -669,6 +677,58 @@ export type Database = {
             foreignKeyName: "gastos_negocio_id_fkey"
             columns: ["negocio_id"]
             isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negocio_miembros: {
+        Row: {
+          created_at: string
+          negocio_id: string
+          rol: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          negocio_id: string
+          rol: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          negocio_id?: string
+          rol?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocio_miembros_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      negocio_orden_contadores: {
+        Row: {
+          negocio_id: string
+          ultimo: number
+        }
+        Insert: {
+          negocio_id: string
+          ultimo?: number
+        }
+        Update: {
+          negocio_id?: string
+          ultimo?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negocio_orden_contadores_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: true
             referencedRelation: "negocios"
             referencedColumns: ["id"]
           },
@@ -852,7 +912,44 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      crear_negocio_con_owner: {
+        Args: { p_nombre: string; p_rubro: string; p_slug: string }
+        Returns: {
+          activo: boolean | null
+          created_at: string | null
+          id: string
+          nombre: string
+          rubro: string
+          slug: string
+          telefono_admin: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "negocios"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       generar_numero_orden: { Args: { p_negocio_id: string }; Returns: string }
+      obtener_seguimiento_publico: {
+        Args: { p_token: string }
+        Returns: {
+          categoria: string
+          cliente_nombre: string
+          estado: string
+          fecha_entrega: string
+          fecha_estimada_entrega: string
+          fecha_ingreso: string
+          historial: Json
+          marca: string
+          modelo: string
+          negocio_nombre: string
+          numero_orden: string
+          precio_final: number
+          presupuesto: number
+          problema_reportado: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
