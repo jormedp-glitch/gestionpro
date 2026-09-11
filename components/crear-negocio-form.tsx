@@ -3,6 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { Button } from "@/lib/ui/button";
+import { Card } from "@/lib/ui/card";
+import { Input } from "@/lib/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/lib/ui/select";
 
 const RUBROS = [
   { value: "gimnasio", label: "Gimnasio" },
@@ -61,85 +71,42 @@ export default function CrearNegocioForm() {
   }
 
   return (
-    <div
-      style={{
-        background: "#13131A",
-        border: "1px solid #ffffff10",
-        borderRadius: "16px",
-        padding: "1.5rem",
-        marginBottom: "2rem",
-      }}
-    >
-      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-        <input
+    <Card className="mb-8 p-6">
+      <div className="flex flex-wrap gap-3">
+        <Input
           placeholder="Nombre del negocio"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
-          style={{
-            background: "#1E1E28",
-            border: "1px solid #333",
-            color: "#fff",
-            borderRadius: "8px",
-            padding: "0.65rem 1rem",
-            flex: 1,
-            minWidth: "150px",
-          }}
+          className="min-w-[150px] flex-1"
         />
-        <input
+        <Input
           placeholder="slug (ej: gym-el-oso)"
           value={slug}
           onChange={(e) => setSlug(slugSeguro(e.target.value))}
-          style={{
-            background: "#1E1E28",
-            border: "1px solid #333",
-            color: "#fff",
-            borderRadius: "8px",
-            padding: "0.65rem 1rem",
-            flex: 1,
-            minWidth: "150px",
-          }}
+          className="min-w-[150px] flex-1"
         />
-        <select
-          value={rubro}
-          onChange={(e) => setRubro(e.target.value)}
-          style={{
-            background: "#1E1E28",
-            border: "1px solid #333",
-            color: "#fff",
-            borderRadius: "8px",
-            padding: "0.65rem 1rem",
-          }}
-        >
-          {RUBROS.map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
-            </option>
-          ))}
-        </select>
-        <button
+        <Select value={rubro} onValueChange={setRubro}>
+          <SelectTrigger className="w-auto">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {RUBROS.map((r) => (
+              <SelectItem key={r.value} value={r.value}>
+                {r.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
           onClick={crearNegocio}
           disabled={creando}
-          style={{
-            background: "#FF6B35",
-            color: "#000",
-            border: "none",
-            borderRadius: "8px",
-            padding: "0.65rem 1.5rem",
-            cursor: "pointer",
-            fontWeight: 700,
-            opacity: creando ? 0.6 : 1,
-          }}
+          variant="accent"
+          className="font-bold"
         >
           {creando ? "Creando..." : "Crear"}
-        </button>
+        </Button>
       </div>
-      {error && (
-        <p
-          style={{ color: "#FF6B35", marginTop: "0.75rem", fontSize: "0.9rem" }}
-        >
-          {error}
-        </p>
-      )}
-    </div>
+      {error && <p className="mt-3 text-sm text-accent">{error}</p>}
+    </Card>
   );
 }

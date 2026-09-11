@@ -1,5 +1,6 @@
 ﻿import { getOwnNegocios } from "@/lib/auth/dal";
 import CrearNegocioForm from "@/components/crear-negocio-form";
+import { Card, CardContent } from "@/lib/ui/card";
 
 const rubroIcon: Record<string, string> = {
   gimnasio: "🏋️",
@@ -17,66 +18,34 @@ export default async function AdminPanel() {
   const negocios = await getOwnNegocios();
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#050508",
-        color: "#fff",
-        fontFamily: "sans-serif",
-        padding: "2rem",
-      }}
-    >
-      <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-        <h1
-          style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "0.5rem" }}
-        >
-          ⚡ GestiónPro
-        </h1>
-        <p style={{ color: "#555", marginBottom: "2rem" }}>
-          Panel de administración
-        </p>
+    <div className="min-h-screen bg-background p-8 text-foreground">
+      <div className="mx-auto max-w-[800px]">
+        <h1 className="mb-2 text-[2rem] font-bold">⚡ GestiónPro</h1>
+        <p className="mb-8 text-muted-foreground">Panel de administración</p>
         <CrearNegocioForm />
         {negocios.length === 0 && (
-          <p style={{ color: "#333", textAlign: "center", padding: "2rem" }}>
+          <p className="py-8 text-center text-muted-foreground">
             No hay negocios todavía. Crea el primer negocio.
           </p>
         )}
         {negocios.map((n) => (
-          <div
-            key={n.id}
-            style={{
-              background: "#13131A",
-              border: "1px solid #ffffff08",
-              borderRadius: "14px",
-              padding: "1.25rem",
-              marginBottom: "0.75rem",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 600 }}>
-                {rubroIcon[n.rubro]} {n.nombre}
+          <Card key={n.id} className="mb-3">
+            <CardContent className="flex items-center justify-between p-5">
+              <div>
+                <div className="font-semibold">
+                  {rubroIcon[n.rubro]} {n.nombre}
+                </div>
+                <div className="text-xs text-muted-foreground">/{n.slug}</div>
               </div>
-              <div style={{ color: "#444", fontSize: "0.8rem" }}>/{n.slug}</div>
-            </div>
-            <a
-              href={"/" + n.slug}
-              target="_blank"
-              style={{
-                background: "#FF6B3520",
-                color: "#FF6B35",
-                border: "1px solid #FF6B3530",
-                padding: "0.45rem 1rem",
-                borderRadius: "8px",
-                textDecoration: "none",
-                fontSize: "0.85rem",
-              }}
-            >
-              Abrir app
-            </a>
-          </div>
+              <a
+                href={"/" + n.slug}
+                target="_blank"
+                className="inline-flex items-center rounded-lg border border-accent/25 bg-accent/10 px-4 py-2 text-sm text-accent no-underline transition-colors hover:bg-accent/20"
+              >
+                Abrir app
+              </a>
+            </CardContent>
+          </Card>
         ))}
       </div>
     </div>
