@@ -25,11 +25,5 @@ export default defineConfig([
     },
   },
   prettier,
-  globalIgnores([
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    "components/NegocioApp.tsx",
-  ]),
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
 ]);
