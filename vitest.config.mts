@@ -16,7 +16,7 @@ export default defineConfig({
         test: {
           name: "node",
           environment: "node",
-          include: ["lib/domain/**/*.test.ts"],
+          include: ["lib/domain/**/*.test.ts", "proxy.test.ts"],
         },
       },
       {
