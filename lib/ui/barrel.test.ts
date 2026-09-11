@@ -9,11 +9,14 @@ import {
   Badge,
   Button,
   Card,
+  Dialog,
   EmptyState,
   Input,
   Select,
   Skeleton,
   Table,
+  Toaster,
+  toast,
 } from "./index";
 
 describe("barrel lib/ui (REQ-UP-1)", () => {
@@ -29,5 +32,11 @@ describe("barrel lib/ui (REQ-UP-1)", () => {
   it("exporta las islas client Input y Select", () => {
     expect(Input).toBeDefined();
     expect(Select).toBeDefined();
+  });
+
+  it("exporta las islas client Dialog y Toast (sonner)", () => {
+    expect(Dialog).toBeDefined();
+    expect(Toaster).toBeDefined();
+    expect(typeof toast).toBe("function");
   });
 });
