@@ -17,7 +17,6 @@ import { NuevoTurnoModal } from "@/features/turnos/components/NuevoTurnoModal";
 import { ClientesLista } from "@/features/clientes/components/ClientesLista";
 import { NuevoClienteModal } from "@/features/clientes/components/NuevoClienteModal";
 import { GastosCaja } from "@/features/gastos/components/GastosCaja";
-import { accentPorRubro } from "@/lib/ui/theme";
 import { toast, Toaster } from "@/lib/ui/toast";
 import { Button } from "@/lib/ui/button";
 import { cn } from "@/lib/ui/utils";
@@ -62,9 +61,6 @@ export function NegocioShell({
   const [modal, setModal] = useState<null | "turno" | "cliente">(null);
   const [modalData, setModalData] = useState<{ fecha?: string }>({});
 
-  // Acento del rubro (D4): coincide con var(--accent) que setea el island por
-  // data-rubro; se pasa a los features (P6) que aún consumen el color por prop.
-  const color = accentPorRubro(negocio.rubro);
   const icon = iconoRubro(negocio.rubro);
 
   const showToast = (msg: string) => {
@@ -196,7 +192,6 @@ export function NegocioShell({
             ingresoMes={ingresoMes}
             gastosMes={gastosMes}
             hoy={hoy}
-            color={color}
             showToast={showToast}
           />
         )}
