@@ -10,7 +10,12 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-/** Cliente del negocio (columnas usadas por la app). */
+/**
+ * Cliente del negocio (columnas usadas por la app).
+ * NO adopta `Tables<"clientes">` (types/database.types.ts): `cuota` y `estado`
+ * son nullables en la DB y romperían el formato/estado de la vista.
+ * // TODO fase 5: adopt Database types after regenerating post-rollout
+ */
 export interface Cliente {
   id: string;
   negocio_id: string;
