@@ -1,6 +1,8 @@
 ﻿import { getOwnNegocios } from "@/lib/auth/dal";
+import { logout } from "@/lib/auth/actions";
 import CrearNegocioForm from "@/components/crear-negocio-form";
 import { Card, CardContent } from "@/lib/ui/card";
+import { Button } from "@/lib/ui/button";
 
 const rubroIcon: Record<string, string> = {
   gimnasio: "🏋️",
@@ -20,8 +22,22 @@ export default async function AdminPanel() {
   return (
     <div className="min-h-screen bg-background p-8 text-foreground">
       <div className="mx-auto max-w-[800px]">
-        <h1 className="mb-2 text-[2rem] font-bold">⚡ GestiónPro</h1>
-        <p className="mb-8 text-muted-foreground">Panel de administración</p>
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <div>
+            <h1 className="mb-2 text-[2rem] font-bold">⚡ GestiónPro</h1>
+            <p className="text-muted-foreground">Panel de administración</p>
+          </div>
+          <form action={logout}>
+            <Button
+              type="submit"
+              variant="outline"
+              size="sm"
+              className="text-muted-foreground"
+            >
+              Salir
+            </Button>
+          </form>
+        </div>
         <CrearNegocioForm />
         {negocios.length === 0 && (
           <p className="py-8 text-center text-muted-foreground">
