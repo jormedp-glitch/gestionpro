@@ -75,7 +75,7 @@ Esperado: X no aparece en la lista.
 
 **TC-SHELL-01 · Tabs según rubro · P1**
 Pasos: abrir un negocio `servicio_técnico` y uno de otro rubro (gimnasio/peluquería/veterinaria).
-Esperado: servicio técnico → Dashboard, Reparaciones, Caja. Otros → Dashboard, Agenda, Clientes, Caja, Reparaciones.
+Esperado: servicio técnico → Dashboard, Reparaciones, Caja. Otros → Dashboard, Agenda, Clientes, Caja (sin Reparaciones).
 
 **TC-SHELL-02 · Slug inexistente · P1**
 Pasos: abrir `/no-existe-123`.
@@ -144,7 +144,7 @@ Esperado: el turno sigue ahí, con los mismos datos.
 
 **TC-CLI-01 · Alta de cliente · P1**
 Pasos: tab `👥 Clientes` → `+ Agregar` → nombre, teléfono, plan, cuota, vence → guardar.
-Esperado: toast de alta y el cliente aparece con badge **Activo**; la cuota se muestra en formato ARS.
+Esperado: toast de alta y el cliente aparece con badge **Activo** (con `vence` a más de 7 días; si `vence` queda vacío se guarda hoy → badge **Vence pronto**); la cuota se muestra en formato ARS.
 
 **TC-CLI-02 · Validaciones · P2**
 Pasos: intentar cuota vacía / 0 / negativa; nombre o plan vacíos.
@@ -160,7 +160,7 @@ Esperado: toast "Eliminado"; desaparece de la lista y persiste la baja al recarg
 
 **TC-CLI-05 · Exploratorio: estados por vencimiento · P2**
 Pasos: crear un cliente QA con `vence` en el pasado y observar el badge (Activo / Vence pronto / Vencido) y las alertas.
-Esperado: documentar el comportamiento real. **Pregunta abierta**: nada en el código actual setea `vence_pronto`/`vencido` — si el cliente sigue "Activo", registrar como hallazgo (las alertas de cobro dependerían de un cambio manual o de un trigger externo).
+Esperado: documentar el comportamiento real. **Confirmado 2026-09-14 (hallazgo)**: los clientes con `vence` en el pasado siguen "Activo" — nada setea `vence_pronto`/`vencido` y la tarjeta "⚡ Alertas de cobro" del dashboard nunca aparece. Registrado en el plan maestro (hallazgos de pruebas).
 
 ---
 

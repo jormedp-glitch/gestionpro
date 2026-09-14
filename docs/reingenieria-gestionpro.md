@@ -39,6 +39,15 @@
 - **Producción**: deploy Vercel con login real y smoke seguro verificados (2026-09-14); backup verificado post-rollout.
 - **Pendientes**: dark mode, auditoría WCAG (axe), entorno e2e dedicado + job bloqueante, Fase 7 (CoachFlow).
 
+### Hallazgos de pruebas manuales en producción (2026-09-14)
+
+> Detectados durante la ronda de pruebas manuales en producción; reparados en batch el 2026-09-14 (#80–#82). La gestión de usuarios desde la app queda como alcance de FASE 6.
+
+- [ ] **Gestión de usuarios desde la app (FASE 6)**: alta/invitación de usuarios, membresías por negocio (asignar/quitar) y roles — hoy se hace a mano en Supabase (dashboard/SQL). Origen: TC-ADMIN-04 (segundo usuario creado por SQL).
+- [x] **Cerrar sesión desde el panel `/`**: `logout()` ya existe (`lib/auth/actions.ts`) pero el botón "Salir" solo está en `NegocioShell` (dentro de `/{slug}`). Agregar el botón al panel de administración. Relacionado: TC-AUTH-05. — **Reparado en #80**.
+- [x] **Link "Reparaciones" visible en rubros que no son de reparaciones**: `NegocioShell` muestra "🔧 Reparaciones" en el branch de rubros no-`servicio_tecnico` (`features/admin/components/NegocioShell.tsx:128-133`); debe aparecer solo en rubros de reparaciones. Ojo: la condición usa `rubro === "servicio_tecnico"` (el seed viejo usa el valor `reparaciones`). — **Reparado en #81**.
+- [x] **Estados de cliente por vencimiento nunca se calculan (y las "⚡ Alertas de cobro" no aparecen)**: `vence_pronto`/`vencido` existen en la UI pero nada los setea — `agregarCliente` inserta `activo` y `pagarCliente` vuelve a `activo` sin tocar `vence`; las alertas filtran `estado !== "activo"` (`features/admin/components/DashboardResumen.tsx:39`). Evidencia: clientes con `vence` 06/04 y 07/04/2026 (meses vencidos) siguen "Activo" → la tarjeta "⚡ Alertas de cobro" nunca aparece. Resuelto: estado derivado del `vence` al leer (`lib/domain/cuotas.ts`: vencido / vence_pronto ≤ 7 días / activo) y `✓ Pagó` extiende el `vence` al próximo período. — **Reparado en #82**.
+
 ---
 
 ## 1. Objetivo y principios de la reingeniería
@@ -154,7 +163,7 @@ Verificación en producción (2026-09-14): login real OK; smoke seguro verde en 
 
 - Recordatorios automáticos (Supabase Edge Function + pg_cron): recordatorio de turno (día anterior), recordatorio de retiro (3 y 7 días), re-pedido de cuota (7 días antes).
 - Reportes mensuales por negocio (CSV/PDF).
-- Multi-usuario por negocio: invitaciones y roles.
+- Gestión de usuarios desde la app (no en la base): alta/invitación de usuarios, membresías por negocio (asignar/quitar) y roles (owner/editor). Hoy se hace a mano en Supabase (dashboard/SQL) — fricción detectada en las pruebas manuales 2026-09-14 (TC-ADMIN-04: segundo usuario creado por SQL).
 - Onboarding wizard del negocio nuevo (plan, servicios, horarios, colores).
 - Monetización (ver sección 3): facturación por negocio (Stripe) — según decisión D-01.
 - Branding por negocio en la página pública de seguimiento (logo, colores) — el gancho de crecimiento.
