@@ -9,6 +9,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { proximoVencimiento } from "@/lib/domain/cuotas";
 import { createClient } from "@/lib/supabase/server";
 import { requireNegocio } from "@/lib/server/negocio";
 
@@ -68,7 +69,11 @@ export async function agregarCliente(
   return { ok: true };
 }
 
-/** Marca el cliente como "activo" (cobro registrado, R9). */
+/**
+ * Registra el cobro (R9): extiende el `vence` al próximo período
+ * (lib/domain/cuotas, issue #78) y marca "activo" (el estado de la vista se
+ * deriva del vence al leer).
+ */
 export async function pagarCliente(
   _prev: ClienteActionResult,
   formData: FormData,
@@ -81,9 +86,24 @@ export async function pagarCliente(
   const negocio = await requireNegocio(slug);
   const supabase = await createClient();
 
+  const { data: actual, error: selectError } = await supabase
+    .from("clientes")
+    .select("vence")
+    .eq("id", clienteId)
+    .eq("negocio_id", negocio.id)
+    .maybeSingle<{ vence: string | null }>();
+  if (selectError || !actual) {
+    console.error(
+      "[pagarCliente] select:",
+      selectError?.message ?? "cliente no encontrado",
+    );
+    return { ok: false, error: "No se pudo registrar el pago." };
+  }
+
+  const hoy = new Date().toISOString().split("T")[0];
   const { error } = await supabase
     .from("clientes")
-    .update({ estado: "activo" })
+    .update({ estado: "activo", vence: proximoVencimiento(actual.vence, hoy) })
     .eq("id", clienteId)
     .eq("negocio_id", negocio.id);
   if (error) {
