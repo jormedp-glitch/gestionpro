@@ -8,6 +8,7 @@
 // Este módulo es server-only: los client components reciben los datos como
 // props y los tipos via `import type` (se borra en compilación).
 
+import { estadoPorVencimiento } from "@/lib/domain/cuotas";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -28,7 +29,12 @@ export interface Cliente {
   created_at: string;
 }
 
-/** Clientes del negocio (R8: lectura con el cliente server). */
+/**
+ * Clientes del negocio (R8: lectura con el cliente server).
+ * El `estado` se deriva del `vence` al leer (lib/domain/cuotas, issue #78):
+ * la columna almacenada no manda en la vista — badges, KPIs y alertas salen
+ * de esta única fuente.
+ */
 export async function getClientesDeNegocio(
   negocioId: string,
 ): Promise<Cliente[]> {
@@ -37,5 +43,9 @@ export async function getClientesDeNegocio(
     .from("clientes")
     .select("*")
     .eq("negocio_id", negocioId);
-  return (data ?? []) as Cliente[];
+  const hoy = new Date().toISOString().split("T")[0];
+  return ((data ?? []) as Cliente[]).map((c) => ({
+    ...c,
+    estado: estadoPorVencimiento(c.vence, hoy),
+  }));
 }
