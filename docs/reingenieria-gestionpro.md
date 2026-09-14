@@ -3,22 +3,24 @@
 > Documento vivo del proyecto. Fuente de verdad para el alcance, las fases y las decisiones.
 > Se actualiza en cada hito. Cada decisión adoptada se registra en la sección [Log de decisiones](#4-log-de-decisiones).
 > Los cambios grandes se ejecutan con SDD (explore → proposal → spec → design → tasks → apply → verify → archive) y entregas en PRs encadenados.
+> Última actualización: 2026-09-14 (post-rollout a producción + verificación en producción).
 
 ---
 
 ## 0. Ficha del proyecto
 
-| Campo             | Valor                                                                                                                                                                                              |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Nombre            | GestiónPro                                                                                                                                                                                         |
-| Producto          | SaaS de abono mensual para **profesionales independientes** (peluqueros, profes de clases, servicio técnico). 3 capas: plataforma (dueño del SaaS) → profesional abonado → cliente final (celular) |
-| Stack actual      | Next.js 16.2.2 (App Router) · React 19.2.4 · TypeScript 5 · Tailwind 4 · Supabase (supabase-js v2, solo cliente)                                                                                   |
-| Backend           | Supabase (anónimo, sin Auth/RLS configurados)                                                                                                                                                      |
-| Estado de git     | Limpio; commits convencionales; `.env.local` correctamente ignorado                                                                                                                                |
-| Dominio actual    | `negocios`, `clientes`, `turnos`, `gastos`, `equipos`, `reparaciones_historial`, `reparaciones_repuestos`                                                                                          |
-| Tests / lint / CI | No existen                                                                                                                                                                                         |
+| Campo             | Valor                                                                                                                                                                                               |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nombre            | GestiónPro                                                                                                                                                                                          |
+| Producto          | SaaS de abono mensual para **profesionales independientes** (peluqueros, profes de clases, servicio técnico). 3 capas: plataforma (dueño del SaaS) → profesional abonado → cliente final (celular)  |
+| Stack actual      | Next.js 16.2.2 (App Router) · React 19.2.4 · TypeScript 5 · Tailwind 4 · Supabase (`@supabase/ssr`: clients browser/server/middleware)                                                              |
+| Backend           | Supabase — Auth email+password + RLS por membresía (`negocio_miembros`); migraciones 0001–0003 aplicadas en producción (sa-east-1)                                                                  |
+| Estado de git     | main `96a05ce`; batch fases 0–5 mergeado (33 PRs); commits convencionales; `.env.local` ignorado                                                                                                    |
+| Dominio actual    | `negocios`, `negocio_miembros`, `clientes`, `turnos`, `gastos`, `equipos`, `reparaciones_historial`, `reparaciones_repuestos`                                                                       |
+| Tests / lint / CI | ESLint + Prettier + Husky; Vitest (4 suites de dominio, cobertura ≥ 80 % en `lib/domain`); Playwright smoke (2 viewports); GitHub Actions `lint → typecheck → test → build` + job e2e no bloqueante |
+| Producción        | Vercel `https://gestionpro-three.vercel.app` · Supabase `qjawdjzaokffhiqnixcx` (sa-east-1) · rollout 2026-09-11 · verificado 2026-09-14                                                             |
 
-### Estado actual (diagnóstico)
+### Estado inicial (diagnóstico previo a la reingeniería, 2026-09-02)
 
 - **App funcional en un solo producto**: 8 páginas (`/`, `/[slug]`, `/reparaciones`, `/reparaciones/nuevo`, `/reparaciones/[id]`, `/seguimiento/[orden]`) + `components/NegocioApp.tsx` (muerto, 657 líneas, no importado).
 - **CRÍTICO — Sin seguridad**: el panel de administración (`/`) crea negocios sin login; todo el acceso a datos es directo desde el cliente con la anon key; no hay RLS. Cualquiera con la URL puede leer/escribir la base completa.
@@ -27,6 +29,15 @@
 - **Sin calidad**: no hay ESLint, no hay tests, no hay CI. UI con estilos inline + Tailwind mezclados.
 - **IA del análisis**: fetch directo al cliente a Anthropic sin API key (hoy no funciona; si se le agrega key, queda expuesta).
 - **WhatsApp**: deep links `wa.me` desde el cliente. Dependencia funcional fuerte (el producto gira alrededor de WhatsApp).
+
+### Estado actual (2026-09-14)
+
+- **Seguridad**: login email+password + RLS por membresía en todas las tablas del dominio; middleware de protección en `/` y `/[slug]`; seguimiento público por token (capability UUID, migración 0002). Verificado en producción.
+- **Arquitectura**: `features/<dominio>` + `lib/{domain,server,ui,auth,supabase}`; Server Components para lecturas y Server Actions con zod para escrituras; 0 estilos inline en `app/` y `features/`.
+- **Datos**: migraciones 0001–0003 aplicadas en producción; `numero_orden` normalizado a numérico puro con contador atómico por negocio; `types/database.types.ts` regenerado post-rollout.
+- **Calidad**: ESLint + Prettier + Husky; 4 suites Vitest (cobertura ≥ 80 % en `lib/domain`); Playwright smoke (2 viewports); CI en cada PR.
+- **Producción**: deploy Vercel con login real y smoke seguro verificados (2026-09-14); backup verificado post-rollout.
+- **Pendientes**: dark mode, auditoría WCAG (axe), entorno e2e dedicado + job bloqueante, Fase 7 (CoachFlow).
 
 ---
 
@@ -60,7 +71,7 @@ Principios:
 
 **Criterios de aceptación**: `npm run lint` y `npm run typecheck` pasan en CI local; commit limpio con hook.
 
-### FASE 1 — Seguridad y acceso (3–5 días) — riesgo: ALTO (crítica)
+### FASE 1 — Seguridad y acceso (3–5 días) — riesgo: ALTO (crítica) — ✅ IMPLEMENTADA (2026-09-03, SDD `fase1-seguridad`, WU-1..WU-4; migraciones 0001–0002; PRs mergeados 2026-09-11)
 
 - `@supabase/ssr`: clients de browser/server/middleware; sesión por cookies.
 - Auth: login por email+password (u OTP, ver decisión D-03); layout `/login`; middleware de protección en `/` y `/[slug]` (sin proteger `/seguimiento`).
@@ -71,7 +82,7 @@ Principios:
 
 **Criterios de aceptación**: sin login no se puede crear ni leer datos; dos negocios no se ven entre sí; la página de seguimiento pública funciona solo con token válido.
 
-### FASE 2 — Arquitectura y dominio (3–5 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-03, SDD `fase2-arquitectura`, verify PASS with warnings; PRs pendientes de creación al cierre del ciclo)
+### FASE 2 — Arquitectura y dominio (3–5 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-03, SDD `fase2-arquitectura`, verify PASS with warnings; PRs mergeados a main 2026-09-11)
 
 - Reorganización por dominios:
   - `app/(auth)/login` · `app/page.tsx` (admin, protegido) · `app/[slug]/` (app del negocio, protegido) · `app/[slug]/seguimiento/[orden]` (público con token)
@@ -85,7 +96,7 @@ Principios:
 
 **Criterios de aceptación**: consultas de dominio en un solo lugar; las páginas usan los módulos de dominio; derrocar `any` de las nuevas capas.
 
-### FASE 3 — Datos (2–3 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-03, SDD `fase3-datos`, verify PASS con runtime-pending SQL; PRs pendientes de creación al cierre del ciclo)
+### FASE 3 — Datos (2–3 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-03, SDD `fase3-datos`, verify PASS; migraciones aplicadas en producción 2026-09-11 (backup + verify-rls/verify-ordering OK); PRs mergeados 2026-09-11)
 
 - Migraciones versionadas en `supabase/migrations/`: schema inicial (negocios, clientes, turnos, gastos, equipos, historial, repuestos, miembros), enums o checks de estado, constraints (`monto >= 0`, FK con cascada, unicidades).
 - Ejecutado en producción con `supabase db push` / CI.
@@ -95,7 +106,7 @@ Principios:
 
 **Criterios de aceptación**: `database.types.ts` generado y usado; migraciones aplicables desde cero en un entorno nuevo.
 
-### FASE 4 — Calidad y CI (2–3 días) — riesgo: Bajo — ✅ IMPLEMENTADA (2026-09-10, SDD `fase4-calidad`, verify PASS with warnings; PRs pendientes de creación al cierre del ciclo)
+### FASE 4 — Calidad y CI (2–3 días) — riesgo: Bajo — ✅ IMPLEMENTADA (2026-09-10, SDD `fase4-calidad`, verify PASS with warnings; PRs mergeados a main 2026-09-11)
 
 - Vitest + Testing Library: tests de máquina de estados (todas las transiciones válidas e inválidas), generación de orden, mensajes WhatsApp, formatos (ARS/fechas).
 - Playwright smoke: login → crear negocio → crear turno → seguimiento público con token.
@@ -104,7 +115,7 @@ Principios:
 
 **Criterios de aceptación**: el CI bloquea un PR con lint/typecheck/test fallando; suite de dominio verde.
 
-### FASE 5 — UI / UX (3–5 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-10, SDD `fase5-ui`, apply P1–P9; verify PASS (2026-09-11; 15/15 req · 25/25 escenarios; CRITICAL e2e resuelto en P9); archivada (2026-09-11); PRs al cierre del ciclo)
+### FASE 5 — UI / UX (3–5 días) — riesgo: Medio — ✅ IMPLEMENTADA (2026-09-10, SDD `fase5-ui`, apply P1–P9; verify PASS (2026-09-11; 15/15 req · 25/25 escenarios; CRITICAL e2e resuelto en P9); archivada (2026-09-11); PRs mergeados a main 2026-09-11)
 
 - Primitivos propios en `lib/ui/` (base shadcn/ui sobre Radix + Tailwind 4, `cva` + `clsx` + `tailwind-merge`): Button, Input, Select, Card, Dialog, Toast, Badge, Table, EmptyState, Skeleton — 10 con barrel `index.ts` y tests RTL (Dialog con focus trap + ESC + `aria-modal`, Select operable por teclado con anuncio, Toast en `aria-live` con botón accesible).
 - Tema unificado con tokens: paleta clara en `globals.css` (`@theme inline`), acento por rubro vía `html[data-rubro]` + `RUBRO_ACCENT` espejo para el favicon (ImageResponse); **0 estilos inline** en `app/` y `features/` (grep `style={|React.CSSProperties` = 0; 11 componentes migrados).
@@ -116,6 +127,16 @@ Principios:
 **Criterios de aceptación**: ninguna página con estilos inline crudos; los flujos principales probados en viewport móvil y desktop.
 
 **Follow-ups (fuera de Fase 5, documentados)**: dark mode (tokens dark-ready, sin rework); auditoría WCAG completa (axe runtime); entorno de test dedicado para el smoke completo (credenciales `E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD` + proyecto Supabase de test — el flujo muta datos y nunca debe correr contra producción); pasar el job e2e a bloqueante cuando exista ese entorno.
+
+### Hito — Rollout a producción (2026-09-11)
+
+Ejecutado con el operador presente. Secuencia real: backup verificado (`pg_dump` 17 vía Docker) → DROP de 11 policies legacy "acceso publico" → 0001 → admin en Dashboard (`auth.users` estaba vacío) + bootstrap de owners (2 negocios) → `verify-rls` OK → 0002 → normalización de `numero_orden` (`REP-2026-0001..0008` → `0001..0008`) → 0003 con 2 fixes (quote sin escapar en el gate + índices no idempotentes) → `verify-ordering` OK → types regenerados.
+
+Fixes al repo derivados: PR #68 (`format:check`: CRLF de Windows + artefactos Playwright), PR #70 (robustez de 0003 + `verify-ordering`), PR #72 (types post-rollout + `.gitignore` de `supabase/.temp`).
+
+Verificación en producción (2026-09-14): login real OK; smoke seguro verde en desktop y mobile (render, redirect sin sesión, error de credenciales, seguimiento público con token inválido); set de casos de prueba manuales creado (`docs/casos-de-prueba-manuales.md`).
+
+**Lecciones**: los scripts SQL del repo tenían bugs que solo aparecieron en su primera ejecución real (gate con quote sin escapar, índices no idempotentes, `verify-ordering` leyendo una tabla revocada); `psql -1` (transacción única) evitó 3 estados parciales; `psql` no interpola `:'var'` dentro de bloques `DO $$`; el gate go/no-go por migración funcionó como red de seguridad.
 
 ### FASE 7 — Convergencia CoachFlow (post-Fase 5, por slices) — riesgo: Medio
 
@@ -213,30 +234,32 @@ Inventario completo, facturación AFIP, RR. HH., multi-idioma, app nativa (PWA a
 
 ## 4. Log de decisiones
 
-| ID   | Decisión                                                                                     | Contexto                                                                                                                                                                           | Estado                                                                                                                  | Fecha      |
-| ---- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------- |
-| D-00 | Reingeniería por fases (0-6) con PR encadenados, ejecutada con SDD                           | Proyecto hecho "suelto" necesita estructura; fase 1 = seguridad                                                                                                                    | ✅ Adoptada                                                                                                             | 2026-09-02 |
-| D-01 | Modelo de negocio                                                                            | Producto a terceros: SaaS por **abono mensual** para profesionales independientes (peluquero, profe de clases, técnico). 3 capas: plataforma → profesional → cliente final         | ✅ Adoptada                                                                                                             | 2026-09-02 |
-| D-02 | ¿Mantener Next.js 16 + Supabase como stack?                                                  | Evaluación: stack correcto, mal usado                                                                                                                                              | ✅ Adoptada (no cambiar stack)                                                                                          | 2026-09-02 |
-| D-03 | Auth: email+password vs OTP (¿magic link o código por celular?)                              | Los dueños suelen no usar email; evaluar según D-01                                                                                                                                | ⏳ Abierta                                                                                                              | —          |
-| D-04 | Seguimiento público: ¿visible presupuesto/precio o solo estado?                              | Depende de regla de negocio por rubro                                                                                                                                              | ⏳ Abierta                                                                                                              | —          |
-| D-05 | ¿`sin_reparacion` es terminal o puede pasar a `entregado`?                                   | La máquina de estados final la define la operación real del taller                                                                                                                 | ✅ Adoptada — `sin_reparacion` es terminal (Fase 2, spec R1)                                                            | 2026-09-03 |
-| D-06 | UI: primitivos propios estilo shadcn/ui vs. sistema de diseño enterprise (Chameleon/Mercury) | Depende de la ambición de producto (D-01)                                                                                                                                          | ✅ Adoptada — primitivas propias `lib/ui` (Fase 5, `fase5-ui`); enterprise (Chameleon/Mercury) queda como opción futura | 2026-09-10 |
-| D-07 | Plataforma de pagos del abono: Mercado Pago vs Stripe                                        | Mercado Pago es de facto en Argentina; Stripe multi-país                                                                                                                           | ⏳ Abierta                                                                                                              | —          |
-| D-08 | Alcance del self-service del cliente final (reservar y/o pagar en línea vs. solo consultar)  | Define buena parte del alcance de la capa cliente                                                                                                                                  | ✅ Adoptada — consultar + reservar; pagos por fuera (el profe cobra y marca pagado)                                     | 2026-09-02 |
-| D-09 | Race condition de `generar_numero_orden` y decisión de formato                               | Exploración Fase 3: count(*)+1 sin lock; formato "0001" se mantiene; fix por tabla contador + upsert atómico + constraint único (negocio_id, numero_orden) — backfill con snapshot | ✅ Adoptada                                                                                                             | 2026-09-03 |
-| D-10 | Backup antes de tocar RLS/migraciones con datos reales                                       | Producción tiene datos reales (negocios, equipos, etc.); todo cambio de schema va precedido de backup verificado                                                                   | ✅ Adoptada (implementada scripts/backup-bootstrap.md)                                                                  | 2026-09-02 |
-| D-11 | Seguimiento público: solo por token; link viejo → página "link desactualizado"               | `acceso_token` uuid como única capability; sin grace period por enumerabilidad de `numero_orden`                                                                                   | ✅ Adoptada (implementada migración 0002)                                                                               | 2026-09-03 |
-| D-12 | ABSORBER CoachFlow al 100% dentro de GestiónPro (misma DB, sin RLS hoy)                      | CoachFlow = app de profes de gym (alumnos/rutinas/progreso), comparte proyecto Supabase y no tiene RLS/Auth real → agujero de seguridad; la convergencia cierra el gap             | ✅ Adoptada — FASE 7 (post-Fase 5)                                                                                      | 2026-09-03 |
+| ID   | Decisión                                                                                                                                                  | Contexto                                                                                                                                                                           | Estado                                                                                                                                             | Fecha      |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| D-00 | Reingeniería por fases (0-6) con PR encadenados, ejecutada con SDD                                                                                        | Proyecto hecho "suelto" necesita estructura; fase 1 = seguridad                                                                                                                    | ✅ Adoptada                                                                                                                                        | 2026-09-02 |
+| D-01 | Modelo de negocio                                                                                                                                         | Producto a terceros: SaaS por **abono mensual** para profesionales independientes (peluquero, profe de clases, técnico). 3 capas: plataforma → profesional → cliente final         | ✅ Adoptada                                                                                                                                        | 2026-09-02 |
+| D-02 | ¿Mantener Next.js 16 + Supabase como stack?                                                                                                               | Evaluación: stack correcto, mal usado                                                                                                                                              | ✅ Adoptada (no cambiar stack)                                                                                                                     | 2026-09-02 |
+| D-03 | Auth: email+password vs OTP (¿magic link o código por celular?)                                                                                           | Los dueños suelen no usar email; evaluar según D-01                                                                                                                                | ✅ Adoptada — email+password (implementado en Fase 1: `app/login` + `lib/auth`)                                                                    | 2026-09-03 |
+| D-04 | Seguimiento público: ¿visible presupuesto/precio o solo estado?                                                                                           | Depende de regla de negocio por rubro                                                                                                                                              | ✅ Adoptada — visible: estado, historial, presupuesto y precio final, nombre de cliente y negocio; nunca datos internos (allowlist migración 0002) | 2026-09-03 |
+| D-05 | ¿`sin_reparacion` es terminal o puede pasar a `entregado`?                                                                                                | La máquina de estados final la define la operación real del taller                                                                                                                 | ✅ Adoptada — `sin_reparacion` es terminal (Fase 2, spec R1)                                                                                       | 2026-09-03 |
+| D-06 | UI: primitivos propios estilo shadcn/ui vs. sistema de diseño enterprise (Chameleon/Mercury)                                                              | Depende de la ambición de producto (D-01)                                                                                                                                          | ✅ Adoptada — primitivas propias `lib/ui` (Fase 5, `fase5-ui`); enterprise (Chameleon/Mercury) queda como opción futura                            | 2026-09-10 |
+| D-07 | Plataforma de pagos del abono: Mercado Pago vs Stripe                                                                                                     | Mercado Pago es de facto en Argentina; Stripe multi-país                                                                                                                           | ⏳ Abierta                                                                                                                                         | —          |
+| D-08 | Alcance del self-service del cliente final (reservar y/o pagar en línea vs. solo consultar)                                                               | Define buena parte del alcance de la capa cliente                                                                                                                                  | ✅ Adoptada — consultar + reservar; pagos por fuera (el profe cobra y marca pagado)                                                                | 2026-09-02 |
+| D-09 | Race condition de `generar_numero_orden` y decisión de formato                                                                                            | Exploración Fase 3: count(*)+1 sin lock; formato "0001" se mantiene; fix por tabla contador + upsert atómico + constraint único (negocio_id, numero_orden) — backfill con snapshot | ✅ Adoptada                                                                                                                                        | 2026-09-03 |
+| D-10 | Backup antes de tocar RLS/migraciones con datos reales                                                                                                    | Producción tiene datos reales (negocios, equipos, etc.); todo cambio de schema va precedido de backup verificado                                                                   | ✅ Adoptada (implementada scripts/backup-bootstrap.md)                                                                                             | 2026-09-02 |
+| D-11 | Seguimiento público: solo por token; link viejo → página "link desactualizado"                                                                            | `acceso_token` uuid como única capability; sin grace period por enumerabilidad de `numero_orden`                                                                                   | ✅ Adoptada (implementada migración 0002)                                                                                                          | 2026-09-03 |
+| D-12 | ABSORBER CoachFlow al 100% dentro de GestiónPro (misma DB, sin RLS hoy)                                                                                   | CoachFlow = app de profes de gym (alumnos/rutinas/progreso), comparte proyecto Supabase y no tiene RLS/Auth real → agujero de seguridad; la convergencia cierra el gap             | ✅ Adoptada — FASE 7 (post-Fase 5)                                                                                                                 | 2026-09-03 |
+| D-13 | Operación de schema en producción: backup verificado + `psql -1` (transacción única) + gates go/no-go por migración; scripts SQL probados antes en ensayo | El rollout real expuso bugs latentes en los scripts del repo y `psql -1` evitó 3 estados parciales                                                                                 | ✅ Adoptada (lecciones del rollout)                                                                                                                | 2026-09-11 |
+| D-14 | `numero_orden` en producción: numérico puro `0001` (normalizado desde `REP-2026-0001..0008`); se descarta el formato `R-YYYY-NNNN` del plan de Fase 2     | El gate de 0003 exige numérico; consistente con D-09                                                                                                                               | ✅ Adoptada                                                                                                                                        | 2026-09-11 |
 
 ---
 
-## 5. Supuestos abiertos (contestar antes de planificar la fase 1)
+## 5. Supuestos abiertos (histórico — todos resueltos)
 
 1. **D-08** ✅ resuelta (2026-09-02): cliente final = consultar + reservar (acceso por link/token, sin cuenta); pagos por fuera.
-2. **D-03**: ¿Cómo entra el profesional a su backend? ¿Email o celular + código? — por D-01, el celular/OTP es la hipótesis fuerte por confirmar.
-3. **D-04**: reglas operativas del taller (validar con un caso real: ¿qué ve el cliente en seguimiento?).
-4. ¿Hay datos reales en la base de producción? (afecta cómo corremos las migraciones: respaldo + modo mantenimiento).
+2. **D-03** ✅ resuelta (2026-09-03): email+password implementado en Fase 1 (`app/login` + `lib/auth`).
+3. **D-04** ✅ resuelta (2026-09-03): la allowlist de la migración 0002 expone estado, historial, presupuesto y precio final; nunca datos internos.
+4. ¿Hay datos reales en la base de producción? ✅ resuelto (2026-09-11): sí (negocios y equipos reales) → backup verificado + rollout con gates (D-10).
 
 ---
 
@@ -245,4 +268,4 @@ Inventario completo, facturación AFIP, RR. HH., multi-idioma, app nativa (PWA a
 - **Cambios grandes** → SDD completo: cada fase es un _change_ con proposal/spec/design/tasks/apply/verify/archive. Artifact store: engram (default) u OpenSpec si se quiere trail de archivos compartibles.
 - **PRs encadenados** si el forecast de líneas supera 400 (o `delivery_strategy: auto-chain` con slices por fase).
 - **Commits por work unit** (una unidad de trabajo por commit: feature + tests + docs juntos), convencionales.
-- **Documentación**: este archivo es el plan maestro; las decisiones se agregan acá con ID; las conclusiones de cada fase se registran también en engram (`reingenieria/gestionpro`).
+- **Documentación**: este archivo es el plan maestro; las decisiones se agregan acá con ID; las conclusiones de cada fase se registran también en engram (`reingenieria/gestionpro`). El set de pruebas manuales vive en `docs/casos-de-prueba-manuales.md`.
