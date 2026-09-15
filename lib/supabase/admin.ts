@@ -3,13 +3,14 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
 // Service-role admin client (R8): server-only module.
-// - Reads the server-side env pair (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY).
-//   Never exposed via public env vars: the secret must not reach the browser
-//   bundle.
+// - URL: the project URL (NEXT_PUBLIC_SUPABASE_URL), already public — the same
+//   value the anon-key clients use, so there is no duplicate env var.
+// - Secret: SUPABASE_SERVICE_ROLE_KEY is server-only and must never reach the
+//   browser bundle (never NEXT_PUBLIC_*).
 // - The generic client is intentionally NOT exported; the public surface is
 //   the two operations below, consumed only by server actions.
 const admin = createClient(
-  process.env.SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   {
     auth: {

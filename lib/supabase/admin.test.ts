@@ -2,9 +2,9 @@
 //
 // R8 guard meta-test: reads the admin module SOURCE (not the module itself —
 // importing it would trip the server-only guard in the node environment) and
-// asserts the invariants: the server-only import is present, no NEXT_PUBLIC_
-// env var is referenced, the server-side service-role pair is consumed, and
-// the generic admin client is never re-exported.
+// asserts the invariants: the server-only import is present, the service-role
+// key is read only from the server-only env var, and the generic admin client
+// is never re-exported.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -25,13 +25,9 @@ describe("lib/supabase/admin.ts — R8 server-only guard", () => {
     expect(source).toContain('import "server-only"');
   });
 
-  it("never references a NEXT_PUBLIC_ env var (secret stays server-side)", () => {
-    expect(source).not.toContain("NEXT_PUBLIC_");
-  });
-
-  it("consumes the server-side service-role env pair", () => {
-    expect(source).toContain("SUPABASE_SERVICE_ROLE_KEY");
-    expect(source).toContain("SUPABASE_URL");
+  it("reads the service-role key only from the server-only env var", () => {
+    expect(source).toContain("process.env.SUPABASE_SERVICE_ROLE_KEY");
+    expect(source).not.toMatch(/NEXT_PUBLIC_[A-Z0-9_]*SERVICE_ROLE_KEY/);
   });
 
   it("exposes only the two admin operations (no generic client re-export)", () => {
