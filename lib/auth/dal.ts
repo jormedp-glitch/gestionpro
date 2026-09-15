@@ -40,6 +40,18 @@ export async function isMember(userId: string, negocioId: string) {
   return data !== null;
 }
 
+/** True si `userId` es owner (rol = 'owner') del negocio indicado. */
+export async function isOwner(userId: string, negocioId: string) {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("negocio_miembros")
+    .select("rol")
+    .eq("user_id", userId)
+    .eq("negocio_id", negocioId)
+    .maybeSingle();
+  return data?.rol === "owner";
+}
+
 /**
  * Exige sesión + membresía en el negocio antes de continuar.
  * Sin sesión → /login; sin membresía → /. Devuelve el usuario de la sesión.
@@ -48,6 +60,18 @@ export async function requireMembership(negocioId: string) {
   const user = await getSessionUser();
   if (!user) redirect("/login");
   if (!(await isMember(user.id, negocioId))) redirect("/");
+  return user;
+}
+
+/**
+ * Exige sesión + membresía + rol owner en el negocio antes de continuar.
+ * Sin sesión → /login; sin membresía → /; no-owner → / (R6: la gestión de
+ * miembros es invisible e inejecutable para editores y no-miembros).
+ * Devuelve el usuario de la sesión.
+ */
+export async function requireOwner(negocioId: string) {
+  const user = await requireMembership(negocioId);
+  if (!(await isOwner(user.id, negocioId))) redirect("/");
   return user;
 }
 
