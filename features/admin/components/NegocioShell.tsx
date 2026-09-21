@@ -45,6 +45,7 @@ export function NegocioShell({
   gastosMes,
   turnosHoy,
   hoy,
+  esOwner,
 }: {
   slug: string;
   negocio: Negocio;
@@ -56,6 +57,7 @@ export function NegocioShell({
   gastosMes: number;
   turnosHoy: Turno[];
   hoy: string;
+  esOwner: boolean;
 }) {
   const [vista, setVista] = useState<Vista>("dashboard");
   const [modal, setModal] = useState<null | "turno" | "cliente">(null);
@@ -126,6 +128,16 @@ export function NegocioShell({
                 </button>
               ))}
             </>
+          )}
+          {/* R6 (D3): el link a /usuarios solo lo ve el owner. Mismo patrón
+              que el link de Reparaciones: sub-ruta con guard server-side. */}
+          {esOwner && (
+            <a
+              href={"/" + slug + "/usuarios"}
+              className="inline-flex items-center rounded-lg bg-accent/15 px-3.5 py-2 text-xs text-accent no-underline"
+            >
+              👥 Usuarios
+            </a>
           )}
         </nav>
         <form action={logout}>
