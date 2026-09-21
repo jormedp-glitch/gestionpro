@@ -1,7 +1,7 @@
 # Casos de prueba manuales — GestiónPro
 
 > Set de pruebas funcionales para ejecutar contra un entorno desplegado (producción o preview).
-> Base: revisión del código en `main` (96a05ce) + verificación en producción del 2026-09-14.
+> Base: revisión del código en `main` (e4294b2, incluye FASE 6) + verificación en producción del 2026-09-14. Actualizado 2026-09-21 (Fase 6).
 > Los casos marcados 🤖 ya tienen cobertura automatizada (Vitest / Playwright) — se listan igual para verificación end-to-end en el entorno real.
 
 ---
@@ -65,9 +65,9 @@ Esperado: el negocio aparece en la lista; `Abrir app` abre `/{slug}` correctamen
 Pasos: (a) crear sin nombre/slug; (b) crear con un slug ya existente.
 Esperado: (a) no crea; (b) error controlado (sin crash ni pantalla rota).
 
-**TC-ADMIN-04 · Lista scopeada a membresía · P2** _(requiere un segundo usuario)_
-Pasos: loguearse con un usuario sin membresía en un negocio X.
-Esperado: X no aparece en la lista.
+**TC-ADMIN-04 · Lista scopeada a membresía y gestión de usuarios · P2** ✅ (resuelto por FASE 6 — `fase6-gestion-usuarios`; el segundo usuario ya no se crea por SQL en Supabase)
+Pasos: como owner, en `/{slug}/usuarios`: (1) dar de alta un segundo usuario (email + rol editor) — el sistema devuelve una **contraseña temporal** para pasarla por WhatsApp; (2) loguearse con ese usuario (con la contraseña temporal): X **aparece** en `/` (es miembro); (3) volver como owner: cambiar el rol del miembro a `owner` y volver a `editor`, luego quitarlo (baja); (4) recargar `/` con la sesión del segundo usuario.
+Esperado: (1) el alta crea el usuario auth y su membresía en una sola operación, y devuelve la contraseña temporal UNA sola vez (R1, D6); (2) la lista de negocios refleja la membresía; (3) el cambio de rol persiste (R3) y la baja elimina la membresía (R4); (4) X **no** aparece en la lista (sin membresía → sin acceso). El último owner no se puede quitar ni demotar (R5).
 
 ---
 
