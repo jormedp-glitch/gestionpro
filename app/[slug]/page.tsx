@@ -5,6 +5,7 @@
 // render interactivo (tabs, modales, escrituras) al client component
 // NegocioShell. Sin monolitos >500 líneas en app/.
 
+import { getSessionUser, isOwner } from "@/lib/auth/dal";
 import { requireNegocio } from "@/lib/server/negocio";
 import { getClientesDeNegocio } from "@/features/clientes/data/clientes";
 import { getTurnosDeNegocio } from "@/features/turnos/data/turnos";
@@ -18,6 +19,11 @@ export default async function NegocioPage({
 }) {
   const { slug } = await params;
   const negocio = await requireNegocio(slug);
+
+  // R6: el link "Usuarios" se muestra SOLO al owner. No se lee la lista de
+  // miembros acá (D3): editores no reciben ese dato (va por /usuarios).
+  const user = await getSessionUser();
+  const esOwner = user ? await isOwner(user.id, negocio.id) : false;
 
   const [clientes, turnos, gastos] = await Promise.all([
     getClientesDeNegocio(negocio.id),
@@ -48,6 +54,7 @@ export default async function NegocioPage({
       gastosMes={gastosMes}
       turnosHoy={turnosHoy}
       hoy={hoy}
+      esOwner={esOwner}
     />
   );
 }
