@@ -115,6 +115,12 @@ export interface GymProgreso {
   created_at: string;
 }
 
+/** Medición de progreso reducida a lo que consume la lista de alumnos (IMC). */
+export type GymProgresoResumen = Pick<
+  GymProgreso,
+  "cliente_id" | "fecha" | "peso"
+>;
+
 /** Ejercicio completado por el alumno; idempotente por día (AD-5). */
 export interface GymCompletado {
   id: string;
@@ -229,6 +235,24 @@ export async function getProgresoDeCliente(
     .order("fecha", { ascending: false })
     .order("created_at", { ascending: false });
   return (data ?? []) as GymProgreso[];
+}
+
+/**
+ * Progreso de todo el negocio reducido a `cliente_id`/`fecha`/`peso` (para el
+ * IMC de la lista, R7). Orden determinista: fecha desc y, a igual fecha,
+ * `created_at` desc, así la primera medición de cada alumno es la más reciente.
+ */
+export async function getProgresoDeNegocio(
+  negocioId: string,
+): Promise<GymProgresoResumen[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("gym_progreso")
+    .select("cliente_id, fecha, peso")
+    .eq("negocio_id", negocioId)
+    .order("fecha", { ascending: false })
+    .order("created_at", { ascending: false });
+  return (data ?? []) as GymProgresoResumen[];
 }
 
 /** Completados del alumno (AD-5), más reciente primero. */
