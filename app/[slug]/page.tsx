@@ -10,6 +10,10 @@ import { requireNegocio } from "@/lib/server/negocio";
 import { getClientesDeNegocio } from "@/features/clientes/data/clientes";
 import { getTurnosDeNegocio } from "@/features/turnos/data/turnos";
 import { getGastosDeNegocio } from "@/features/gastos/data/gastos";
+import {
+  getAlumnosDeNegocio,
+  getProgresoDeNegocio,
+} from "@/features/gym/data/gym";
 import { NegocioShell } from "@/features/admin/components/NegocioShell";
 
 export default async function NegocioPage({
@@ -25,10 +29,16 @@ export default async function NegocioPage({
   const user = await getSessionUser();
   const esOwner = user ? await isOwner(user.id, negocio.id) : false;
 
-  const [clientes, turnos, gastos] = await Promise.all([
+  // R1: los datos de gimnasio solo se cargan para el rubro gimnasio; el flag
+  // se resuelve antes del Promise.all para no serializar el segundo fetch.
+  const esGimnasio = negocio.rubro === "gimnasio";
+
+  const [clientes, turnos, gastos, alumnos, progreso] = await Promise.all([
     getClientesDeNegocio(negocio.id),
     getTurnosDeNegocio(negocio.id),
     getGastosDeNegocio(negocio.id),
+    esGimnasio ? getAlumnosDeNegocio(negocio.id) : Promise.resolve([]),
+    esGimnasio ? getProgresoDeNegocio(negocio.id) : Promise.resolve([]),
   ]);
 
   const hoy = new Date().toISOString().split("T")[0];
@@ -55,6 +65,8 @@ export default async function NegocioPage({
       turnosHoy={turnosHoy}
       hoy={hoy}
       esOwner={esOwner}
+      alumnos={alumnos}
+      progreso={progreso}
     />
   );
 }
