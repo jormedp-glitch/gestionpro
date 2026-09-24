@@ -34,7 +34,7 @@ export default async function PortalAlumnoPage({
 }: {
   params: Promise<{ slug: string; token: string }>;
 }) {
-  const { token } = await params;
+  const { slug, token } = await params;
 
   // Formato inválido: se evita el viaje a la base y se responde lo mismo que
   // ante un token desconocido.
@@ -53,5 +53,5 @@ export default async function PortalAlumnoPage({
   // viaja como prop para que el HTML y la hidratación coincidan.
   const hoy = new Date().toISOString().split("T")[0];
 
-  return <PortalAlumno hoy={hoy} portal={portal} />;
+  return <PortalAlumno slug={slug} token={token} hoy={hoy} portal={portal} />;
 }
