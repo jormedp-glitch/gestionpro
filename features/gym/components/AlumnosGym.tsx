@@ -313,6 +313,15 @@ export function AlumnosGym({
                   )}
                 </div>
                 <div className="flex gap-1.5">
+                  {/* R6/R7: la ficha del alumno es una ruta real enlazable. */}
+                  <a
+                    href={"/" + slug + "/gym/alumnos/" + alumno.cliente_id}
+                    title="Ver ficha"
+                    aria-label="Ver ficha"
+                    className="cursor-pointer rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-xs"
+                  >
+                    📋
+                  </a>
                   <button
                     type="button"
                     onClick={() => abrirEdicion(alumno)}
