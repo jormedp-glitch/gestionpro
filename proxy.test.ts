@@ -1,9 +1,10 @@
 // proxy.test.ts
 //
-// Focused test of the optimistic gate's public-path decision (proxy.ts
-// isPublicPath). Business favicons (/[slug]/icon...) are public branding
-// (discovery #197, fix in P5 addendum): they must NOT redirect to /login
-// without a session. Every other route stays protected.
+// Focused test of the optimistic gate's public-path decision (proxy.ts →
+// esRutaPublica). Business favicons (/[slug]/icon...) are public branding
+// (discovery #197, fix in P5 addendum) and the student portal
+// (/[slug]/portal/[token], token = capability) must be reachable without a
+// session too. Every other route stays protected.
 
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
@@ -42,6 +43,19 @@ describe("proxy: public and protected paths", () => {
   it("allows /[slug]/seguimiento/[orden] without a session", async () => {
     const res = await proxy(req("/taller-x/seguimiento/1234"));
     expect(res.status).toBe(200);
+  });
+
+  it("allows /[slug]/portal/[token] without a session", async () => {
+    const res = await proxy(
+      req("/taller-x/portal/3f2504e0-4f89-41d3-9a0c-0305e82c3301"),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it("still protects /[slug]/portal without a token (redirect to /login)", async () => {
+    const res = await proxy(req("/taller-x/portal"));
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toContain("/login");
   });
 
   it("allows the public business favicon /[slug]/icon without a session", async () => {
