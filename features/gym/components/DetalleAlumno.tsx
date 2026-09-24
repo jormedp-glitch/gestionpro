@@ -15,6 +15,7 @@ import {
   desasignarRutina,
   type GymActionResult,
 } from "@/features/gym/actions/asignaciones";
+import { CompletadosAlumno } from "@/features/gym/components/CompletadosAlumno";
 import { RegistrarMedicionModal } from "@/features/gym/components/RegistrarMedicionModal";
 import { categoriaImc, imc, type CategoriaImc } from "@/lib/domain/imc";
 import { formatFecha } from "@/lib/domain/formato";
@@ -29,8 +30,10 @@ import {
 } from "@/lib/ui/select";
 import { toast, Toaster } from "@/lib/ui/toast";
 import type {
+  GymActividad,
   GymAlumno,
   GymAsignacion,
+  GymCompletado,
   GymProgreso,
   GymRutina,
 } from "@/features/gym/data/gym";
@@ -226,12 +229,16 @@ export function DetalleAlumno({
   asignacion,
   progreso,
   rutinas,
+  completados,
+  actividades,
 }: {
   slug: string;
   alumno: GymAlumno;
   asignacion: GymAsignacion | null;
   progreso: GymProgreso[];
   rutinas: GymRutina[];
+  completados: GymCompletado[];
+  actividades: GymActividad[];
 }) {
   const showToast = (msg: string) => toast(msg, { duration: 3000 });
   const [modalMedicion, setModalMedicion] = useState(false);
@@ -344,6 +351,18 @@ export function DetalleAlumno({
             })}
           </div>
         )}
+      </Card>
+
+      <Card className="mt-5 overflow-hidden p-0">
+        <h3 className="m-0 px-4 py-3.5 font-serif text-[1.15rem]">
+          📅 Días entrenados
+        </h3>
+        <div className="px-4 pb-3">
+          <CompletadosAlumno
+            completados={completados}
+            actividades={actividades}
+          />
+        </div>
       </Card>
 
       {modalMedicion && (
