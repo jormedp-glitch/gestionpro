@@ -18,6 +18,8 @@ import { ClientesLista } from "@/features/clientes/components/ClientesLista";
 import { NuevoClienteModal } from "@/features/clientes/components/NuevoClienteModal";
 import { GastosCaja } from "@/features/gastos/components/GastosCaja";
 import { AlumnosGym } from "@/features/gym/components/AlumnosGym";
+import { RutinasGym } from "@/features/gym/components/RutinasGym";
+import { BibliotecaEjercicios } from "@/features/gym/components/BibliotecaEjercicios";
 import { toast, Toaster } from "@/lib/ui/toast";
 import { Button } from "@/lib/ui/button";
 import { cn } from "@/lib/ui/utils";
@@ -26,9 +28,15 @@ import type { Cliente } from "@/features/clientes/data/clientes";
 import type { Cobro } from "@/features/cobros/data/cobros";
 import type { Turno } from "@/features/turnos/data/turnos";
 import type { Gasto } from "@/features/gastos/data/gastos";
-import type { GymAlumno, GymProgresoResumen } from "@/features/gym/data/gym";
+import type {
+  GymAlumno,
+  GymEjercicio,
+  GymProgresoResumen,
+  GymRutina,
+} from "@/features/gym/data/gym";
 
-type Vista = "dashboard" | "agenda" | "clientes" | "alumnos" | "gastos";
+type Vista =
+  "dashboard" | "agenda" | "clientes" | "alumnos" | "rutinas" | "gastos";
 
 function iconoRubro(rubro: string): string {
   if (rubro === "peluqueria") return "✂️";
@@ -52,6 +60,8 @@ export function NegocioShell({
   esOwner,
   alumnos,
   progreso,
+  rutinas,
+  ejercicios,
 }: {
   slug: string;
   negocio: Negocio;
@@ -67,6 +77,8 @@ export function NegocioShell({
   esOwner: boolean;
   alumnos?: GymAlumno[];
   progreso?: GymProgresoResumen[];
+  rutinas?: GymRutina[];
+  ejercicios?: GymEjercicio[];
 }) {
   const [vista, setVista] = useState<Vista>("dashboard");
   const [modal, setModal] = useState<null | "turno" | "cliente">(null);
@@ -127,6 +139,7 @@ export function NegocioShell({
                   ["dashboard", "📊 Dashboard"],
                   ["agenda", "📅 Agenda"],
                   ["alumnos", "🏋️ Alumnos"],
+                  ["rutinas", "🏋️ Rutinas"],
                   ["gastos", "💸 Caja"],
                 ] as Array<[Vista, string]>
               ).map(([v, l]) => (
@@ -230,6 +243,23 @@ export function NegocioShell({
             progreso={progreso ?? []}
             showToast={showToast}
           />
+        )}
+
+        {vista === "rutinas" && (
+          <>
+            <RutinasGym
+              slug={slug}
+              rutinas={rutinas ?? []}
+              showToast={showToast}
+            />
+            <div className="mt-8">
+              <BibliotecaEjercicios
+                slug={slug}
+                ejercicios={ejercicios ?? []}
+                showToast={showToast}
+              />
+            </div>
+          </>
         )}
 
         {vista === "gastos" && (
