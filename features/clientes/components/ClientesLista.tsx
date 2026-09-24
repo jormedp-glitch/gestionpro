@@ -7,16 +7,21 @@
 // (fase5-ui P6): cero estilos inline (REQ-TT-3); EmptyState en lista vacía
 // (REQ-FS-2). El color por prop se eliminó: los estados usan clases token
 // (mapeo discovery #200) y el acento rubro se resuelve vía CSS var.
+// Fase 7 (R10/R11/R12): cada fila suma el historial de cobros expandible
+// (CobrosCliente) y la acción "Cobrar" que abre RegistrarCobroModal.
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
 import {
   eliminarCliente,
   pagarCliente,
 } from "@/features/clientes/actions/clientes";
 import type { ClienteActionResult } from "@/features/clientes/actions/clientes";
+import { CobrosCliente } from "@/features/cobros/components/CobrosCliente";
+import { RegistrarCobroModal } from "@/features/cobros/components/RegistrarCobroModal";
+import type { Cobro } from "@/features/cobros/data/cobros";
 import { mensajeCobro } from "@/lib/domain/mensajes";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { formatARS, formatFecha } from "@/lib/domain/formato";
@@ -129,6 +134,8 @@ export function ClientesLista({
   clientes,
   negocioNombre,
   icon,
+  cobros,
+  hoy,
   onNuevoCliente,
   showToast,
 }: {
@@ -136,9 +143,15 @@ export function ClientesLista({
   clientes: Cliente[];
   negocioNombre: string;
   icon: string;
+  cobros: Cobro[];
+  hoy: string;
   onNuevoCliente: () => void;
   showToast: (msg: string) => void;
 }) {
+  // R10: a lo sumo una fila expandida a la vez; R11: cliente del modal.
+  const [expandido, setExpandido] = useState<string | null>(null);
+  const [cobrando, setCobrando] = useState<Cliente | null>(null);
+
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
@@ -164,69 +177,102 @@ export function ClientesLista({
         )}
         {clientes.map((c) => {
           const telefono = c.telefono;
+          const abierto = expandido === c.id;
           return (
-            <div
-              key={c.id}
-              className="grid grid-cols-[1fr_1fr_auto_auto_auto_auto] items-center gap-2 border-b border-border/60 px-4 py-3.5"
-            >
-              <div>
-                <div className="text-sm font-medium">{c.nombre}</div>
-                {telefono && (
-                  <div className="text-xs text-muted-foreground">
-                    📱 {telefono}
-                  </div>
-                )}
-              </div>
-              <div className="text-sm text-muted-foreground">{c.plan}</div>
-              <div className="text-sm font-bold text-accent">
-                {formatARS(c.cuota)}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {formatFecha(c.vence || "")}
-              </div>
-              <Badge
-                className={cn(
-                  "border-transparent",
-                  claseFondoEstado(c.estado),
-                  claseColorEstado(c.estado),
-                )}
-              >
-                {etiquetaEstado(c.estado)}
-              </Badge>
-              <div className="flex gap-1.5">
-                {c.estado !== "activo" && (
-                  <PagarClienteBoton
+            <div key={c.id}>
+              <div className="grid grid-cols-[1fr_1fr_auto_auto_auto_auto] items-center gap-2 border-b border-border/60 px-4 py-3.5">
+                <div>
+                  <div className="text-sm font-medium">{c.nombre}</div>
+                  {telefono && (
+                    <div className="text-xs text-muted-foreground">
+                      📱 {telefono}
+                    </div>
+                  )}
+                </div>
+                <div className="text-sm text-muted-foreground">{c.plan}</div>
+                <div className="text-sm font-bold text-accent">
+                  {formatARS(c.cuota)}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {formatFecha(c.vence || "")}
+                </div>
+                <Badge
+                  className={cn(
+                    "border-transparent",
+                    claseFondoEstado(c.estado),
+                    claseColorEstado(c.estado),
+                  )}
+                >
+                  {etiquetaEstado(c.estado)}
+                </Badge>
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setExpandido(abierto ? null : c.id)}
+                    title="Ver cobros"
+                    aria-label="Ver cobros"
+                    className="cursor-pointer rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-xs"
+                  >
+                    💵
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCobrando(c)}
+                    className="cursor-pointer rounded-lg border border-accent/25 bg-accent/10 px-2.5 py-1 text-xs text-accent"
+                  >
+                    💵 Cobrar
+                  </button>
+                  {c.estado !== "activo" && (
+                    <PagarClienteBoton
+                      slug={slug}
+                      clienteId={c.id}
+                      showToast={showToast}
+                    />
+                  )}
+                  {telefono && (
+                    <button
+                      onClick={() =>
+                        window.open(
+                          buildWhatsAppLink(
+                            telefono,
+                            mensajeCobro(negocioNombre, c.nombre),
+                          ),
+                          "_blank",
+                        )
+                      }
+                      className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-500"
+                    >
+                      📲
+                    </button>
+                  )}
+                  <EliminarClienteBoton
                     slug={slug}
                     clienteId={c.id}
                     showToast={showToast}
                   />
-                )}
-                {telefono && (
-                  <button
-                    onClick={() =>
-                      window.open(
-                        buildWhatsAppLink(
-                          telefono,
-                          mensajeCobro(negocioNombre, c.nombre),
-                        ),
-                        "_blank",
-                      )
-                    }
-                    className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-500"
-                  >
-                    📲
-                  </button>
-                )}
-                <EliminarClienteBoton
-                  slug={slug}
-                  clienteId={c.id}
-                  showToast={showToast}
-                />
+                </div>
               </div>
+              {abierto && (
+                <CobrosCliente
+                  cobros={cobros.filter((cb) => cb.cliente_id === c.id)}
+                  hoy={hoy}
+                  onCobrar={() => setCobrando(c)}
+                />
+              )}
             </div>
           );
         })}
       </Card>
+
+      {cobrando && (
+        <RegistrarCobroModal
+          slug={slug}
+          clienteId={cobrando.id}
+          clienteNombre={cobrando.nombre}
+          onClose={() => setCobrando(null)}
+          onToast={showToast}
+        />
+      )}
     </div>
   );
 }
