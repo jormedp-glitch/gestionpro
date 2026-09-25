@@ -2,8 +2,8 @@
 //
 // Listado de rutinas del negocio (R5, client component). Recibe las rutinas ya
 // leídas en el Server Component; el alta y la edición pasan por `RutinaModal`
-// y la baja por `EliminarRutinaBoton` (Server Actions, R9). En esta unidad no
-// hay acceso al detalle de la rutina.
+// y la baja por `EliminarRutinaBoton` (Server Actions, R9). El nombre de cada
+// rutina enlaza a su detalle (`/[slug]/gym/rutinas/[id]`).
 
 "use client";
 
@@ -136,7 +136,14 @@ export function RutinasGym({
               className="grid min-w-[640px] grid-cols-[1.2fr_1.6fr_auto_auto_auto] items-center gap-2 border-b border-border/60 px-4 py-3.5"
             >
               <div className="min-w-0 truncate text-sm font-medium">
-                {rutina.nombre}
+                {/* R5: el detalle de la rutina es una ruta real enlazable. */}
+                <a
+                  href={"/" + slug + "/gym/rutinas/" + rutina.id}
+                  title="Ver detalle"
+                  className="hover:text-accent"
+                >
+                  {rutina.nombre}
+                </a>
               </div>
               <div className="min-w-0 truncate text-xs text-muted-foreground">
                 {rutina.descripcion ?? "—"}

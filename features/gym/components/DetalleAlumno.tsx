@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useState } from "react";
 import {
   asignarRutina,
   avanzarSesion,
@@ -17,6 +17,7 @@ import {
 } from "@/features/gym/actions/asignaciones";
 import { CompletadosAlumno } from "@/features/gym/components/CompletadosAlumno";
 import { RegistrarMedicionModal } from "@/features/gym/components/RegistrarMedicionModal";
+import { useAvisoAccion } from "@/features/gym/components/useAvisoAccion";
 import { categoriaImc, imc, type CategoriaImc } from "@/lib/domain/imc";
 import { formatFecha } from "@/lib/domain/formato";
 import { Button } from "@/lib/ui/button";
@@ -45,36 +46,6 @@ const ETIQUETA_CATEGORIA: Record<CategoriaImc, string> = {
   sobrepeso: "Sobrepeso",
   obesidad: "Obesidad",
 };
-
-/**
- * Aviso por toast del resultado de una Server Action (patrón `manejado` del
- * repo, factorizado para los tres formularios): el éxito se avisa una vez por
- * resultado y el error, una vez por resultado nuevo.
- */
-function useAvisoAccion(
-  state: GymActionResult,
-  showToast: (msg: string) => void,
-  mensajeOk: string,
-) {
-  const manejado = useRef(false);
-  const errorAvisado = useRef<GymActionResult | null>(null);
-
-  useEffect(() => {
-    if (!state.ok) {
-      manejado.current = false;
-      return;
-    }
-    if (manejado.current) return;
-    manejado.current = true;
-    showToast(mensajeOk);
-  }, [state, showToast, mensajeOk]);
-
-  useEffect(() => {
-    if (!state.error || errorAvisado.current === state) return;
-    errorAvisado.current = state;
-    showToast(state.error);
-  }, [state, showToast]);
-}
 
 /** Medidas presentes de una medición, en el orden del formulario (R7). */
 function medidasDe(medicion: GymProgreso): string {
