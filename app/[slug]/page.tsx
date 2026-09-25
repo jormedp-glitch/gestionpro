@@ -8,6 +8,7 @@
 import { getSessionUser, isOwner } from "@/lib/auth/dal";
 import { requireNegocio } from "@/lib/server/negocio";
 import { getClientesDeNegocio } from "@/features/clientes/data/clientes";
+import { getCobrosDeNegocio } from "@/features/cobros/data/cobros";
 import { getTurnosDeNegocio } from "@/features/turnos/data/turnos";
 import { getGastosDeNegocio } from "@/features/gastos/data/gastos";
 import {
@@ -33,13 +34,16 @@ export default async function NegocioPage({
   // se resuelve antes del Promise.all para no serializar el segundo fetch.
   const esGimnasio = negocio.rubro === "gimnasio";
 
-  const [clientes, turnos, gastos, alumnos, progreso] = await Promise.all([
-    getClientesDeNegocio(negocio.id),
-    getTurnosDeNegocio(negocio.id),
-    getGastosDeNegocio(negocio.id),
-    esGimnasio ? getAlumnosDeNegocio(negocio.id) : Promise.resolve([]),
-    esGimnasio ? getProgresoDeNegocio(negocio.id) : Promise.resolve([]),
-  ]);
+  const [clientes, turnos, gastos, cobros, alumnos, progreso] =
+    await Promise.all([
+      getClientesDeNegocio(negocio.id),
+      getTurnosDeNegocio(negocio.id),
+      getGastosDeNegocio(negocio.id),
+      // R10/R12: el historial de cobros es un dato central de todos los rubros.
+      getCobrosDeNegocio(negocio.id),
+      esGimnasio ? getAlumnosDeNegocio(negocio.id) : Promise.resolve([]),
+      esGimnasio ? getProgresoDeNegocio(negocio.id) : Promise.resolve([]),
+    ]);
 
   const hoy = new Date().toISOString().split("T")[0];
   const mesActual = hoy.slice(0, 7);
@@ -59,6 +63,7 @@ export default async function NegocioPage({
       clientes={clientes}
       turnos={turnos}
       gastos={gastos}
+      cobros={cobros}
       activos={activos}
       ingresoMes={ingresoMes}
       gastosMes={gastosMes}

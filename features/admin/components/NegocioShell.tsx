@@ -23,6 +23,7 @@ import { Button } from "@/lib/ui/button";
 import { cn } from "@/lib/ui/utils";
 import type { Negocio } from "@/lib/auth/dal";
 import type { Cliente } from "@/features/clientes/data/clientes";
+import type { Cobro } from "@/features/cobros/data/cobros";
 import type { Turno } from "@/features/turnos/data/turnos";
 import type { Gasto } from "@/features/gastos/data/gastos";
 import type { GymAlumno, GymProgresoResumen } from "@/features/gym/data/gym";
@@ -40,6 +41,7 @@ export function NegocioShell({
   slug,
   negocio,
   clientes,
+  cobros,
   turnos,
   gastos,
   activos,
@@ -54,6 +56,7 @@ export function NegocioShell({
   slug: string;
   negocio: Negocio;
   clientes: Cliente[];
+  cobros: Cobro[];
   turnos: Turno[];
   gastos: Gasto[];
   activos: number;
@@ -210,6 +213,8 @@ export function NegocioShell({
             clientes={clientes}
             negocioNombre={negocio.nombre}
             icon={icon}
+            cobros={cobros}
+            hoy={hoy}
             onNuevoCliente={() => {
               setModalData({});
               setModal("cliente");
