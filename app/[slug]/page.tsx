@@ -13,7 +13,9 @@ import { getTurnosDeNegocio } from "@/features/turnos/data/turnos";
 import { getGastosDeNegocio } from "@/features/gastos/data/gastos";
 import {
   getAlumnosDeNegocio,
+  getEjerciciosDeNegocio,
   getProgresoDeNegocio,
+  getRutinasDeNegocio,
 } from "@/features/gym/data/gym";
 import { NegocioShell } from "@/features/admin/components/NegocioShell";
 
@@ -34,16 +36,26 @@ export default async function NegocioPage({
   // se resuelve antes del Promise.all para no serializar el segundo fetch.
   const esGimnasio = negocio.rubro === "gimnasio";
 
-  const [clientes, turnos, gastos, cobros, alumnos, progreso] =
-    await Promise.all([
-      getClientesDeNegocio(negocio.id),
-      getTurnosDeNegocio(negocio.id),
-      getGastosDeNegocio(negocio.id),
-      // R10/R12: el historial de cobros es un dato central de todos los rubros.
-      getCobrosDeNegocio(negocio.id),
-      esGimnasio ? getAlumnosDeNegocio(negocio.id) : Promise.resolve([]),
-      esGimnasio ? getProgresoDeNegocio(negocio.id) : Promise.resolve([]),
-    ]);
+  const [
+    clientes,
+    turnos,
+    gastos,
+    cobros,
+    alumnos,
+    progreso,
+    rutinas,
+    ejercicios,
+  ] = await Promise.all([
+    getClientesDeNegocio(negocio.id),
+    getTurnosDeNegocio(negocio.id),
+    getGastosDeNegocio(negocio.id),
+    // R10/R12: el historial de cobros es un dato central de todos los rubros.
+    getCobrosDeNegocio(negocio.id),
+    esGimnasio ? getAlumnosDeNegocio(negocio.id) : Promise.resolve([]),
+    esGimnasio ? getProgresoDeNegocio(negocio.id) : Promise.resolve([]),
+    esGimnasio ? getRutinasDeNegocio(negocio.id) : Promise.resolve([]),
+    esGimnasio ? getEjerciciosDeNegocio(negocio.id) : Promise.resolve([]),
+  ]);
 
   const hoy = new Date().toISOString().split("T")[0];
   const mesActual = hoy.slice(0, 7);
@@ -72,6 +84,8 @@ export default async function NegocioPage({
       esOwner={esOwner}
       alumnos={alumnos}
       progreso={progreso}
+      rutinas={rutinas}
+      ejercicios={ejercicios}
     />
   );
 }
