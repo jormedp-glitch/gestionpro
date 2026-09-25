@@ -1,14 +1,26 @@
 // features/portal/components/PortalAlumno.tsx
 //
-// Portal del alumno (R13): render de SOLO LECTURA del plan activo (sesiones
-// con actividades ordenadas y lo ya hecho hoy), el progreso, los días
-// entrenados y el estado de cuenta. El navegador nunca toca Supabase: los
-// datos llegan ya resueltos por el RPC del page (R15). Sin shell ni sesión:
-// es la pantalla pública del alumno.
+// Portal del alumno (client, R13–R15): render del plan activo (sesiones con
+// actividades ordenadas), el progreso, los días entrenados y el estado de
+// cuenta, más los toggles de completado y el avance de sesión. Los
+// formularios disparan las Server Actions (el navegador nunca toca Supabase:
+// el acceso anónimo pasa solo por los RPC security definer, R15). Sin shell
+// ni sesión: es la pantalla pública del alumno. Los errores se muestran junto
+// a cada control (no hay toast: el resultado tiene que quedar visible en la
+// pantalla del alumno).
 //
 // `hoy` lo calcula el page (UTC, patrón del repo) y viaja como prop para que
 // el HTML del server y la hidratación coincidan.
 
+"use client";
+
+import { useActionState } from "react";
+import {
+  avanzarSesionPortal,
+  desmarcarCompletadoPortal,
+  marcarCompletadoPortal,
+  type PortalActionResult,
+} from "@/features/portal/actions/portal";
 import type {
   PortalActividad,
   PortalAlumno as PortalAlumnoData,
@@ -18,6 +30,7 @@ import type {
 import { categoriaImc, imc, type CategoriaImc } from "@/lib/domain/imc";
 import { formatARS, formatFecha } from "@/lib/domain/formato";
 import { Badge } from "@/lib/ui/badge";
+import { Button } from "@/lib/ui/button";
 import { Card } from "@/lib/ui/card";
 
 /** Máximo de nombres de actividad visibles por día (mismo criterio que R8). */
@@ -120,10 +133,97 @@ function DiasEntrenados({
   );
 }
 
+/** Mensaje de error de una Server Action del portal, visible junto al control. */
+function ErrorAccion({ error }: { error?: string }) {
+  if (!error) return null;
+  return (
+    <p role="alert" className="m-0 text-right text-xs text-destructive">
+      {error}
+    </p>
+  );
+}
+
+/**
+ * Toggle "hecha hoy" de una actividad (AD-5). El RPC es idempotente en ambos
+ * sentidos; el estado `completada` sale de los completados de la fecha. React
+ * 19 actualiza la acción del `useActionState` cuando cambia entre renders, así
+ * que el mismo componente sirve para marcar y desmarcar.
+ */
+function ToggleActividad({
+  slug,
+  token,
+  actividadId,
+  fecha,
+  completada,
+}: {
+  slug: string;
+  token: string;
+  actividadId: string;
+  fecha: string;
+  completada: boolean;
+}) {
+  const accion = completada
+    ? desmarcarCompletadoPortal
+    : marcarCompletadoPortal;
+  const [state, formAction, pending] = useActionState(accion, {
+    ok: false,
+  } as PortalActionResult);
+
+  return (
+    <form
+      action={formAction}
+      className="flex shrink-0 flex-col items-end gap-1"
+    >
+      <input type="hidden" name="slug" value={slug} />
+      <input type="hidden" name="token" value={token} />
+      <input type="hidden" name="rutina_ejercicio_id" value={actividadId} />
+      <input type="hidden" name="fecha" value={fecha} />
+      <Button
+        type="submit"
+        size="sm"
+        variant={completada ? "secondary" : "accent"}
+        disabled={pending}
+        className="rounded-[10px]"
+      >
+        {pending ? "..." : completada ? "Deshacer" : "Hecha hoy"}
+      </Button>
+      <ErrorAccion error={state.error} />
+    </form>
+  );
+}
+
+/** Botón "Avanzar sesión" (R6): el tope del plan llega como error y se avisa. */
+function AvanzarSesionBoton({ slug, token }: { slug: string; token: string }) {
+  const [state, formAction, pending] = useActionState(avanzarSesionPortal, {
+    ok: false,
+  } as PortalActionResult);
+
+  return (
+    <form action={formAction} className="flex flex-col items-end gap-1">
+      <input type="hidden" name="slug" value={slug} />
+      <input type="hidden" name="token" value={token} />
+      <Button
+        type="submit"
+        variant="accent"
+        size="sm"
+        disabled={pending}
+        className="rounded-[10px] font-bold"
+      >
+        {pending ? "Avanzando..." : "Avanzar sesión"}
+      </Button>
+      <ErrorAccion error={state.error} />
+    </form>
+  );
+}
+
 export function PortalAlumno({
+  slug,
+  token,
   hoy,
   portal,
 }: {
+  slug: string;
+  token: string;
   hoy: string;
   portal: PortalAlumnoData;
 }) {
@@ -236,9 +336,13 @@ export function PortalAlumno({
                                   </a>
                                 )}
                               </div>
-                              {completadosHoy.has(actividad.id) && (
-                                <Badge variant="accent">✓ Hoy</Badge>
-                              )}
+                              <ToggleActividad
+                                slug={slug}
+                                token={token}
+                                actividadId={actividad.id}
+                                fecha={hoy}
+                                completada={completadosHoy.has(actividad.id)}
+                              />
                             </div>
                           </li>
                         ))}
@@ -247,11 +351,12 @@ export function PortalAlumno({
                   </div>
                 );
               })}
-              <div className="border-t border-border/60 px-4 py-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 px-4 py-3.5">
                 <p className="m-0 text-xs text-muted-foreground">
                   Sesión {asignacion.sesion_actual} de{" "}
                   {asignacion.sesiones_total}
                 </p>
+                <AvanzarSesionBoton slug={slug} token={token} />
               </div>
             </>
           ) : (
