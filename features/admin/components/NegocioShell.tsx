@@ -17,6 +17,7 @@ import { NuevoTurnoModal } from "@/features/turnos/components/NuevoTurnoModal";
 import { ClientesLista } from "@/features/clientes/components/ClientesLista";
 import { NuevoClienteModal } from "@/features/clientes/components/NuevoClienteModal";
 import { GastosCaja } from "@/features/gastos/components/GastosCaja";
+import { AlumnosGym } from "@/features/gym/components/AlumnosGym";
 import { toast, Toaster } from "@/lib/ui/toast";
 import { Button } from "@/lib/ui/button";
 import { cn } from "@/lib/ui/utils";
@@ -24,8 +25,9 @@ import type { Negocio } from "@/lib/auth/dal";
 import type { Cliente } from "@/features/clientes/data/clientes";
 import type { Turno } from "@/features/turnos/data/turnos";
 import type { Gasto } from "@/features/gastos/data/gastos";
+import type { GymAlumno, GymProgresoResumen } from "@/features/gym/data/gym";
 
-type Vista = "dashboard" | "agenda" | "clientes" | "gastos";
+type Vista = "dashboard" | "agenda" | "clientes" | "alumnos" | "gastos";
 
 function iconoRubro(rubro: string): string {
   if (rubro === "peluqueria") return "✂️";
@@ -46,6 +48,8 @@ export function NegocioShell({
   turnosHoy,
   hoy,
   esOwner,
+  alumnos,
+  progreso,
 }: {
   slug: string;
   negocio: Negocio;
@@ -58,6 +62,8 @@ export function NegocioShell({
   turnosHoy: Turno[];
   hoy: string;
   esOwner: boolean;
+  alumnos?: GymAlumno[];
+  progreso?: GymProgresoResumen[];
 }) {
   const [vista, setVista] = useState<Vista>("dashboard");
   const [modal, setModal] = useState<null | "turno" | "cliente">(null);
@@ -108,6 +114,27 @@ export function NegocioShell({
               >
                 💸 Caja
               </button>
+            </>
+          ) : negocio.rubro === "gimnasio" ? (
+            <>
+              {/* R1: el gimnasio no usa "Clientes"; su vista de personas es
+                  Alumnos (ficha + IMC + acceso al portal). */}
+              {(
+                [
+                  ["dashboard", "📊 Dashboard"],
+                  ["agenda", "📅 Agenda"],
+                  ["alumnos", "🏋️ Alumnos"],
+                  ["gastos", "💸 Caja"],
+                ] as Array<[Vista, string]>
+              ).map(([v, l]) => (
+                <button
+                  key={v}
+                  onClick={() => setVista(v)}
+                  className={estiloTab(vista === v)}
+                >
+                  {l}
+                </button>
+              ))}
             </>
           ) : (
             <>
@@ -187,6 +214,15 @@ export function NegocioShell({
               setModalData({});
               setModal("cliente");
             }}
+            showToast={showToast}
+          />
+        )}
+
+        {vista === "alumnos" && (
+          <AlumnosGym
+            slug={slug}
+            alumnos={alumnos ?? []}
+            progreso={progreso ?? []}
             showToast={showToast}
           />
         )}
