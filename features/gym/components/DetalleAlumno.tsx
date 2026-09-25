@@ -15,6 +15,7 @@ import {
   desasignarRutina,
   type GymActionResult,
 } from "@/features/gym/actions/asignaciones";
+import { RegistrarMedicionModal } from "@/features/gym/components/RegistrarMedicionModal";
 import { categoriaImc, imc, type CategoriaImc } from "@/lib/domain/imc";
 import { formatFecha } from "@/lib/domain/formato";
 import { Button } from "@/lib/ui/button";
@@ -233,6 +234,7 @@ export function DetalleAlumno({
   rutinas: GymRutina[];
 }) {
   const showToast = (msg: string) => toast(msg, { duration: 3000 });
+  const [modalMedicion, setModalMedicion] = useState(false);
 
   // R7: la última medición es la primera fila (`progreso` viene por fecha desc).
   const ultima = progreso[0];
@@ -296,7 +298,17 @@ export function DetalleAlumno({
       </Card>
 
       <Card className="mt-5 overflow-hidden p-0">
-        <h3 className="m-0 px-4 py-3.5 font-serif text-[1.15rem]">Progreso</h3>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3.5">
+          <h3 className="m-0 font-serif text-[1.15rem]">Progreso</h3>
+          <Button
+            variant="accent"
+            size="sm"
+            onClick={() => setModalMedicion(true)}
+            className="rounded-[10px] font-bold"
+          >
+            + Registrar medición
+          </Button>
+        </div>
         {progreso.length === 0 ? (
           <p className="m-0 px-4 pb-4 text-sm text-muted-foreground">
             Sin mediciones registradas
@@ -333,6 +345,15 @@ export function DetalleAlumno({
           </div>
         )}
       </Card>
+
+      {modalMedicion && (
+        <RegistrarMedicionModal
+          slug={slug}
+          clienteId={alumno.cliente_id}
+          onClose={() => setModalMedicion(false)}
+          onToast={showToast}
+        />
+      )}
 
       <Toaster />
     </div>
