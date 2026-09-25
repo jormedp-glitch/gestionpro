@@ -16,6 +16,7 @@ import { TurnosAgenda } from "@/features/turnos/components/TurnosAgenda";
 import { NuevoTurnoModal } from "@/features/turnos/components/NuevoTurnoModal";
 import { ClientesLista } from "@/features/clientes/components/ClientesLista";
 import { NuevoClienteModal } from "@/features/clientes/components/NuevoClienteModal";
+import { CobrosNegocio } from "@/features/cobros/components/CobrosNegocio";
 import { GastosCaja } from "@/features/gastos/components/GastosCaja";
 import { AlumnosGym } from "@/features/gym/components/AlumnosGym";
 import { RutinasGym } from "@/features/gym/components/RutinasGym";
@@ -36,7 +37,13 @@ import type {
 } from "@/features/gym/data/gym";
 
 type Vista =
-  "dashboard" | "agenda" | "clientes" | "alumnos" | "rutinas" | "gastos";
+  | "dashboard"
+  | "agenda"
+  | "clientes"
+  | "alumnos"
+  | "rutinas"
+  | "cobros"
+  | "gastos";
 
 function iconoRubro(rubro: string): string {
   if (rubro === "peluqueria") return "✂️";
@@ -140,6 +147,7 @@ export function NegocioShell({
                   ["agenda", "📅 Agenda"],
                   ["alumnos", "🏋️ Alumnos"],
                   ["rutinas", "🏋️ Rutinas"],
+                  ["cobros", "💵 Cobros"],
                   ["gastos", "💸 Caja"],
                 ] as Array<[Vista, string]>
               ).map(([v, l]) => (
@@ -260,6 +268,10 @@ export function NegocioShell({
               />
             </div>
           </>
+        )}
+
+        {vista === "cobros" && (
+          <CobrosNegocio cobros={cobros} clientes={clientes} hoy={hoy} />
         )}
 
         {vista === "gastos" && (
