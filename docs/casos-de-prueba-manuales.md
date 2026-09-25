@@ -1,7 +1,7 @@
 # Casos de prueba manuales — GestiónPro
 
 > Set de pruebas funcionales para ejecutar contra un entorno desplegado (producción o preview).
-> Base: revisión del código en `main` (e4294b2, incluye FASE 6) + verificación en producción del 2026-09-14. Actualizado 2026-09-21 (Fase 6).
+> Base: revisión del código en `main` (e4294b2, incluye FASE 6) + verificación en producción del 2026-09-14. Actualizado 2026-09-25 (FASE 7 — convergencia CoachFlow).
 > Los casos marcados 🤖 ya tienen cobertura automatizada (Vitest / Playwright) — se listan igual para verificación end-to-end en el entorno real.
 
 ---
@@ -73,9 +73,9 @@ Esperado: (1) el alta crea el usuario auth y su membresía en una sola operació
 
 ## 3. Navegación del negocio (SHELL)
 
-**TC-SHELL-01 · Tabs según rubro · P1**
-Pasos: abrir un negocio `servicio_técnico` y uno de otro rubro (gimnasio/peluquería/veterinaria).
-Esperado: servicio técnico → Dashboard, Reparaciones, Caja. Otros → Dashboard, Agenda, Clientes, Caja (sin Reparaciones).
+**TC-SHELL-01 · Tabs según rubro · P1** 🤖
+Pasos: abrir un negocio `servicio_técnico`, uno `gimnasio` y uno de otro rubro (peluquería/veterinaria).
+Esperado: servicio técnico → Dashboard, Reparaciones, Caja. Gimnasio → Dashboard, Agenda, Alumnos, Rutinas, Cobros, Caja (sin Clientes). Otros → Dashboard, Agenda, Clientes, Caja (sin Reparaciones). Cubierto por `features/admin/components/NegocioShell.test.tsx` (ver TC-GYM-01).
 
 **TC-SHELL-02 · Slug inexistente · P1**
 Pasos: abrir `/no-existe-123`.
@@ -328,13 +328,85 @@ Esperado: consistente con `scripts/verify-rls.sql` (ya ejecutado OK en el rollou
 
 ---
 
+## 13. FASE 7 — Gimnasio / convergencia CoachFlow (GYM)
+
+> Negocio QA de rubro **gimnasio** (`QA Gym`). La fase absorbe CoachFlow: alumnos con ficha y progreso, rutinas por sesiones, cobros y portal del alumno. Los pasos operativos de la migración real están en el runbook (`docs/reingenieria-gestionpro.md:183-212`); esta sección es la verificación funcional del rollout, en el mismo orden del runbook.
+
+**TC-GYM-01 · Tabs del rubro gimnasio · P1** 🤖
+Pasos: abrir `/{slug}` de un negocio QA con rubro gimnasio.
+Esperado: tabs Dashboard · Agenda · Alumnos · Rutinas · Cobros · Caja (sin "Clientes"); el owner ve el link "Usuarios". Un negocio de otro rubro conserva sus tabs y no ve Alumnos/Rutinas/Cobros.
+Cubierto por `features/admin/components/NegocioShell.test.tsx` (R1, escenario 1).
+
+**TC-GYM-02 · Alta de alumno · P1** 🤖(parcial)
+Pasos: tab `🏋️ Alumnos` → alta → nombre + altura (opcionales: teléfono, email, objetivo, notas, fecha de nacimiento) → guardar. Probar también sin nombre y con email inválido.
+Esperado: el alumno aparece en la lista con IMC pendiente (sin mediciones) y con su código de acceso generado; las validaciones no crean nada.
+Cubierto por `features/gym/actions/alumnos.test.ts` (R2, escenario 2).
+
+**TC-GYM-03 · Edición y baja del alumno · P2**
+Pasos: editar la ficha del alumno (nombre, contacto, objetivo, notas, altura, nacimiento) y luego eliminar un alumno QA.
+Esperado: los cambios persisten; la baja desaparece de la lista y no vuelve al recargar (cascade de la ficha, cobros y asignaciones).
+
+**TC-GYM-04 · Código de acceso regenerable · P1** 🤖
+Pasos: abrir el portal del alumno con su link actual; desde la ficha, `Regenerar código`; volver a abrir el link viejo y el nuevo.
+Esperado: el link viejo deja de mostrar datos (enlace no válido) y el nuevo funciona; cada regeneración emite un UUID distinto.
+Cubierto por `features/gym/actions/alumnos.test.ts` (R3, escenario 3).
+
+**TC-GYM-05 · Biblioteca de ejercicios · P2** 🤖(parcial)
+Pasos: tab `🏋️ Rutinas` → biblioteca: crear un ejercicio propio, editarlo y borrarlo; revisar el catálogo compartido; intentar borrar un ejercicio usado en una rutina.
+Esperado: el CRUD propio funciona; el catálogo global se ve en solo lectura (sin editar/borrar); el borrado de un ejercicio usado avisa el motivo (FK).
+Cubierto por `features/gym/actions/ejercicios.test.ts` (R4, escenario 4).
+
+**TC-GYM-06 · Rutina con actividades ordenadas · P1** 🤖
+Pasos: crear una rutina con N sesiones; en una sesión agregar 3 actividades y quitar la del medio.
+Esperado: las actividades quedan 0,1,2… al agregar y se renumeran sin huecos al quitar.
+Cubierto por `features/gym/actions/rutinas.test.ts` (R5, escenario 5).
+
+**TC-GYM-07 · Asignación y reasignación · P1** 🤖
+Pasos: asignar una rutina al alumno; reasignar otra rutina al mismo alumno; avanzar la sesión desde la ficha hasta la última.
+Esperado: una sola rutina activa por alumno (la anterior queda inactiva), la nueva arranca en sesión 1 con la fecha de hoy; en la última sesión el avance no supera el total y avisa que el plan está completo.
+Cubierto por `features/gym/actions/asignaciones.test.ts` (R6, escenarios 6 y 7).
+
+**TC-GYM-08 · Progreso y mediciones · P1** 🤖(parcial)
+Pasos: registrar una medición sin peso (debe rechazarse); registrar con peso y altura, completando métricas opcionales.
+Esperado: sin peso no guarda; con peso la medición aparece en la ficha y el IMC se muestra con su categoría.
+Cubierto por `features/gym/actions/asignaciones.test.ts` (R7, escenario 8) y `lib/domain/imc.test.ts`.
+
+**TC-GYM-09 · Completados e historial de días · P2**
+Pasos: en el portal del alumno marcar una actividad dos veces el mismo día; desmarcarla; revisar el historial de días entrenados en la ficha del profe.
+Esperado: marcar dos veces no duplica (idempotente); desmarcar borra el registro del día; el historial refleja los días con actividad.
+
+**TC-GYM-10 · Cobros del alumno · P1** 🤖(parcial)
+Pasos: en la ficha del alumno (o tab Cobros), registrar un cobro de un alumno con `vence` vencido, con su medio de pago.
+Esperado: el `vence` pasa a hoy + 1 mes y el cliente queda activo; el cobro aparece en el historial del cliente y suma al total del mes del tab Cobros.
+Cubierto por `features/cobros/actions/cobros.test.ts` y `features/cobros/components/CobrosNegocio.test.tsx` (R10–R12, escenario 10).
+
+**TC-GYM-11 · Portal del alumno · P1** 🤖
+Pasos: abrir `/{slug}/portal/{token}` en incógnito (sin sesión); probar con un token inválido.
+Esperado: con token válido ve plan actual, progreso, historial y estado de cuenta; con token inválido, "Enlace no válido", sin error 500 ni datos.
+Cubierto por `features/portal/contrato.test.ts`, `lib/domain/rutas-publicas.test.ts`, `proxy.test.ts` y `scripts/verify-portal.sql` (R13–R15).
+
+**TC-GYM-12 · Login del profe migrado · P1**
+Pasos (runbook paso 4, `docs/reingenieria-gestionpro.md:192`): aplicar `scripts/migracion-coachflow-auth.sql` con el filtro de UN profe; luego iniciar sesión con el email migrado y la contraseña actual del profe.
+Esperado: el profe entra a GestiónPro y ve su negocio con los datos migrados (escenario 14). Sin email, el usuario es `<slug>@migrado.invalid` (D2) y se corrige después.
+Nota: es el único escenario de la fase sin test automatizado posible (requiere Auth real y los datos migrados).
+
+**TC-GYM-13 · Aislamiento del rubro gym · P2** 🤖(parcial)
+Pasos: con un usuario de otro negocio, intentar leer/escribir tablas gym del negocio QA (IDs cruzados); sin sesión, intentar con la anon key.
+Esperado: sin filas y sin escrituras; `anon` no tiene grants.
+Cubierto por `scripts/verify-rls.sql` y `harness/invariantes.sql` (R9, escenario 15).
+
+---
+
 ## Automatización (estado actual)
 
-| Cobertura          | Qué corre                                                 | Cómo                                                                                     |
-| ------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| Dominio            | 4 suites de `lib/domain` (estados, mensajes, wa, formato) | `npm test` (Vitest)                                                                      |
-| E2E no destructivo | Seguimiento público con token inválido (desktop + mobile) | `npx playwright test`                                                                    |
-| E2E destructivo    | Login → crear negocio → turno → seguimiento               | Requiere `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` de un entorno de TEST (nunca producción) |
-| Prod check         | Login renderiza, `/` redirige, credenciales inválidas     | Verificado 2026-09-14 (script temporal, no commiteado)                                   |
+| Cobertura          | Qué corre                                                                | Cómo                                                                                     |
+| ------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Dominio            | 4 suites de `lib/domain` (estados, mensajes, wa, formato)                | `npm test` (Vitest)                                                                      |
+| Server Actions gym | `alumnos`, `rutinas`, `asignaciones`, `ejercicios` con Supabase mockeado | `npm test` (Vitest)                                                                      |
+| Cobros             | Acción `registrarCobro` + total del mes de `CobrosNegocio`               | `npm test` (Vitest)                                                                      |
+| Shell por rubro    | Tabs de gimnasio vs otros rubros (RTL)                                   | `npm test` (Vitest)                                                                      |
+| E2E no destructivo | Seguimiento público con token inválido (desktop + mobile)                | `npx playwright test`                                                                    |
+| E2E destructivo    | Login → crear negocio → turno → seguimiento                              | Requiere `E2E_TEST_EMAIL` / `E2E_TEST_PASSWORD` de un entorno de TEST (nunca producción) |
+| Prod check         | Login renderiza, `/` redirige, credenciales inválidas                    | Verificado 2026-09-14 (script temporal, no commiteado)                                   |
 
 **Próximos candidatos a automatizar** (seguros, sin mutación): TC-AUTH-01/02/04, TC-SHELL-02/03, TC-SEG-02/03/05, TC-UX-01 sobre las vistas públicas.
