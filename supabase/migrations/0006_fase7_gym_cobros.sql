@@ -28,7 +28,7 @@
 --     anon key lee todo vía PostgREST.
 --   - _fase7_migracion_map es INTERNA (idempotencia + verificación de la
 --     migración de datos): RLS sin policies + revoke a anon y authenticated
---     (patrón 0004:22-24). Se dropea en 0007.
+--     (patrón 0004:22-24). Se dropea en 0008 (retiro de CoachFlow).
 --
 -- ROLLBACK (ver también scripts/backup-bootstrap.md):
 --   drop table public._fase7_migracion_map;

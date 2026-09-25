@@ -30,7 +30,7 @@
 -- Uso (rol con privilegios, p. ej. postgres/service_role):
 --   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/rollback-coachflow.sql
 --
--- Nota: _fase7_profes_reusados NO se dropea acá (lo hace 0007). Queda vacía de
+-- Nota: _fase7_profes_reusados NO se dropea acá (lo hace 0008). Queda vacía de
 -- sentido después del rollback, pero es inofensiva y sirve de bitácora.
 -- ============================================================================
 
