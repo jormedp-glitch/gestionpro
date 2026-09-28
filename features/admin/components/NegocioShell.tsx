@@ -50,6 +50,7 @@ export function NegocioShell({
   ingresoMes,
   gastosMes,
   turnosHoy,
+  turnosSemana,
   hoy,
   esOwner,
   alumnos,
@@ -68,6 +69,8 @@ export function NegocioShell({
   ingresoMes: number;
   gastosMes: number;
   turnosHoy: Turno[];
+  /** Turnos de los próximos 7 días (issue #187), ya filtrados y ordenados. */
+  turnosSemana: Turno[];
   hoy: string;
   esOwner: boolean;
   alumnos?: GymAlumno[];
@@ -107,6 +110,7 @@ export function NegocioShell({
           <DashboardResumen
             clientes={clientes}
             turnosHoy={turnosHoy}
+            turnosSemana={turnosSemana}
             activos={activos}
             ingresoMes={ingresoMes}
             gastosMes={gastosMes}
