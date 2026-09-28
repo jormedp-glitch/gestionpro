@@ -21,7 +21,12 @@ vi.mock("@/features/reparaciones/actions/reparaciones", () => ({
   marcarEntregado: vi.fn(),
   cambiarEstado: vi.fn(),
 }));
-vi.mock("@/features/turnos/actions/turnos", () => ({ crearTurno: vi.fn() }));
+// El modal de turno importa ambas acciones (#190): se mockean las dos para
+// que useActionState reciba funciones aunque el test solo use el alta.
+vi.mock("@/features/turnos/actions/turnos", () => ({
+  actualizarTurno: vi.fn(),
+  crearTurno: vi.fn(),
+}));
 vi.mock("@/lib/ui/toast", () => ({ toast: vi.fn(), Toaster: () => null }));
 
 import { toast } from "@/lib/ui/toast";

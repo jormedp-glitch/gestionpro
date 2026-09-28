@@ -1,10 +1,12 @@
 // features/turnos/actions/turnos.test.ts
 //
-// Tests de la Server Action de turnos (issue #179 · aviso optativo): el waUrl
-// de confirmación solo se arma si hay teléfono Y el checkbox `avisar` vino
-// marcado. Sin DB real, sin red: se mockean lib/supabase/server (query builder
-// fluido, ver lib/testing/supabase-query-mock), lib/server/negocio y
-// next/cache, igual que features/cobros/actions/cobros.test.ts.
+// Tests de las Server Actions de turnos: #179 (aviso optativo — el waUrl de
+// confirmación solo se arma si hay teléfono Y el checkbox `avisar` vino
+// marcado) y #190 (ABM de la agenda — editar, cancelar, no vino y eliminar,
+// siempre scopeados al negocio). Sin DB real, sin red: se mockean
+// lib/supabase/server (query builder fluido, ver
+// lib/testing/supabase-query-mock), lib/server/negocio y next/cache, igual que
+// features/cobros/actions/cobros.test.ts.
 
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
@@ -30,7 +32,13 @@ import {
   prepararMockSupabase,
   type SupabaseMock,
 } from "@/lib/testing/supabase-query-mock";
-import { crearTurno } from "./turnos";
+import {
+  actualizarTurno,
+  cancelarTurno,
+  crearTurno,
+  eliminarTurno,
+  marcarNoAsistio,
+} from "./turnos";
 
 const NEGOCIO = {
   id: "negocio-1",
@@ -123,5 +131,106 @@ describe("crearTurno (#179 · aviso optativo)", () => {
     expect(result.ok).toBe(true);
     expect(result.waUrl).toBeUndefined();
     expect(db.consultas("turnos")[0].insert).toHaveBeenCalled();
+  });
+});
+
+describe("actualizarTurno (#190 · edición)", () => {
+  it("actualiza el turno scopeado al negocio y devuelve waUrl con avisar=on", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await actualizarTurno(
+      { ok: false },
+      fd({
+        ...TURNO_BASE,
+        turno_id: "turno-1",
+        telefono: "11 5555-1234",
+        avisar: "on",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.waUrl).toContain("https://wa.me/541155551234?text=");
+
+    const consulta = db.consultas("turnos")[0];
+    expect(consulta.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cliente_nombre: "Retiro de máquinas",
+        telefono: "11 5555-1234",
+        servicio: "Retiro a domicilio",
+        fecha: "2026-09-28",
+        hora: "09:00",
+      }),
+    );
+    expect(consulta.eq).toHaveBeenCalledWith("id", "turno-1");
+    expect(consulta.eq).toHaveBeenCalledWith("negocio_id", "negocio-1");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/taller-test");
+  });
+
+  it("sin avisar: guarda los cambios sin waUrl", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await actualizarTurno(
+      { ok: false },
+      fd({
+        ...TURNO_BASE,
+        turno_id: "turno-1",
+        telefono: "11 5555-1234",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.waUrl).toBeUndefined();
+    expect(db.consultas("turnos")[0].update).toHaveBeenCalled();
+  });
+});
+
+describe("cancelarTurno y marcarNoAsistio (#190 · estados)", () => {
+  it("cancelarTurno pasa el estado a cancelado, scopeado al negocio", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await cancelarTurno(
+      { ok: false },
+      fd({ slug: "taller-test", turno_id: "turno-1" }),
+    );
+
+    expect(result).toEqual({ ok: true });
+    const consulta = db.consultas("turnos")[0];
+    expect(consulta.update).toHaveBeenCalledWith({ estado: "cancelado" });
+    expect(consulta.eq).toHaveBeenCalledWith("id", "turno-1");
+    expect(consulta.eq).toHaveBeenCalledWith("negocio_id", "negocio-1");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/taller-test");
+  });
+
+  it("marcarNoAsistio pasa el estado a no_asistio, scopeado al negocio", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await marcarNoAsistio(
+      { ok: false },
+      fd({ slug: "taller-test", turno_id: "turno-1" }),
+    );
+
+    expect(result).toEqual({ ok: true });
+    const consulta = db.consultas("turnos")[0];
+    expect(consulta.update).toHaveBeenCalledWith({ estado: "no_asistio" });
+    expect(consulta.eq).toHaveBeenCalledWith("id", "turno-1");
+    expect(consulta.eq).toHaveBeenCalledWith("negocio_id", "negocio-1");
+  });
+});
+
+describe("eliminarTurno (#190 · baja)", () => {
+  it("borra el turno scopeado al negocio y revalida la ruta", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await eliminarTurno(
+      { ok: false },
+      fd({ slug: "taller-test", turno_id: "turno-1" }),
+    );
+
+    expect(result).toEqual({ ok: true });
+    const consulta = db.consultas("turnos")[0];
+    expect(consulta.delete).toHaveBeenCalled();
+    expect(consulta.eq).toHaveBeenCalledWith("id", "turno-1");
+    expect(consulta.eq).toHaveBeenCalledWith("negocio_id", "negocio-1");
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/taller-test");
   });
 });

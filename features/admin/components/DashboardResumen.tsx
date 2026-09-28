@@ -10,6 +10,7 @@
 import { mensajeCobro } from "@/lib/domain/mensajes";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { agruparTurnosPorDia } from "@/lib/domain/agenda";
+import { claseEstadoTurno } from "@/lib/domain/estados-turno";
 import { formatARS, formatFecha } from "@/lib/domain/formato";
 import { Button } from "@/lib/ui/button";
 import { Card } from "@/lib/ui/card";
@@ -98,7 +99,10 @@ export function DashboardResumen({
                       sin teléfono, 👤 con teléfono para avisar. */}
                   {t.telefono ? "👤" : "📌"} {t.cliente_nombre} · {t.servicio}
                 </div>
-                <span className="text-xs text-emerald-400">{t.estado}</span>
+                {/* Color por estado (#190), compartido con la agenda. */}
+                <span className={cn("text-xs", claseEstadoTurno(t.estado))}>
+                  {t.estado}
+                </span>
               </div>
             ))}
           </div>
