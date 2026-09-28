@@ -3,7 +3,8 @@
 // Shell server del negocio (spec R5/R8, A4): resuelve el negocio + membresía
 // con el DAL (fase 1), lee los datos con el cliente server y delega el
 // render interactivo (tabs, modales, escrituras) al client component
-// NegocioShell. Sin monolitos >500 líneas en app/.
+// NegocioShell. Sin monolitos >500 líneas en app/. Issue #183: `?vista=`
+// elige la sección inicial (links del header desde rutas fuera del shell).
 
 import { getSessionUser, isOwner } from "@/lib/auth/dal";
 import { requireNegocio } from "@/lib/server/negocio";
@@ -19,14 +20,40 @@ import {
 } from "@/features/gym/data/gym";
 import { totalCobradoDelMes } from "@/lib/domain/ingresos";
 import { NegocioShell } from "@/features/admin/components/NegocioShell";
+import type { Vista } from "@/features/admin/components/NegocioHeader";
+
+// Vistas válidas para `?vista=` (issue #183): el shell solo inicializa en
+// estas secciones; cualquier otro valor cae en dashboard. El `satisfies`
+// avisa en compile-time si el shell suma una vista nueva.
+const VISTAS_VALIDAS = [
+  "dashboard",
+  "agenda",
+  "clientes",
+  "alumnos",
+  "rutinas",
+  "cobros",
+  "gastos",
+] as const satisfies readonly Vista[];
+
+function esVistaValida(valor: string): valor is Vista {
+  return (VISTAS_VALIDAS as readonly string[]).includes(valor);
+}
 
 export default async function NegocioPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { slug } = await params;
+  const { vista } = await searchParams;
   const negocio = await requireNegocio(slug);
+
+  // Issue #183: `?vista=` permite que los links del header (que viven en
+  // rutas fuera del shell) abran el shell en la sección pedida.
+  const vistaInicial: Vista =
+    typeof vista === "string" && esVistaValida(vista) ? vista : "dashboard";
 
   // R6: el link "Usuarios" se muestra SOLO al owner. No se lee la lista de
   // miembros acá (D3): editores no reciben ese dato (va por /usuarios).
@@ -87,6 +114,7 @@ export default async function NegocioPage({
       progreso={progreso}
       rutinas={rutinas}
       ejercicios={ejercicios}
+      vistaInicial={vistaInicial}
     />
   );
 }
