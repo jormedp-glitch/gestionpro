@@ -5,10 +5,12 @@
 // owner) → recién ahí se leen los miembros. Los editores y no-miembros
 // redirigen ANTES de disparar la lectura (R6: superficie invisible e
 // inejecutable, sin fuga de datos). requireOwner devuelve el usuario de la
-// sesión, que sirve para marcar la propia fila en la UI.
+// sesión, que sirve para marcar la propia fila en la UI. Issue #183: header
+// compartido arriba del contenido (la ruta vive fuera del shell).
 
 import { requireOwner } from "@/lib/auth/dal";
 import { requireNegocio } from "@/lib/server/negocio";
+import { NegocioHeader } from "@/features/admin/components/NegocioHeader";
 import { getMiembrosDeNegocio } from "@/features/miembros/data/miembros";
 import { UsuariosPage } from "@/features/miembros/components/UsuariosPage";
 
@@ -23,10 +25,15 @@ export default async function UsuariosRoute({
   const miembros = await getMiembrosDeNegocio(negocio.id);
 
   return (
-    <UsuariosPage
-      slug={slug}
-      miembros={miembros}
-      usuarioActualId={usuario.id}
-    />
+    <>
+      {/* requireOwner ya garantizó el rol: esOwner es true por construcción
+          del guard (no se repiten las consultas de sesión/rol). */}
+      <NegocioHeader slug={slug} negocio={negocio} esOwner activa="usuarios" />
+      <UsuariosPage
+        slug={slug}
+        miembros={miembros}
+        usuarioActualId={usuario.id}
+      />
+    </>
   );
 }

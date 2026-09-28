@@ -47,8 +47,9 @@ vi.mock("@/features/gym/components/BibliotecaEjercicios", () => ({
 }));
 
 import { NegocioShell } from "./NegocioShell";
+import type { Vista } from "./NegocioHeader";
 
-function renderShell(rubro: string, esOwner = true) {
+function renderShell(rubro: string, esOwner = true, vistaInicial?: Vista) {
   return render(
     <NegocioShell
       slug="gym-test"
@@ -73,6 +74,7 @@ function renderShell(rubro: string, esOwner = true) {
       progreso={[]}
       rutinas={[]}
       ejercicios={[]}
+      vistaInicial={vistaInicial}
     />,
   );
 }
@@ -142,5 +144,12 @@ describe("NegocioShell (R1 · escenario 1: tabs por rubro)", () => {
     expect(
       screen.queryByRole("link", { name: /Usuarios/ }),
     ).not.toBeInTheDocument();
+  });
+
+  it("vistaInicial abre el shell en la sección pedida (?vista=)", () => {
+    renderShell("gimnasio", true, "cobros");
+
+    expect(screen.getByTestId("seccion-cobros")).toBeInTheDocument();
+    expect(screen.queryByTestId("seccion-dashboard")).not.toBeInTheDocument();
   });
 });

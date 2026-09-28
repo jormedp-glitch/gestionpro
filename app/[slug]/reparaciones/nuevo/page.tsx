@@ -10,6 +10,8 @@ import {
   requireNegocio,
 } from "@/features/reparaciones/data/reparaciones";
 import { NuevaReparacionForm } from "@/features/reparaciones/components/NuevaReparacionForm";
+import { getSessionUser, isOwner } from "@/lib/auth/dal";
+import { NegocioHeader } from "@/features/admin/components/NegocioHeader";
 
 export default async function NuevaReparacionPage({
   params,
@@ -19,11 +21,25 @@ export default async function NuevaReparacionPage({
   const { slug } = await params;
   const negocio = await requireNegocio(slug);
   const clientes = await getClientesDeNegocio(negocio.id);
+
+  // Issue #183: misma navegación que el resto de la sección Reparaciones
+  // (el link "Usuarios" del header es owner-only, R6).
+  const user = await getSessionUser();
+  const esOwner = user ? await isOwner(user.id, negocio.id) : false;
+
   return (
-    <NuevaReparacionForm
-      slug={slug}
-      clientes={clientes}
-      categorias={CATEGORIAS_EQUIPO}
-    />
+    <>
+      <NegocioHeader
+        slug={slug}
+        negocio={negocio}
+        esOwner={esOwner}
+        activa="reparaciones"
+      />
+      <NuevaReparacionForm
+        slug={slug}
+        clientes={clientes}
+        categorias={CATEGORIAS_EQUIPO}
+      />
+    </>
   );
 }
