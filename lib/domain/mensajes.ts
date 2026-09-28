@@ -26,6 +26,21 @@ export function mensajeIngreso(
   return `Hola ${nombre}, recibimos tu ${equipo}. N° de orden: *${orden}*. Podés seguir el estado en: ${link} ¡Gracias por confiar en nosotros!`;
 }
 
+/**
+ * Reenvío del link de seguimiento (#185): el popup de WhatsApp puede quedar
+ * bloqueado al crear la reparación y el negocio necesita reenviarlo después
+ * desde el detalle (ej. cuando el equipo está listo), con el mismo link
+ * tokenizado del alta.
+ */
+export function mensajeSeguimiento(
+  nombre: string,
+  equipo: string,
+  orden: string,
+  link: string,
+): string {
+  return `Hola ${nombre} 👋 Te paso de nuevo el link de seguimiento de tu ${equipo}. N° de orden: *${orden}*. Podés seguir el estado en: ${link} ¡Cualquier novedad te avisamos por acá!`;
+}
+
 /** Presupuesto enviado: diagnóstico y monto en *negrita*. */
 export function mensajePresupuesto(
   nombre: string,

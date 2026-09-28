@@ -15,6 +15,7 @@ import {
   mensajePresupuesto,
   mensajeRecordatorioRetiro,
   mensajeRecordatorioTurno,
+  mensajeSeguimiento,
   mensajeSinReparacion,
   mensajeTurnoConfirmado,
 } from "./mensajes";
@@ -59,6 +60,21 @@ describe("mensajes de reparación (5 eventos)", () => {
     const msg = mensajeSinReparacion("Ana", "notebook");
     expect(msg).toContain("sin costo");
     expect(msg).toContain("retirarlo");
+  });
+});
+
+describe("reenvío de seguimiento (#185)", () => {
+  it("mensajeSeguimiento: saludo, equipo, N° de orden y link", () => {
+    const msg = mensajeSeguimiento(
+      "Ana",
+      "Notebook Lenovo IdeaPad 3",
+      "42",
+      "https://seguimiento/42?token=abc",
+    );
+    expect(msg).toContain("Hola Ana");
+    expect(msg).toContain("Notebook Lenovo IdeaPad 3");
+    expect(msg).toContain("N° de orden: *42*");
+    expect(msg).toContain("https://seguimiento/42?token=abc");
   });
 });
 
