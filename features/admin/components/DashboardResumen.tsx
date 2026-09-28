@@ -9,6 +9,7 @@
 
 import { mensajeCobro } from "@/lib/domain/mensajes";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
+import { agruparTurnosPorDia } from "@/lib/domain/agenda";
 import { formatARS, formatFecha } from "@/lib/domain/formato";
 import { Button } from "@/lib/ui/button";
 import { Card } from "@/lib/ui/card";
@@ -19,6 +20,7 @@ import type { Cliente } from "@/features/clientes/data/clientes";
 export function DashboardResumen({
   clientes,
   turnosHoy,
+  turnosSemana,
   activos,
   ingresoMes,
   gastosMes,
@@ -28,6 +30,8 @@ export function DashboardResumen({
 }: {
   clientes: Cliente[];
   turnosHoy: Turno[];
+  /** Turnos de los próximos 7 días (issue #187), ya filtrados y ordenados. */
+  turnosSemana: Turno[];
   activos: number;
   ingresoMes: number;
   gastosMes: number;
@@ -37,6 +41,9 @@ export function DashboardResumen({
 }) {
   const neto = ingresoMes - gastosMes;
   const clientesConAdeuda = clientes.filter((c) => c.estado !== "activo");
+  // Issue #187: la card de turnos pasa de "solo hoy" a la semana agrupada por
+  // día (servicio_tecnico no tiene Agenda: este es su único tablero).
+  const gruposSemana = agruparTurnosPorDia(turnosSemana, hoy);
 
   const kpis: Array<[string, string, string, string]> = [
     [String(activos), "✅", "Activos", "text-emerald-400"],
@@ -68,25 +75,32 @@ export function DashboardResumen({
       </div>
       <Card className="mb-5 p-6">
         <div className="mb-4 text-xs uppercase tracking-wider text-muted-foreground">
-          📅 Turnos de hoy
+          📅 Próximos 7 días
         </div>
-        {turnosHoy.length === 0 && (
+        {gruposSemana.length === 0 && (
           <p className="py-4 text-center text-muted-foreground">
-            Sin turnos para hoy
+            Sin turnos en los próximos 7 días
           </p>
         )}
-        {turnosHoy.map((t) => (
-          <div
-            key={t.id}
-            className="flex items-center justify-between border-b border-border/60 py-2.5"
-          >
-            <div>
-              <span className="mr-3 font-bold text-accent">{t.hora}</span>
-              {/* Mismo criterio que la agenda (#179): 📌 compromiso interno
-                  sin teléfono, 👤 con teléfono para avisar. */}
-              {t.telefono ? "👤" : "📌"} {t.cliente_nombre} · {t.servicio}
+        {gruposSemana.map((grupo) => (
+          <div key={grupo.fecha} className="mt-4 first:mt-0">
+            <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {grupo.etiqueta}
             </div>
-            <span className="text-xs text-emerald-400">{t.estado}</span>
+            {grupo.turnos.map((t) => (
+              <div
+                key={t.id}
+                className="flex items-center justify-between border-b border-border/60 py-2.5"
+              >
+                <div>
+                  <span className="mr-3 font-bold text-accent">{t.hora}</span>
+                  {/* Mismo criterio que la agenda (#179): 📌 compromiso interno
+                      sin teléfono, 👤 con teléfono para avisar. */}
+                  {t.telefono ? "👤" : "📌"} {t.cliente_nombre} · {t.servicio}
+                </div>
+                <span className="text-xs text-emerald-400">{t.estado}</span>
+              </div>
+            ))}
           </div>
         ))}
         <Button
@@ -94,7 +108,7 @@ export function DashboardResumen({
           onClick={onNuevoTurno}
           className="mt-4 font-bold"
         >
-          + Nuevo turno hoy
+          + Nuevo turno
         </Button>
       </Card>
       {clientesConAdeuda.length > 0 && (

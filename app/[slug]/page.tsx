@@ -19,6 +19,7 @@ import {
   getRutinasDeNegocio,
 } from "@/features/gym/data/gym";
 import { totalCobradoDelMes } from "@/lib/domain/ingresos";
+import { proximosTurnos } from "@/lib/domain/agenda";
 import { NegocioShell } from "@/features/admin/components/NegocioShell";
 import type { Vista } from "@/features/admin/components/NegocioHeader";
 
@@ -95,6 +96,8 @@ export default async function NegocioPage({
     .filter((g) => g.fecha?.startsWith(mesActual))
     .reduce((s, g) => s + Number(g.monto || 0), 0);
   const turnosHoy = turnos.filter((t) => t.fecha === hoy);
+  // Issue #187: ventana de planificación semanal del dashboard (hoy + 6).
+  const turnosSemana = proximosTurnos(turnos, hoy, 7);
 
   return (
     <NegocioShell
@@ -108,6 +111,7 @@ export default async function NegocioPage({
       ingresoMes={ingresoMes}
       gastosMes={gastosMes}
       turnosHoy={turnosHoy}
+      turnosSemana={turnosSemana}
       hoy={hoy}
       esOwner={esOwner}
       alumnos={alumnos}

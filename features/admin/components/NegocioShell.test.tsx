@@ -68,6 +68,7 @@ function renderShell(rubro: string, esOwner = true, vistaInicial?: Vista) {
       ingresoMes={0}
       gastosMes={0}
       turnosHoy={[]}
+      turnosSemana={[]}
       hoy="2026-09-25"
       esOwner={esOwner}
       alumnos={[]}
