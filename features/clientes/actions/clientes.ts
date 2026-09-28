@@ -71,8 +71,9 @@ export async function agregarCliente(
 
 /**
  * Registra el cobro (R9): extiende el `vence` al próximo período
- * (lib/domain/cuotas, issue #78) y marca "activo" (el estado de la vista se
- * deriva del vence al leer).
+ * (lib/domain/cuotas, issue #78), marca "activo" (el estado de la vista se
+ * deriva del vence al leer) y, si el cliente tiene cuota, inserta el cobro en
+ * `cobros` para que Caja/Dashboard sumen plata realmente cobrada (issue #177).
  */
 export async function pagarCliente(
   _prev: ClienteActionResult,
@@ -88,10 +89,14 @@ export async function pagarCliente(
 
   const { data: actual, error: selectError } = await supabase
     .from("clientes")
-    .select("vence")
+    .select("vence, cuota, plan")
     .eq("id", clienteId)
     .eq("negocio_id", negocio.id)
-    .maybeSingle<{ vence: string | null }>();
+    .maybeSingle<{
+      vence: string | null;
+      cuota: number | null;
+      plan: string | null;
+    }>();
   if (selectError || !actual) {
     console.error(
       "[pagarCliente] select:",
@@ -109,6 +114,24 @@ export async function pagarCliente(
   if (error) {
     console.error("[pagarCliente] update:", error.message);
     return { ok: false, error: "No se pudo registrar el pago." };
+  }
+
+  // Ingresos reales (issue #177): el pago de la cuota registra su cobro para
+  // que Caja/Dashboard sumen plata cobrada. No bloqueante: si falla, el pago
+  // (vence/estado) ya quedó firme y solo se loguea. Sin cuota no hay cobro.
+  const cuota = Number(actual.cuota);
+  if (cuota > 0) {
+    const { error: errorCobro } = await supabase.from("cobros").insert({
+      negocio_id: negocio.id,
+      cliente_id: clienteId,
+      monto: cuota,
+      concepto: `Cuota ${actual.plan ?? ""}`.trim(),
+      medio_pago: "efectivo",
+      fecha: hoy,
+    });
+    if (errorCobro) {
+      console.error("[pagarCliente] cobro:", errorCobro.message);
+    }
   }
 
   revalidatePath(`/${slug}`);
