@@ -26,12 +26,15 @@ import type {
   ActionResult,
   CambiarEstadoResult,
 } from "@/features/reparaciones/actions/reparaciones";
+import { NuevoTurnoModal } from "@/features/turnos/components/NuevoTurnoModal";
 import { ESTADOS } from "@/lib/domain/estados-reparacion";
 import { formatARS, formatFechaHora } from "@/lib/domain/formato";
+import { valoresTurnoDesdeEquipo } from "@/lib/domain/turnos";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { Badge } from "@/lib/ui/badge";
 import { Button } from "@/lib/ui/button";
 import { Input } from "@/lib/ui/input";
+import { toast, Toaster } from "@/lib/ui/toast";
 import { cn } from "@/lib/ui/utils";
 import { CambiarEstadoForm } from "./CambiarEstadoForm";
 import type {
@@ -42,16 +45,21 @@ import type {
 
 export function DetalleReparacion({
   slug,
+  rubro,
   equipo,
   historial,
   repuestos,
 }: {
   slug: string;
+  rubro: string;
   equipo: EquipoConCliente;
   historial: HistorialReparacion[];
   repuestos: RepuestoReparacion[];
 }) {
   const router = useRouter();
+
+  // Toast del aviso "Turno creado" al agendar desde la reparación (#180).
+  const showToast = (msg: string) => toast(msg, { duration: 3000 });
 
   const [mostrarPresupuesto, setMostrarPresupuesto] = useState(false);
   const [presupuestoState, presupuestoAction, presupuestoPending] =
@@ -68,6 +76,10 @@ export function DetalleReparacion({
     marcarEntregado,
     { ok: false } as ActionResult,
   );
+
+  // Alta de turno desde la reparación (#180): el modal se monta recién al
+  // abrir, así el prefill del equipo se calcula fresco en cada apertura.
+  const [mostrarAgendar, setMostrarAgendar] = useState(false);
 
   // WhatsApp del presupuesto al confirmarse la acción (R3/R4).
   useEffect(() => {
@@ -240,6 +252,15 @@ export function DetalleReparacion({
                 ✓ Marcar entregado y cobrado
               </button>
             )}
+          {/* Agendar desde la reparación (#180): el turno del taller es el
+              retiro/entrega, con cliente y equipo ya cargados. */}
+          <button
+            type="button"
+            onClick={() => setMostrarAgendar(true)}
+            className="rounded-lg bg-accent/15 px-3 py-1.5 text-sm text-accent transition-colors hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            📅 Agendar retiro/entrega
+          </button>
         </div>
 
         {/* Form presupuesto */}
@@ -477,6 +498,20 @@ export function DetalleReparacion({
           </div>
         )}
       </div>
+
+      {/* Alta de turno prellenada desde el equipo (#180). */}
+      {mostrarAgendar && (
+        <NuevoTurnoModal
+          slug={slug}
+          rubro={rubro}
+          fechaInicial={new Date().toISOString().split("T")[0]}
+          valoresIniciales={valoresTurnoDesdeEquipo(equipo)}
+          onClose={() => setMostrarAgendar(false)}
+          onToast={showToast}
+        />
+      )}
+
+      <Toaster />
     </div>
   );
 }
