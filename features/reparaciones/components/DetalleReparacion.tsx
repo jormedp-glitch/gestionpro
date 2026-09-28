@@ -293,6 +293,17 @@ export function DetalleReparacion({
               aria-label="Precio final cobrado"
               className="flex-1"
             />
+            <select
+              name="medio_pago"
+              defaultValue="efectivo"
+              aria-label="Medio de pago"
+              className="w-40 rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia">Transferencia</option>
+              <option value="mercadopago">MercadoPago</option>
+              <option value="otro">Otro</option>
+            </select>
             <button
               type="submit"
               disabled={entregadoPending}

@@ -17,6 +17,7 @@ import {
   getProgresoDeNegocio,
   getRutinasDeNegocio,
 } from "@/features/gym/data/gym";
+import { totalCobradoDelMes } from "@/lib/domain/ingresos";
 import { NegocioShell } from "@/features/admin/components/NegocioShell";
 
 export default async function NegocioPage({
@@ -60,9 +61,9 @@ export default async function NegocioPage({
   const hoy = new Date().toISOString().split("T")[0];
   const mesActual = hoy.slice(0, 7);
   const activos = clientes.filter((c) => c.estado === "activo").length;
-  const ingresoMes = clientes
-    .filter((c) => c.estado !== "vencido")
-    .reduce((s, c) => s + Number(c.cuota || 0), 0);
+  // Ingresos reales del mes (issue #177): se suman los cobros registrados
+  // (reparaciones, cuotas, etc.), no las cuotas proyectadas de los clientes.
+  const ingresoMes = totalCobradoDelMes(cobros, mesActual);
   const gastosMes = gastos
     .filter((g) => g.fecha?.startsWith(mesActual))
     .reduce((s, g) => s + Number(g.monto || 0), 0);

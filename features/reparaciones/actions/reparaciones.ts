@@ -96,6 +96,10 @@ const marcarEntregadoSchema = z.object({
   slug: z.string().min(1),
   equipo_id: z.string().min(1),
   precio_final: z.coerce.number().positive("Ingresá el precio final cobrado"),
+  // Opcional para no romper callers viejos del form; sin valor se asume efectivo.
+  medio_pago: z
+    .enum(["efectivo", "transferencia", "mercadopago", "otro"])
+    .optional(),
 });
 
 /** Revalida las rutas del feature tras una mutación (R9). */
@@ -430,7 +434,11 @@ export async function eliminarRepuesto(formData: FormData): Promise<void> {
   revalidarReparaciones(slug, equipo.id);
 }
 
-/** Marca el equipo como entregado con el precio final cobrado (R2). */
+/**
+ * Marca el equipo como entregado con el precio final cobrado (R2) y, si hay
+ * cliente, registra el cobro en `cobros` para que Caja/Dashboard sumen plata
+ * realmente cobrada (issue #177).
+ */
 export async function marcarEntregado(
   _prev: ActionResult,
   formData: FormData,
@@ -439,7 +447,8 @@ export async function marcarEntregado(
   if (!parsed.success) {
     return { ok: false, error: "Ingresá el precio final cobrado." };
   }
-  const { slug, equipo_id: equipoId, precio_final } = parsed.data;
+  const { slug, equipo_id: equipoId, precio_final, medio_pago } = parsed.data;
+  const medioPago = medio_pago ?? "efectivo";
   const negocio = await requireNegocio(slug);
   const supabase = await createClient();
 
@@ -476,6 +485,29 @@ export async function marcarEntregado(
     });
   if (errorHistorial) {
     console.error("[marcarEntregado] historial:", errorHistorial.message);
+  }
+
+  // Ingresos reales (issue #177): la entrega cobrada registra su cobro para
+  // que Caja/Dashboard sumen plata cobrada. No bloqueante: si el insert falla,
+  // la entrega (operación primaria) ya quedó firme — mismo criterio que el
+  // historial, que solo loguea.
+  if (equipo.cliente_id) {
+    const { error: errorCobro } = await supabase.from("cobros").insert({
+      negocio_id: negocio.id,
+      cliente_id: equipo.cliente_id,
+      monto: precio_final,
+      concepto: `Reparación ${equipo.numero_orden} — ${equipo.categoria}${equipo.marca ? " " + equipo.marca : ""}${equipo.modelo ? " " + equipo.modelo : ""}`,
+      medio_pago: medioPago,
+      fecha: new Date().toISOString().split("T")[0],
+    });
+    if (errorCobro) {
+      console.error("[marcarEntregado] cobro:", errorCobro.message);
+    }
+  } else {
+    // `cobros.cliente_id` es NOT NULL: sin cliente no hay a quién imputarlo.
+    console.error(
+      "[marcarEntregado] sin cliente: no se registra el cobro de la reparación",
+    );
   }
 
   revalidarReparaciones(slug, equipoId);
