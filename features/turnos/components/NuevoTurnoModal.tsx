@@ -74,12 +74,21 @@ export function NuevoTurnoModal({
   slug,
   rubro,
   fechaInicial,
+  valoresIniciales,
   onClose,
   onToast,
 }: {
   slug: string;
   rubro: string;
   fechaInicial: string;
+  // Prefill opcional (#180): agendar desde una reparación trae cliente,
+  // teléfono, servicio y notas ya armados desde el equipo.
+  valoresIniciales?: Partial<{
+    clienteNombre: string;
+    telefono: string;
+    servicio: string;
+    notas: string;
+  }>;
   onClose: () => void;
   onToast: (msg: string) => void;
 }) {
@@ -87,12 +96,12 @@ export function NuevoTurnoModal({
     ok: false,
   } as TurnoActionResult);
   const [form, setForm] = useState<FormularioTurno>({
-    clienteNombre: "",
-    telefono: "",
-    servicio: "",
+    clienteNombre: valoresIniciales?.clienteNombre ?? "",
+    telefono: valoresIniciales?.telefono ?? "",
+    servicio: valoresIniciales?.servicio ?? "",
     fecha: fechaInicial,
     hora: "",
-    notas: "",
+    notas: valoresIniciales?.notas ?? "",
     // Default por rubro: en servicio técnico el turno no se notifica.
     avisar: avisoTurnoPorDefecto(rubro),
   });

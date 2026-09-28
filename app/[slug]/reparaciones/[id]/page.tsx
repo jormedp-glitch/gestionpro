@@ -31,6 +31,7 @@ export default async function DetalleReparacionPage({
   return (
     <DetalleReparacion
       slug={slug}
+      rubro={negocio.rubro}
       equipo={equipo}
       historial={historial}
       repuestos={repuestos}
