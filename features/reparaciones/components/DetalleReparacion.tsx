@@ -29,6 +29,7 @@ import type {
 import { NuevoTurnoModal } from "@/features/turnos/components/NuevoTurnoModal";
 import { ESTADOS } from "@/lib/domain/estados-reparacion";
 import { formatARS, formatFechaHora } from "@/lib/domain/formato";
+import { mensajeSeguimiento } from "@/lib/domain/mensajes";
 import { valoresTurnoDesdeEquipo } from "@/lib/domain/turnos";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { Badge } from "@/lib/ui/badge";
@@ -94,6 +95,37 @@ export function DetalleReparacion({
   );
   const estadoInfo = ESTADOS.find((e) => e.valor === equipo.estado);
 
+  // Link público de seguimiento (#185): se arma dentro del handler (y no en
+  // el render) porque `window` no existe en el servidor (SSR).
+  function armarLinkSeguimiento(): string {
+    return `${window.location.origin}/${slug}/seguimiento/${equipo.numero_orden}?token=${equipo.acceso_token}`;
+  }
+
+  // Reenvío del WhatsApp de ingreso (#185): el envío original al crear la
+  // reparación puede quedar bloqueado por el popup del navegador.
+  function enviarSeguimiento() {
+    const telefono = equipo.clientes?.telefono;
+    if (!telefono) return;
+    const equipoNombre = `${equipo.categoria}${equipo.marca ? " " + equipo.marca : ""}${equipo.modelo ? " " + equipo.modelo : ""}`;
+    const mensaje = mensajeSeguimiento(
+      equipo.clientes?.nombre || "cliente",
+      equipoNombre,
+      equipo.numero_orden,
+      armarLinkSeguimiento(),
+    );
+    window.open(buildWhatsAppLink(telefono, mensaje), "_blank");
+  }
+
+  // Copia manual del link (#185): alternativa cuando no hay teléfono/WhatsApp.
+  async function copiarLinkSeguimiento() {
+    try {
+      await navigator.clipboard.writeText(armarLinkSeguimiento());
+      showToast("Link copiado ✓");
+    } catch {
+      showToast("No se pudo copiar el link");
+    }
+  }
+
   return (
     <div className="mx-auto max-w-2xl p-4 pb-16">
       {/* ENCABEZADO */}
@@ -139,6 +171,25 @@ export function DetalleReparacion({
             📱 {equipo.clientes.telefono}
           </a>
         )}
+        {/* Reenvío/copia del link de seguimiento (#185). */}
+        <div className="mt-2 flex flex-wrap gap-2">
+          {equipo.clientes?.telefono && (
+            <button
+              type="button"
+              onClick={enviarSeguimiento}
+              className="rounded-lg border border-border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              📲 Enviar seguimiento
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={copiarLinkSeguimiento}
+            className="rounded-lg border border-border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            🔗 Copiar link
+          </button>
+        </div>
       </div>
 
       {/* EQUIPO */}

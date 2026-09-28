@@ -48,6 +48,8 @@ export interface Equipo {
   negocio_id: string;
   cliente_id: string | null;
   numero_orden: string;
+  /** Capability del seguimiento público (migración 0002): viaja en el link ?token=. */
+  acceso_token: string;
   categoria: string;
   marca: string | null;
   modelo: string | null;
