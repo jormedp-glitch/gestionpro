@@ -270,7 +270,9 @@ with nuevos as (
     al.telefono,
     'Entrenamiento' as servicio,
     t.fecha_hora::date as fecha,
-    to_char(t.fecha_hora::timestamp, 'HH24:MI') as hora,
+    -- turnos.hora es `time` en el esquema real (producción); to_char devuelve
+    -- text y no hay cast implícito text→time → cast explícito.
+    (to_char(t.fecha_hora::timestamp, 'HH24:MI'))::time as hora,
     t.duracion_min as duracion,
     t.notas,
     t.espacio as lugar,
