@@ -123,6 +123,7 @@ export function NegocioShell({
         {vista === "agenda" && (
           <TurnosAgenda
             slug={slug}
+            rubro={negocio.rubro}
             negocioNombre={negocio.nombre}
             turnos={turnos}
             hoy={hoy}
@@ -195,6 +196,9 @@ export function NegocioShell({
           slug={slug}
           rubro={negocio.rubro}
           fechaInicial={modalData.fecha || hoy}
+          // Aviso no bloqueante de superposición (#190) con los turnos ya
+          // cargados del negocio.
+          turnosExistentes={turnos}
           onClose={() => setModal(null)}
           onToast={showToast}
         />

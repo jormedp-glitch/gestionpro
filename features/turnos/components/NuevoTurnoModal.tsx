@@ -13,13 +13,18 @@
 // (lib/domain/rubros): en servicio técnico viene apagado porque el turno
 // suele ser un compromiso interno. Sin teléfono el checkbox queda
 // deshabilitado y no se envía.
+//
+// #190: el mismo modal sirve para editar. Con la prop `turno` arranca con los
+// datos del turno, guarda con actualizarTurno (turno_id oculto) y avisa si
+// fecha+hora se superponen con otro turno del negocio (no bloqueante).
 
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
-import { crearTurno } from "@/features/turnos/actions/turnos";
+import { actualizarTurno, crearTurno } from "@/features/turnos/actions/turnos";
 import type { TurnoActionResult } from "@/features/turnos/actions/turnos";
+import type { Turno } from "@/features/turnos/data/turnos";
 import { avisoTurnoPorDefecto } from "@/lib/domain/rubros";
 import { Button } from "@/lib/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/lib/ui/dialog";
@@ -75,6 +80,8 @@ export function NuevoTurnoModal({
   rubro,
   fechaInicial,
   valoresIniciales,
+  turno,
+  turnosExistentes,
   onClose,
   onToast,
 }: {
@@ -89,23 +96,46 @@ export function NuevoTurnoModal({
     servicio: string;
     notas: string;
   }>;
+  // Edición (#190): con el turno el modal arranca con sus datos y guarda con
+  // actualizarTurno en vez de crear uno nuevo.
+  turno?: Turno;
+  // Turnos del negocio (fecha + hora) para el aviso de superposición.
+  turnosExistentes?: Array<{ id: string; fecha: string; hora: string }>;
   onClose: () => void;
   onToast: (msg: string) => void;
 }) {
-  const [state, formAction, pending] = useActionState(crearTurno, {
+  // Reglas de hooks: los dos useActionState se llaman siempre y el modo elige
+  // cuál alimenta al form (el otro queda inerte, sin condicionar el orden).
+  const [stateCrear, actionCrear, pendingCrear] = useActionState(crearTurno, {
     ok: false,
   } as TurnoActionResult);
+  const [stateEditar, actionEditar, pendingEditar] = useActionState(
+    actualizarTurno,
+    { ok: false } as TurnoActionResult,
+  );
+  const editando = turno != null;
+  const state = editando ? stateEditar : stateCrear;
+  const formAction = editando ? actionEditar : actionCrear;
+  const pending = editando ? pendingEditar : pendingCrear;
+
   const [form, setForm] = useState<FormularioTurno>({
-    clienteNombre: valoresIniciales?.clienteNombre ?? "",
-    telefono: valoresIniciales?.telefono ?? "",
-    servicio: valoresIniciales?.servicio ?? "",
-    fecha: fechaInicial,
-    hora: "",
-    notas: valoresIniciales?.notas ?? "",
+    clienteNombre:
+      turno?.cliente_nombre ?? valoresIniciales?.clienteNombre ?? "",
+    telefono: turno?.telefono ?? valoresIniciales?.telefono ?? "",
+    servicio: turno?.servicio ?? valoresIniciales?.servicio ?? "",
+    fecha: turno?.fecha ?? fechaInicial,
+    hora: turno?.hora ?? "",
+    notas: turno?.notas ?? valoresIniciales?.notas ?? "",
     // Default por rubro: en servicio técnico el turno no se notifica.
     avisar: avisoTurnoPorDefecto(rubro),
   });
   const manejado = useRef(false);
+
+  // Aviso no bloqueante (#190): ya hay otro turno a la misma fecha y hora.
+  // En edición el turno se excluye a sí mismo para no alertar siempre.
+  const superpuesto = (turnosExistentes ?? []).some(
+    (t) => t.id !== turno?.id && t.fecha === form.fecha && t.hora === form.hora,
+  );
 
   // Sin teléfono no hay a quién avisar: el checkbox queda deshabilitado.
   const telefonoCargado = form.telefono.trim() !== "";
@@ -124,20 +154,32 @@ export function NuevoTurnoModal({
     }
     if (manejado.current) return;
     manejado.current = true;
-    onToast("Turno creado ✓");
+    onToast(editando ? "Turno actualizado ✓" : "Turno creado ✓");
     onClose();
     if (state.waUrl) window.open(state.waUrl, "_blank");
-  }, [state, onToast, onClose]);
+  }, [state, editando, onToast, onClose]);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[480px] p-7">
         <DialogTitle className="font-serif text-[1.3rem]">
-          📅 Nuevo Turno
+          {editando ? "✏️ Editar turno" : "📅 Nuevo Turno"}
         </DialogTitle>
         <form action={formAction} className="flex flex-col gap-3">
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="hora" value={form.hora} />
+          {turno && (
+            <>
+              <input type="hidden" name="turno_id" value={turno.id} />
+              {/* El form no expone duración: viaja oculta para conservar la
+                  del turno original en vez de resetearla al default. */}
+              <input
+                type="hidden"
+                name="duracion"
+                value={turno.duracion ?? 60}
+              />
+            </>
+          )}
           <Input
             placeholder="Cliente o tarea"
             name="cliente_nombre"
@@ -190,6 +232,11 @@ export function NuevoTurnoModal({
               </SelectContent>
             </Select>
           </div>
+          {superpuesto && (
+            <p className="m-0 text-sm text-amber-400">
+              ⚠️ Ya tenés un turno a esa hora
+            </p>
+          )}
           <Input
             placeholder="Notas (opcional)"
             name="notas"
@@ -216,7 +263,11 @@ export function NuevoTurnoModal({
               disabled={pending}
               className="rounded-[10px] font-bold"
             >
-              {pending ? "Guardando..." : "Guardar"}
+              {pending
+                ? "Guardando..."
+                : editando
+                  ? "Guardar cambios"
+                  : "Guardar"}
             </Button>
           </div>
         </form>

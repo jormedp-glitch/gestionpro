@@ -9,14 +9,25 @@
 // (R3/R4, sin fetch del cliente). Migrado a primitivas lib/ui + tokens
 // (fase5-ui P6): cero estilos inline (REQ-TT-3); EmptyState cuando el día
 // visible no tiene turnos (REQ-FS-2); el color por prop se eliminó (tokens).
+//
+// #190 (ABM de la agenda): cada fila muestra acciones según el estado —
+// confirmado: Listo/Editar/Cancelar/No vino; cancelado y no_asistio: Eliminar;
+// completado: ninguna. La edición reusa NuevoTurnoModal en modo edición.
 
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
-import { completarTurno } from "@/features/turnos/actions/turnos";
+import {
+  cancelarTurno,
+  completarTurno,
+  eliminarTurno,
+  marcarNoAsistio,
+} from "@/features/turnos/actions/turnos";
 import type { TurnoActionResult } from "@/features/turnos/actions/turnos";
+import { NuevoTurnoModal } from "@/features/turnos/components/NuevoTurnoModal";
 import { diasDeLaSemana, sumarDias } from "@/lib/domain/agenda";
+import { claseEstadoTurno } from "@/lib/domain/estados-turno";
 import { mensajeDemora, mensajeRecordatorioTurno } from "@/lib/domain/mensajes";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { formatFecha } from "@/lib/domain/formato";
@@ -35,17 +46,38 @@ function sumarTreintaMin(hora: string): string {
   return `${hr}:${mi}`;
 }
 
-/** Botón "✓ Listo": completa el turno vía Server Action y avisa con toast. */
-function CompletarTurnoBoton({
+/**
+ * Botón de fila (#190): envía una Server Action de turno (slug + turno_id) y
+ * avisa con toast al confirmarse. `confirmar` pide validación con el
+ * window.confirm del navegador antes de enviar (cancelar / eliminar).
+ */
+function AccionTurnoBoton({
+  accion,
   slug,
   turnoId,
+  etiqueta,
+  descripcion,
+  confirmar,
+  toastOk,
   showToast,
+  className,
 }: {
+  accion: (
+    prev: TurnoActionResult,
+    formData: FormData,
+  ) => Promise<TurnoActionResult>;
   slug: string;
   turnoId: string;
+  etiqueta: string;
+  /** title + aria-label del botón; opcional para no pisar el nombre visible. */
+  descripcion?: string;
+  /** Texto del confirm previo; sin esto el envío es directo. */
+  confirmar?: string;
+  toastOk: string;
   showToast: (msg: string) => void;
+  className: string;
 }) {
-  const [state, formAction] = useActionState(completarTurno, {
+  const [state, formAction] = useActionState(accion, {
     ok: false,
   } as TurnoActionResult);
   const manejado = useRef(false);
@@ -57,8 +89,8 @@ function CompletarTurnoBoton({
     }
     if (manejado.current) return;
     manejado.current = true;
-    showToast("Completado ✓");
-  }, [state, showToast]);
+    showToast(toastOk);
+  }, [state, showToast, toastOk]);
 
   return (
     <form action={formAction}>
@@ -66,9 +98,15 @@ function CompletarTurnoBoton({
       <input type="hidden" name="turno_id" value={turnoId} />
       <button
         type="submit"
-        className="cursor-pointer rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-400"
+        title={descripcion}
+        aria-label={descripcion}
+        onClick={(e) => {
+          // Si el usuario cancela el confirm, el form no se envía.
+          if (confirmar && !window.confirm(confirmar)) e.preventDefault();
+        }}
+        className={className}
       >
-        ✓ Listo
+        {etiqueta}
       </button>
     </form>
   );
@@ -76,6 +114,7 @@ function CompletarTurnoBoton({
 
 export function TurnosAgenda({
   slug,
+  rubro,
   negocioNombre,
   turnos,
   hoy,
@@ -83,6 +122,8 @@ export function TurnosAgenda({
   showToast,
 }: {
   slug: string;
+  /** Rubro del negocio: default del aviso en el modal de edición (#190). */
+  rubro: string;
   negocioNombre: string;
   turnos: Turno[];
   hoy: string;
@@ -92,6 +133,8 @@ export function TurnosAgenda({
 }) {
   // Día visible de la agenda; arranca en hoy y se mueve con el strip semanal.
   const [dia, setDia] = useState(hoy);
+  // Turno que se está editando (#190); null = sin modal de edición.
+  const [turnoEnEdicion, setTurnoEnEdicion] = useState<Turno | null>(null);
 
   const semana = diasDeLaSemana(dia);
   const turnosDelDia = turnos
@@ -202,6 +245,10 @@ export function TurnosAgenda({
         )}
         {turnosDelDia.map((t) => {
           const telefono = t.telefono;
+          // Demora/Recordar son avisos de un turno vigente: en un turno ya
+          // resuelto (completado/cancelado/no vino) no aplican.
+          const vigente = t.estado === "confirmado";
+          const cancelado = t.estado === "cancelado";
           return (
             <div
               key={t.id}
@@ -211,15 +258,27 @@ export function TurnosAgenda({
                 <span className="mr-3 font-bold text-accent">{t.hora}</span>
                 {/* Sin teléfono el turno es un compromiso interno (#179):
                     📌; con teléfono hay a quién avisarle: 👤. */}
-                <span className="font-medium">
+                <span
+                  className={cn(
+                    "font-medium",
+                    cancelado && "text-muted-foreground line-through",
+                  )}
+                >
                   {telefono ? "👤" : "📌"} {t.cliente_nombre}
                 </span>
                 <span className="ml-2 text-sm text-muted-foreground">
                   · {t.servicio} ({t.duracion}min)
                 </span>
+                {/* Estado visible (#190): cancelado / no vino quedan en la
+                    agenda y el color los distingue de un vistazo. */}
+                <span
+                  className={cn("ml-2 text-xs", claseEstadoTurno(t.estado))}
+                >
+                  {t.estado}
+                </span>
               </div>
               <div className="flex gap-2">
-                {telefono && (
+                {vigente && telefono && (
                   <button
                     onClick={() => {
                       const horaReal = sumarTreintaMin(t.hora);
@@ -236,7 +295,7 @@ export function TurnosAgenda({
                     ⏱ Demora
                   </button>
                 )}
-                {telefono && (
+                {vigente && telefono && (
                   <button
                     onClick={() =>
                       window.open(
@@ -257,16 +316,80 @@ export function TurnosAgenda({
                     📲 Recordar
                   </button>
                 )}
-                <CompletarTurnoBoton
-                  slug={slug}
-                  turnoId={t.id}
-                  showToast={showToast}
-                />
+                {vigente && (
+                  <>
+                    <AccionTurnoBoton
+                      accion={completarTurno}
+                      slug={slug}
+                      turnoId={t.id}
+                      etiqueta="✓ Listo"
+                      toastOk="Completado ✓"
+                      showToast={showToast}
+                      className="cursor-pointer rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-400"
+                    />
+                    <button
+                      type="button"
+                      title="Editar turno"
+                      aria-label="Editar turno"
+                      onClick={() => setTurnoEnEdicion(t)}
+                      className="cursor-pointer rounded-lg border border-border px-2.5 py-1 text-xs text-muted-foreground"
+                    >
+                      ✏️ Editar
+                    </button>
+                    <AccionTurnoBoton
+                      accion={cancelarTurno}
+                      slug={slug}
+                      turnoId={t.id}
+                      etiqueta="🚫 Cancelar"
+                      descripcion="Cancelar turno"
+                      confirmar="¿Cancelar este turno?"
+                      toastOk="Turno cancelado ✓"
+                      showToast={showToast}
+                      className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-400"
+                    />
+                    <AccionTurnoBoton
+                      accion={marcarNoAsistio}
+                      slug={slug}
+                      turnoId={t.id}
+                      etiqueta="🙈 No vino"
+                      descripcion="Marcar que no vino"
+                      toastOk="Marcado: no vino"
+                      showToast={showToast}
+                      className="cursor-pointer rounded-lg border border-amber-400/25 bg-amber-400/10 px-2.5 py-1 text-xs text-amber-400"
+                    />
+                  </>
+                )}
+                {(cancelado || t.estado === "no_asistio") && (
+                  <AccionTurnoBoton
+                    accion={eliminarTurno}
+                    slug={slug}
+                    turnoId={t.id}
+                    etiqueta="🗑️ Eliminar"
+                    descripcion="Eliminar turno"
+                    confirmar="¿Eliminar este turno?"
+                    toastOk="Turno eliminado ✓"
+                    showToast={showToast}
+                    className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-400"
+                  />
+                )}
               </div>
             </div>
           );
         })}
       </Card>
+
+      {/* Edición (#190): el modal reusa el alta y guarda con actualizarTurno. */}
+      {turnoEnEdicion && (
+        <NuevoTurnoModal
+          slug={slug}
+          rubro={rubro}
+          fechaInicial={turnoEnEdicion.fecha}
+          turno={turnoEnEdicion}
+          turnosExistentes={turnos}
+          onClose={() => setTurnoEnEdicion(null)}
+          onToast={showToast}
+        />
+      )}
     </div>
   );
 }
