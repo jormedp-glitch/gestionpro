@@ -3,22 +3,22 @@
 > Documento vivo del proyecto. Fuente de verdad para el alcance, las fases y las decisiones.
 > Se actualiza en cada hito. Cada decisión adoptada se registra en la sección [Log de decisiones](#4-log-de-decisiones).
 > Los cambios grandes se ejecutan con SDD (explore → proposal → spec → design → tasks → apply → verify → archive) y entregas en PRs encadenados.
-> Última actualización: 2026-09-22 (FASE 7 — convergencia CoachFlow implementada; rollout pendiente del maintainer).
+> Última actualización: 2026-09-28 (FASE 7 — convergencia CoachFlow mergeada (PRs #135–#170) y rollout pasos 1–9 aplicados en producción; paso 10 — apagado de CoachFlow — pendiente del maintainer).
 
 ---
 
 ## 0. Ficha del proyecto
 
-| Campo             | Valor                                                                                                                                                                                                                |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Nombre            | GestiónPro                                                                                                                                                                                                           |
-| Producto          | SaaS de abono mensual para **profesionales independientes** (peluqueros, profes de clases, servicio técnico). 3 capas: plataforma (dueño del SaaS) → profesional abonado → cliente final (celular)                   |
-| Stack actual      | Next.js 16.2.2 (App Router) · React 19.2.4 · TypeScript 5 · Tailwind 4 · Supabase (`@supabase/ssr`: clients browser/server/middleware)                                                                               |
-| Backend           | Supabase — Auth email+password + RLS por membresía (`negocio_miembros`); migraciones 0001–0004 aplicadas en producción (sa-east-1); 0005 (Fase 6) + 0006–0008 (FASE 7) pendientes de rollout por el maintainer       |
-| Estado de git     | main `e4294b2`; fases 0–5 + Fase 6 (slices 1–5) + fix RLS 0004 (PR #84) mergeados; FASE 7 (slices 1–7) en pila local `feat/fase7-p1..p29-*` (30 commits, sin pushear); commits convencionales; `.env.local` ignorado |
-| Dominio actual    | `negocios`, `negocio_miembros`, `clientes`, `turnos`, `gastos`, `equipos`, `reparaciones_historial`, `reparaciones_repuestos` + FASE 7: `cobros`, 8 `gym_*` y los RPCs del portal                                    |
-| Tests / lint / CI | ESLint + Prettier + Husky; Vitest (4 suites de dominio, cobertura ≥ 80 % en `lib/domain`); Playwright smoke (2 viewports); GitHub Actions `lint → typecheck → test → build` + job e2e no bloqueante                  |
-| Producción        | Vercel `https://gestionpro-three.vercel.app` · Supabase `qjawdjzaokffhiqnixcx` (sa-east-1) · rollout 2026-09-11 · verificado 2026-09-14                                                                              |
+| Campo             | Valor                                                                                                                                                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nombre            | GestiónPro                                                                                                                                                                                                                       |
+| Producto          | SaaS de abono mensual para **profesionales independientes** (peluqueros, profes de clases, servicio técnico). 3 capas: plataforma (dueño del SaaS) → profesional abonado → cliente final (celular)                               |
+| Stack actual      | Next.js 16.2.2 (App Router) · React 19.2.4 · TypeScript 5 · Tailwind 4 · Supabase (`@supabase/ssr`: clients browser/server/middleware)                                                                                           |
+| Backend           | Supabase — Auth email+password + RLS por membresía (`negocio_miembros`); migraciones 0001–0008 aplicadas en producción (sa-east-1; 0005–0008 en la ventana de rollout de FASE 7, 2026-09-25/28)                                  |
+| Estado de git     | main `73f7b1b`; fases 0–5 + Fase 6 + FASE 7 mergeadas (PRs #135–#170); rollout de FASE 7 pasos 1–9 aplicados; deuda post-rollout en PRs abiertos #174 (fix `hora`) y #175 (types); commits convencionales; `.env.local` ignorado |
+| Dominio actual    | `negocios`, `negocio_miembros`, `clientes`, `turnos`, `gastos`, `equipos`, `reparaciones_historial`, `reparaciones_repuestos` + FASE 7: `cobros`, 8 `gym_*` y los RPCs del portal                                                |
+| Tests / lint / CI | ESLint + Prettier + Husky; Vitest (4 suites de dominio, cobertura ≥ 80 % en `lib/domain`); Playwright smoke (2 viewports); GitHub Actions `lint → typecheck → test → build` + job e2e no bloqueante                              |
+| Producción        | Vercel `https://gestionpro-three.vercel.app` · Supabase `qjawdjzaokffhiqnixcx` (sa-east-1) · rollout 2026-09-11 · verificado 2026-09-14                                                                                          |
 
 ### Estado inicial (diagnóstico previo a la reingeniería, 2026-09-02)
 
@@ -30,14 +30,14 @@
 - **IA del análisis**: fetch directo al cliente a Anthropic sin API key (hoy no funciona; si se le agrega key, queda expuesta).
 - **WhatsApp**: deep links `wa.me` desde el cliente. Dependencia funcional fuerte (el producto gira alrededor de WhatsApp).
 
-### Estado actual (2026-09-14)
+### Estado actual (2026-09-28)
 
-- **Seguridad**: login email+password + RLS por membresía en todas las tablas del dominio; middleware de protección en `/` y `/[slug]`; seguimiento público por token (capability UUID, migración 0002). Verificado en producción.
+- **Seguridad**: login email+password + RLS por membresía en todas las tablas del dominio (incluye `gym_*` y `cobros` de FASE 7); middleware de protección en `/` y `/[slug]`; portal público del alumno por token UUID con RPCs `security definer` (0007) y seguimiento público por token (0002). Verificado en producción.
 - **Arquitectura**: `features/<dominio>` + `lib/{domain,server,ui,auth,supabase}`; Server Components para lecturas y Server Actions con zod para escrituras; 0 estilos inline en `app/` y `features/`.
-- **Datos**: migraciones 0001–0003 aplicadas en producción (0004 y 0005: ver hallazgo del Security Advisor y FASE 6, abajo); `numero_orden` normalizado a numérico puro con contador atómico por negocio; `types/database.types.ts` regenerado post-rollout.
-- **Calidad**: ESLint + Prettier + Husky; 4 suites Vitest (cobertura ≥ 80 % en `lib/domain`); Playwright smoke (2 viewports); CI en cada PR.
-- **Producción**: deploy Vercel con login real y smoke seguro verificados (2026-09-14); backup verificado post-rollout.
-- **Pendientes**: dark mode, auditoría WCAG (axe), entorno e2e dedicado + job bloqueante, rollout de FASE 7 (implementada 2026-09-22; ver FASE 7).
+- **Datos**: migraciones 0001–0008 aplicadas en producción (0005–0008 en la ventana del rollout de FASE 7; `0008` dropeó las 11 `cf_*` + las 2 tablas internas de la migración el 2026-09-28); `numero_orden` normalizado a numérico puro con contador atómico por negocio; `types/database.types.ts` regenerado post-drop (PR #175).
+- **Calidad**: ESLint + Prettier + Husky; 33 archivos / 334 tests Vitest (cobertura ≥ 80 % en `lib/domain`); Playwright smoke (2 viewports); CI en cada PR.
+- **Producción**: deploy Vercel con login real y smoke seguro verificados; rollout de FASE 7 pasos 1–9 aplicados (2 profes y datos migrados 1:1 verificados, `verify-coachflow` PASS, backups pre/post verificados); CoachFlow retirado de la base.
+- **Pendientes**: paso 10 del rollout (apagado + redirección de CoachFlow — maintainer); P1/P3 de FASE 6 (service role key en Vercel + runtime de `/[slug]/usuarios`); dark mode; auditoría WCAG (axe); entorno e2e dedicado + job bloqueante; features opcionales de FASE 6 (recordatorios, reportes, onboarding, monetización, branding).
 
 ### Hallazgos de pruebas manuales en producción (2026-09-14)
 
@@ -153,11 +153,11 @@ Verificación en producción (2026-09-14): login real OK; smoke seguro verde en 
 
 **Lecciones**: los scripts SQL del repo tenían bugs que solo aparecieron en su primera ejecución real (gate con quote sin escapar, índices no idempotentes, `verify-ordering` leyendo una tabla revocada); `psql -1` (transacción única) evitó 3 estados parciales; `psql` no interpola `:'var'` dentro de bloques `DO $$`; el gate go/no-go por migración funcionó como red de seguridad.
 
-### FASE 7 — Convergencia CoachFlow (post-Fase 5, por slices) — riesgo: Medio — ✅ IMPLEMENTADA (slices 1–7, 2026-09-22; rollout pendiente del maintainer)
+### FASE 7 — Convergencia CoachFlow (post-Fase 5, por slices) — riesgo: Medio — ✅ IMPLEMENTADA Y DESPLEGADA (36 slices mergeados vía PRs #135–#170; rollout pasos 1–9 aplicados 2026-09-25/28; paso 10 — apagado de CoachFlow — pendiente del maintainer)
 
 > Decisión D-12 (2026-09-03): CoachFlow (C:\coachflow) — app de profes de gym con alumnos, rutinas y progreso — se ABSORBE al 100% dentro de GestiónPro. Comparten el mismo proyecto Supabase (qjawdjzaokffhiqnixcx); CoachFlow no tenía RLS ni Auth real (password_hash en texto plano en la DB) → agujero de seguridad que esta fase cierra.
 
-**Qué se absorbió** (SDD `fase7-coachflow`: 30 slices en pila local `feat/fase7-p1..p29-*`, nada pusheado):
+**Qué se absorbió** (SDD `fase7-coachflow`: 36 slices entregados en 36 PRs apilados #135–#170, mergeados a `main` el 2026-09-25 con CI verde):
 
 - **Núcleo (aditivo)**: tabla `cobros` (sirve a todos los rubros) + `clientes.email` + `turnos.cliente_id` / `turnos.lugar`.
 - **Rubro `gimnasio`**: 8 tablas `gym_*` (alumnos con ficha e IMC, biblioteca de ejercicios, rutinas por sesiones con actividades ordenadas, asignaciones, completados idempotentes, progreso) con RLS por membresía + grants explícitos; backend `features/gym` + `features/cobros` (Server Actions con zod) y UI en el shell (tabs Dashboard · Agenda · Alumnos · Rutinas · Cobros · Caja).
@@ -197,13 +197,28 @@ Verificación en producción (2026-09-14): login real OK; smoke seguro verde en 
 | 9   | Retiro                     | `psql -1 -f supabase/migrations/0008_fase7_drop_cf.sql`                                                          | el gate pasa; `cf_*` y `_fase7_*` = 0 filas             |
 | 10  | Apagado + redirección (D4) | ver abajo                                                                                                        | la app vieja no sirve; el dominio redirige a GestiónPro |
 
+**Estado del rollout (2026-09-28)** — pasos 1–9 aplicados en producción (evidencia completa en Engram, sesión del rollout):
+
+| #   | Estado                    | Evidencia                                                                                                       |
+| --- | ------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| 1   | ✅ 2026-09-25             | Backup pre `gestionpro-pre-fase7-20260925.{dump,sql}` verificado (`pg_restore --list`)                          |
+| 2   | ✅                        | `0005` + `0006` + `0007` aplicadas con `psql -1` (exit 0, transacción única cada una)                           |
+| 3   | ✅                        | `verify-rls: TODAS LAS COMPROBACIONES OK`                                                                       |
+| 4   | ✅                        | Auth con 1 profe probe (Gonzalo): usuario creado, hash `$2a$`, identidad OK                                     |
+| 5   | ✅                        | Auth del resto: 2/2 profes mapeados (Tafi con cuenta reusada)                                                   |
+| 6   | ✅                        | `migracion-coachflow.sql` + `migracion-coachflow-actividad.sql` (con el fix `hora::time`): 12 pares, 0 omitidos |
+| 7   | ✅                        | `verify-coachflow: TODAS LAS COMPROBACIONES OK` (exit 0)                                                        |
+| 8   | ✅                        | Backup post `gestionpro-post-fase7-20260925.{dump,sql}` (punto de restore del retiro)                           |
+| 9   | ✅ 2026-09-28             | `0008_fase7_drop_cf.sql` aplicado: gate 2/2, 13 tablas dropeadas, post-check 0 filas `cf_*`/`_fase7_*`          |
+| 10  | 🔲 pendiente (maintainer) | Apagado + redirección de CoachFlow (D4)                                                                         |
+
 **Apagado de CoachFlow y redirección (D4)** — cómo:
 
 1. CoachFlow es un Next.js aparte (repo `jormedp-glitch/coachflow`, local `C:\coachflow`) contra la misma Supabase; con el paso 9 aplicado ya no puede autenticar ni leer (`cf_*` no existen).
 2. Redirección: en el hosting del maintainer, apuntar el dominio viejo a `https://gestionpro-three.vercel.app` (Project Settings → Domains → Redirect) o pausar/eliminar el proyecto de CoachFlow; alternativa a nivel DNS/registrador: 301 del dominio viejo al nuevo.
 3. Cierre: archivar el repo `jormedp-glitch/coachflow` en GitHub (Settings → Archive) para que no se vuelva a desplegar; el `NEXT_PUBLIC_ADMIN_PASSWORD` que viajaba en el bundle muere con el apagado.
 
-**Pendiente post-rollout — regenerar `types/database.types.ts`**: el snapshot commiteado es PRE-fase 7 (todavía lista las `cf_*` y no tiene `gym_*`/`cobros`/RPCs nuevas). Regenerar recién después del paso 9; el diff es grande (salen 11 tablas `cf_*`, entran 9 tablas + columnas + 4 RPC del portal), por eso no se regeneró en el PR del retiro:
+**Post-rollout — `types/database.types.ts` (hecho, PR #175)**: el snapshot commiteado era PRE-fase 7 (listaba las `cf_*` y no tenía `gym_*`/`cobros`/RPCs nuevas). Se regeneró contra producción post-paso 9; el diff fue grande (salen 11 tablas `cf_*`, entran 9 tablas + columnas + 4 RPC del portal), por eso no se regeneró en el PR del retiro. Comando usado:
 
 ```bash
 supabase gen types typescript --project-id qjawdjzaokffhiqnixcx --schema public > types/database.types.ts
@@ -215,7 +230,7 @@ supabase gen types typescript --db-url "postgresql://postgres@127.0.0.1:54322/po
 
 - Recordatorios automáticos (Supabase Edge Function + pg_cron): recordatorio de turno (día anterior), recordatorio de retiro (3 y 7 días), re-pedido de cuota (7 días antes).
 - Reportes mensuales por negocio (CSV/PDF).
-- ✅ **Gestión de usuarios desde la app** (`fase6-gestion-usuarios`, 2026-09-21, SDD completo, slices 1–5, PRs #86/#88/#90/#92/#94): alta/invitación de usuarios, membresías por negocio (asignar/quitar) y roles (owner/editor) — antes se hacía a mano en Supabase (dashboard/SQL); fricción detectada en las pruebas manuales 2026-09-14 (TC-ADMIN-04: segundo usuario creado por SQL). **Entregado**: migración `0005_fase6_membresias.sql` (4 RPCs `security definer`: `listar_miembros`, `agregar_miembro`, `cambiar_rol_miembro`, `quitar_miembro`, patrón 0001:42-71) + `scripts/verify-membresias.sql`; cliente admin `server-only` (`lib/supabase/admin.ts`, R8, `createUserWithPassword`/`deleteUser`) + meta-test del guard; guards `isOwner`/`requireOwner` (`lib/auth/dal.ts`) + `lib/domain/contrasena.ts` (contraseña temporal pura, D6); Server Actions + data + 14 tests (`features/miembros/`); UI `/[slug]/usuarios` (lista + alta + rol + quitar, contraseña temporal devuelta una vez para WhatsApp) + link "Usuarios" owner-only en el shell. Verificación del autor: lint/typecheck/build OK, 226/226 tests, guard R8 sin secretos en el bundle. **Pendientes del maintainer**: (P1) provisionar `SUPABASE_SERVICE_ROLE_KEY` en Vercel (server-side; la URL pública ya existe como `NEXT_PUBLIC_SUPABASE_URL`); (P2) aplicar `0005` en Supabase con backup previo y correr `scripts/verify-membresias.sql` (exige un tenant con EXACTAMENTE 1 owner); (P3) runtime manual de `/[slug]/usuarios` con un owner real.
+- ✅ **Gestión de usuarios desde la app** (`fase6-gestion-usuarios`, 2026-09-21, SDD completo, slices 1–5, PRs #86/#88/#90/#92/#94): alta/invitación de usuarios, membresías por negocio (asignar/quitar) y roles (owner/editor) — antes se hacía a mano en Supabase (dashboard/SQL); fricción detectada en las pruebas manuales 2026-09-14 (TC-ADMIN-04: segundo usuario creado por SQL). **Entregado**: migración `0005_fase6_membresias.sql` (4 RPCs `security definer`: `listar_miembros`, `agregar_miembro`, `cambiar_rol_miembro`, `quitar_miembro`, patrón 0001:42-71) + `scripts/verify-membresias.sql`; cliente admin `server-only` (`lib/supabase/admin.ts`, R8, `createUserWithPassword`/`deleteUser`) + meta-test del guard; guards `isOwner`/`requireOwner` (`lib/auth/dal.ts`) + `lib/domain/contrasena.ts` (contraseña temporal pura, D6); Server Actions + data + 14 tests (`features/miembros/`); UI `/[slug]/usuarios` (lista + alta + rol + quitar, contraseña temporal devuelta una vez para WhatsApp) + link "Usuarios" owner-only en el shell. Verificación del autor: lint/typecheck/build OK, 226/226 tests, guard R8 sin secretos en el bundle. **Pendientes del maintainer**: (P1) provisionar `SUPABASE_SERVICE_ROLE_KEY` en Vercel (server-side; la URL pública ya existe como `NEXT_PUBLIC_SUPABASE_URL`); (P2) ✅ `0005` aplicada en producción durante la ventana del rollout de FASE 7 (2026-09-25, `psql -1`, corrida limpia); (P3) runtime manual de `/[slug]/usuarios` con un owner real.
 - Onboarding wizard del negocio nuevo (plan, servicios, horarios, colores).
 - Monetización (ver sección 3): facturación por negocio (Stripe) — según decisión D-01.
 - Branding por negocio en la página pública de seguimiento (logo, colores) — el gancho de crecimiento.
@@ -312,8 +327,8 @@ Inventario completo, facturación AFIP, RR. HH., multi-idioma, app nativa (PWA a
 | D-12 | ABSORBER CoachFlow al 100% dentro de GestiónPro (misma DB, sin RLS hoy)                                                                                                                                                                                                           | CoachFlow = app de profes de gym (alumnos/rutinas/progreso), comparte proyecto Supabase y no tiene RLS/Auth real → agujero de seguridad; la convergencia cierra el gap             | ✅ Adoptada — FASE 7 (post-Fase 5)                                                                                                                 | 2026-09-03 |
 | D-13 | Operación de schema en producción: backup verificado + `psql -1` (transacción única) + gates go/no-go por migración; scripts SQL probados antes en ensayo                                                                                                                         | El rollout real expuso bugs latentes en los scripts del repo y `psql -1` evitó 3 estados parciales                                                                                 | ✅ Adoptada (lecciones del rollout)                                                                                                                | 2026-09-11 |
 | D-14 | `numero_orden` en producción: numérico puro `0001` (normalizado desde `REP-2026-0001..0008`); se descarta el formato `R-YYYY-NNNN` del plan de Fase 2                                                                                                                             | El gate de 0003 exige numérico; consistente con D-09                                                                                                                               | ✅ Adoptada                                                                                                                                        | 2026-09-11 |
-| D-15 | Gestión de usuarios desde la app (FASE 6): 4 RPCs `security definer` para membresías (patrón 0001:42-71) + cliente admin `server-only` para Auth (R8); página `/[slug]/usuarios` owner-only (D3 del design `fase6-gestion-usuarios`)                                              | Fricción TC-ADMIN-04 (usuarios creados por SQL); R8 exige que el secreto nunca llegue al bundle; UI en página propia para no filtrar datos a editores                              | ✅ Adoptada (implementada 2026-09-21, PRs #86/#88/#90/#92/#94; rollout 0005 pendiente del maintainer)                                              | 2026-09-15 |
-| D-16 | FASE 7 — convergencia CoachFlow: núcleo aditivo (`cobros`, `clientes.email`, `turnos.cliente_id`/`lugar`), rubro `gimnasio` con RLS/grants, portal por `portal_token` UUID (capacidad, sin oráculo), migración SQL transaccional con map y retiro de `cf_*` en `0008` post-verify | Cerrar el agujero de seguridad de CoachFlow (password en texto plano, sin RLS) absorbiéndolo; decisiones del spec D1–D6 y design AD-1…AD-7                                         | ✅ Adoptada (implementada 2026-09-22; rollout pendiente del maintainer)                                                                            | 2026-09-22 |
+| D-15 | Gestión de usuarios desde la app (FASE 6): 4 RPCs `security definer` para membresías (patrón 0001:42-71) + cliente admin `server-only` para Auth (R8); página `/[slug]/usuarios` owner-only (D3 del design `fase6-gestion-usuarios`)                                              | Fricción TC-ADMIN-04 (usuarios creados por SQL); R8 exige que el secreto nunca llegue al bundle; UI en página propia para no filtrar datos a editores                              | ✅ Adoptada (implementada 2026-09-21, PRs #86/#88/#90/#92/#94; `0005` aplicada en producción 2026-09-25)                                           | 2026-09-15 |
+| D-16 | FASE 7 — convergencia CoachFlow: núcleo aditivo (`cobros`, `clientes.email`, `turnos.cliente_id`/`lugar`), rubro `gimnasio` con RLS/grants, portal por `portal_token` UUID (capacidad, sin oráculo), migración SQL transaccional con map y retiro de `cf_*` en `0008` post-verify | Cerrar el agujero de seguridad de CoachFlow (password en texto plano, sin RLS) absorbiéndolo; decisiones del spec D1–D6 y design AD-1…AD-7                                         | ✅ Adoptada (implementada 2026-09-22; mergeada vía PRs #135–#170; rollout pasos 1–9 aplicados 2026-09-25/28; paso 10 pendiente)                    | 2026-09-22 |
 
 ---
 
