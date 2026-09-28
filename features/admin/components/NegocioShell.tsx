@@ -126,7 +126,8 @@ export function NegocioShell({
             negocioNombre={negocio.nombre}
             turnos={turnos}
             hoy={hoy}
-            onNuevoTurno={() => abrirTurno(hoy)}
+            // Issue #189: el alta usa la fecha del día seleccionado.
+            onNuevoTurno={abrirTurno}
             showToast={showToast}
           />
         )}

@@ -113,15 +113,22 @@ describe("NegocioShell (R1 · escenario 1: tabs por rubro)", () => {
     }
   });
 
-  it("servicio técnico: mantiene Reparaciones y no muestra Agenda", () => {
+  it("servicio técnico: mantiene Reparaciones y suma Agenda (#189)", () => {
     renderShell("servicio_tecnico");
 
     expect(
       screen.getByRole("link", { name: /Reparaciones/ }),
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /Agenda/ }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Agenda/ })).toBeInTheDocument();
+  });
+
+  it("servicio técnico: el tab Agenda renderiza la sección de agenda", async () => {
+    const user = userEvent.setup();
+    renderShell("servicio_tecnico");
+
+    await user.click(screen.getByRole("button", { name: /Agenda/ }));
+
+    expect(screen.getByTestId("seccion-agenda")).toBeInTheDocument();
   });
 
   it("el tab activo cambia la sección renderizada sin cambiar de ruta", async () => {

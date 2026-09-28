@@ -107,6 +107,15 @@ describe("NegocioHeader (issue #183: sección activa y vuelta)", () => {
     );
   });
 
+  it("servicio técnico incluye Agenda con el deep link ?vista=agenda (#189)", () => {
+    renderHeader({ rubro: "servicio_tecnico" });
+
+    expect(screen.getByRole("link", { name: /Agenda/ })).toHaveAttribute(
+      "href",
+      "/taller-test?vista=agenda",
+    );
+  });
+
   it("Usuarios no aparece para un no-owner", () => {
     renderHeader({ esOwner: false });
 

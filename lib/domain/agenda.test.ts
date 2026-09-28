@@ -1,12 +1,16 @@
 // lib/domain/agenda.test.ts
 //
-// Red de seguridad de la ventana semanal del dashboard (issue #187): límites
-// de la ventana (hoy y día 7 dentro; día 8 y ayer fuera), orden por fecha +
-// hora y etiquetas de agrupación (Hoy / Mañana / día de semana). Fechas
-// fijas: sin dependencia TZ.
+// Red de seguridad de la agenda: ventana semanal del dashboard (issue #187:
+// límites, orden y etiquetas de agrupación) y navegación semanal (issue #189:
+// sumarDias y los 7 días del strip). Fechas fijas: sin dependencia TZ.
 
 import { describe, expect, it } from "vitest";
-import { agruparTurnosPorDia, proximosTurnos } from "./agenda";
+import {
+  agruparTurnosPorDia,
+  diasDeLaSemana,
+  proximosTurnos,
+  sumarDias,
+} from "./agenda";
 
 const HOY = "2026-09-28"; // lunes
 
@@ -123,5 +127,80 @@ describe("agruparTurnosPorDia", () => {
 
   it("lista vacía devuelve []", () => {
     expect(agruparTurnosPorDia([], HOY)).toEqual([]);
+  });
+});
+
+describe("sumarDias (#189 · navegación semanal)", () => {
+  it("suma días con cruce de mes", () => {
+    expect(sumarDias("2026-09-28", 3)).toBe("2026-10-01");
+    expect(sumarDias("2026-09-30", 1)).toBe("2026-10-01");
+  });
+
+  it("resta días (n negativo) con cruce de mes", () => {
+    expect(sumarDias("2026-10-01", -3)).toBe("2026-09-28");
+    expect(sumarDias("2026-10-01", -1)).toBe("2026-09-30");
+  });
+
+  it("cruza el año en ambos sentidos", () => {
+    expect(sumarDias("2026-12-31", 1)).toBe("2027-01-01");
+    expect(sumarDias("2027-01-01", -1)).toBe("2026-12-31");
+  });
+
+  it("respeta el 29 de febrero bisiesto", () => {
+    expect(sumarDias("2028-02-28", 1)).toBe("2028-02-29");
+  });
+
+  it("con fecha base inválida la devuelve sin cambios", () => {
+    expect(sumarDias("no-es-fecha", 7)).toBe("no-es-fecha");
+    expect(sumarDias("2026-02-30", 1)).toBe("2026-02-30");
+  });
+});
+
+describe("diasDeLaSemana (#189 · strip semanal)", () => {
+  it("con lunes devuelve la semana completa de lunes a domingo", () => {
+    expect(diasDeLaSemana("2026-09-28")).toEqual([
+      { fecha: "2026-09-28", etiqueta: "LUN", numeroDia: "28" },
+      { fecha: "2026-09-29", etiqueta: "MAR", numeroDia: "29" },
+      { fecha: "2026-09-30", etiqueta: "MIÉ", numeroDia: "30" },
+      { fecha: "2026-10-01", etiqueta: "JUE", numeroDia: "01" },
+      { fecha: "2026-10-02", etiqueta: "VIE", numeroDia: "02" },
+      { fecha: "2026-10-03", etiqueta: "SÁB", numeroDia: "03" },
+      { fecha: "2026-10-04", etiqueta: "DOM", numeroDia: "04" },
+    ]);
+  });
+
+  it("con domingo retrocede al lunes de esa semana (cruce de mes)", () => {
+    const semana = diasDeLaSemana("2026-10-04");
+
+    expect(semana[0]).toEqual({
+      fecha: "2026-09-28",
+      etiqueta: "LUN",
+      numeroDia: "28",
+    });
+    expect(semana[6]).toEqual({
+      fecha: "2026-10-04",
+      etiqueta: "DOM",
+      numeroDia: "04",
+    });
+  });
+
+  it("con un día de mitad de semana cruza el año si hace falta", () => {
+    // 2027-01-01 es viernes: su semana arranca el lunes 2026-12-28.
+    const semana = diasDeLaSemana("2027-01-01");
+
+    expect(semana.map((d) => d.fecha)).toEqual([
+      "2026-12-28",
+      "2026-12-29",
+      "2026-12-30",
+      "2026-12-31",
+      "2027-01-01",
+      "2027-01-02",
+      "2027-01-03",
+    ]);
+  });
+
+  it("con fecha inválida no hay semana calculable: devuelve []", () => {
+    expect(diasDeLaSemana("no-es-fecha")).toEqual([]);
+    expect(diasDeLaSemana("2026-02-30")).toEqual([]);
   });
 });
