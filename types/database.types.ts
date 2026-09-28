@@ -38,488 +38,11 @@ export type Database = {
         }
         Relationships: []
       }
-      cf_alumnos: {
-        Row: {
-          altura_cm: number | null
-          codigo_acceso: string
-          created_at: string | null
-          email: string | null
-          estado: string | null
-          fecha_nac: string | null
-          id: string
-          nombre: string
-          notas: string | null
-          objetivo: string | null
-          profe_id: string | null
-          telefono: string | null
-        }
-        Insert: {
-          altura_cm?: number | null
-          codigo_acceso: string
-          created_at?: string | null
-          email?: string | null
-          estado?: string | null
-          fecha_nac?: string | null
-          id?: string
-          nombre: string
-          notas?: string | null
-          objetivo?: string | null
-          profe_id?: string | null
-          telefono?: string | null
-        }
-        Update: {
-          altura_cm?: number | null
-          codigo_acceso?: string
-          created_at?: string | null
-          email?: string | null
-          estado?: string | null
-          fecha_nac?: string | null
-          id?: string
-          nombre?: string
-          notas?: string | null
-          objetivo?: string | null
-          profe_id?: string | null
-          telefono?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_alumnos_profe_id_fkey"
-            columns: ["profe_id"]
-            isOneToOne: false
-            referencedRelation: "cf_profes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cf_asignaciones: {
-        Row: {
-          activa: boolean | null
-          alumno_id: string | null
-          fecha_inicio: string | null
-          id: string
-          rutina_id: string | null
-          semana_actual: number | null
-        }
-        Insert: {
-          activa?: boolean | null
-          alumno_id?: string | null
-          fecha_inicio?: string | null
-          id?: string
-          rutina_id?: string | null
-          semana_actual?: number | null
-        }
-        Update: {
-          activa?: boolean | null
-          alumno_id?: string | null
-          fecha_inicio?: string | null
-          id?: string
-          rutina_id?: string | null
-          semana_actual?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_asignaciones_alumno_id_fkey"
-            columns: ["alumno_id"]
-            isOneToOne: false
-            referencedRelation: "cf_alumnos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cf_asignaciones_rutina_id_fkey"
-            columns: ["rutina_id"]
-            isOneToOne: false
-            referencedRelation: "cf_rutinas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cf_completados: {
-        Row: {
-          alumno_id: string | null
-          created_at: string | null
-          fecha: string | null
-          id: string
-          rutina_ejercicio_id: string | null
-        }
-        Insert: {
-          alumno_id?: string | null
-          created_at?: string | null
-          fecha?: string | null
-          id?: string
-          rutina_ejercicio_id?: string | null
-        }
-        Update: {
-          alumno_id?: string | null
-          created_at?: string | null
-          fecha?: string | null
-          id?: string
-          rutina_ejercicio_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_completados_alumno_id_fkey"
-            columns: ["alumno_id"]
-            isOneToOne: false
-            referencedRelation: "cf_alumnos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cf_completados_rutina_ejercicio_id_fkey"
-            columns: ["rutina_ejercicio_id"]
-            isOneToOne: false
-            referencedRelation: "cf_rutina_ejercicios"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cf_ejercicios: {
-        Row: {
-          activo: boolean | null
-          descripcion: string | null
-          es_global: boolean | null
-          grupo_muscular: string | null
-          id: string
-          nombre: string
-          profe_id: string | null
-          url_video: string | null
-        }
-        Insert: {
-          activo?: boolean | null
-          descripcion?: string | null
-          es_global?: boolean | null
-          grupo_muscular?: string | null
-          id?: string
-          nombre: string
-          profe_id?: string | null
-          url_video?: string | null
-        }
-        Update: {
-          activo?: boolean | null
-          descripcion?: string | null
-          es_global?: boolean | null
-          grupo_muscular?: string | null
-          id?: string
-          nombre?: string
-          profe_id?: string | null
-          url_video?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_ejercicios_profe_id_fkey"
-            columns: ["profe_id"]
-            isOneToOne: false
-            referencedRelation: "cf_profes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cf_pagos: {
-        Row: {
-          alumno_id: string | null
-          concepto: string | null
-          fecha: string | null
-          id: string
-          medio_pago: string | null
-          monto: number
-          profe_id: string | null
-        }
-        Insert: {
-          alumno_id?: string | null
-          concepto?: string | null
-          fecha?: string | null
-          id?: string
-          medio_pago?: string | null
-          monto: number
-          profe_id?: string | null
-        }
-        Update: {
-          alumno_id?: string | null
-          concepto?: string | null
-          fecha?: string | null
-          id?: string
-          medio_pago?: string | null
-          monto?: number
-          profe_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_pagos_alumno_id_fkey"
-            columns: ["alumno_id"]
-            isOneToOne: false
-            referencedRelation: "cf_alumnos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cf_pagos_profe_id_fkey"
-            columns: ["profe_id"]
-            isOneToOne: false
-            referencedRelation: "cf_profes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cf_profes: {
-        Row: {
-          activo: boolean | null
-          bio: string | null
-          created_at: string | null
-          deporte: string | null
-          email: string | null
-          id: string
-          nombre: string
-          password_hash: string
-          slug: string
-          telefono: string | null
-        }
-        Insert: {
-          activo?: boolean | null
-          bio?: string | null
-          created_at?: string | null
-          deporte?: string | null
-          email?: string | null
-          id?: string
-          nombre: string
-          password_hash: string
-          slug: string
-          telefono?: string | null
-        }
-        Update: {
-          activo?: boolean | null
-          bio?: string | null
-          created_at?: string | null
-          deporte?: string | null
-          email?: string | null
-          id?: string
-          nombre?: string
-          password_hash?: string
-          slug?: string
-          telefono?: string | null
-        }
-        Relationships: []
-      }
-      cf_progreso: {
-        Row: {
-          alumno_id: string | null
-          bicep_cm: number | null
-          cadera: number | null
-          cintura: number | null
-          fecha: string | null
-          id: string
-          metrica1_nombre: string | null
-          metrica1_valor: number | null
-          metrica2_nombre: string | null
-          metrica2_valor: number | null
-          notas: string | null
-          pecho_cm: number | null
-          peso: number | null
-          porcentaje_grasa: number | null
-        }
-        Insert: {
-          alumno_id?: string | null
-          bicep_cm?: number | null
-          cadera?: number | null
-          cintura?: number | null
-          fecha?: string | null
-          id?: string
-          metrica1_nombre?: string | null
-          metrica1_valor?: number | null
-          metrica2_nombre?: string | null
-          metrica2_valor?: number | null
-          notas?: string | null
-          pecho_cm?: number | null
-          peso?: number | null
-          porcentaje_grasa?: number | null
-        }
-        Update: {
-          alumno_id?: string | null
-          bicep_cm?: number | null
-          cadera?: number | null
-          cintura?: number | null
-          fecha?: string | null
-          id?: string
-          metrica1_nombre?: string | null
-          metrica1_valor?: number | null
-          metrica2_nombre?: string | null
-          metrica2_valor?: number | null
-          notas?: string | null
-          pecho_cm?: number | null
-          peso?: number | null
-          porcentaje_grasa?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_progreso_alumno_id_fkey"
-            columns: ["alumno_id"]
-            isOneToOne: false
-            referencedRelation: "cf_alumnos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cf_rutina_ejercicios: {
-        Row: {
-          descanso_seg: number | null
-          ejercicio_id: string | null
-          id: string
-          notas: string | null
-          orden: number | null
-          repeticiones: string | null
-          semana_id: string | null
-          series: number | null
-        }
-        Insert: {
-          descanso_seg?: number | null
-          ejercicio_id?: string | null
-          id?: string
-          notas?: string | null
-          orden?: number | null
-          repeticiones?: string | null
-          semana_id?: string | null
-          series?: number | null
-        }
-        Update: {
-          descanso_seg?: number | null
-          ejercicio_id?: string | null
-          id?: string
-          notas?: string | null
-          orden?: number | null
-          repeticiones?: string | null
-          semana_id?: string | null
-          series?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_rutina_ejercicios_ejercicio_id_fkey"
-            columns: ["ejercicio_id"]
-            isOneToOne: false
-            referencedRelation: "cf_ejercicios"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cf_rutina_ejercicios_semana_id_fkey"
-            columns: ["semana_id"]
-            isOneToOne: false
-            referencedRelation: "cf_rutina_semanas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cf_rutina_semanas: {
-        Row: {
-          id: string
-          numero_semana: number
-          rutina_id: string | null
-        }
-        Insert: {
-          id?: string
-          numero_semana: number
-          rutina_id?: string | null
-        }
-        Update: {
-          id?: string
-          numero_semana?: number
-          rutina_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_rutina_semanas_rutina_id_fkey"
-            columns: ["rutina_id"]
-            isOneToOne: false
-            referencedRelation: "cf_rutinas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cf_rutinas: {
-        Row: {
-          activo: boolean | null
-          created_at: string | null
-          descripcion: string | null
-          id: string
-          nombre: string
-          profe_id: string | null
-          semanas_total: number | null
-        }
-        Insert: {
-          activo?: boolean | null
-          created_at?: string | null
-          descripcion?: string | null
-          id?: string
-          nombre: string
-          profe_id?: string | null
-          semanas_total?: number | null
-        }
-        Update: {
-          activo?: boolean | null
-          created_at?: string | null
-          descripcion?: string | null
-          id?: string
-          nombre?: string
-          profe_id?: string | null
-          semanas_total?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_rutinas_profe_id_fkey"
-            columns: ["profe_id"]
-            isOneToOne: false
-            referencedRelation: "cf_profes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      cf_turnos: {
-        Row: {
-          alumno_id: string | null
-          duracion_min: number | null
-          espacio: string | null
-          estado: string | null
-          fecha_hora: string
-          id: string
-          notas: string | null
-          profe_id: string | null
-        }
-        Insert: {
-          alumno_id?: string | null
-          duracion_min?: number | null
-          espacio?: string | null
-          estado?: string | null
-          fecha_hora: string
-          id?: string
-          notas?: string | null
-          profe_id?: string | null
-        }
-        Update: {
-          alumno_id?: string | null
-          duracion_min?: number | null
-          espacio?: string | null
-          estado?: string | null
-          fecha_hora?: string
-          id?: string
-          notas?: string | null
-          profe_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cf_turnos_alumno_id_fkey"
-            columns: ["alumno_id"]
-            isOneToOne: false
-            referencedRelation: "cf_alumnos"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "cf_turnos_profe_id_fkey"
-            columns: ["profe_id"]
-            isOneToOne: false
-            referencedRelation: "cf_profes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       clientes: {
         Row: {
           created_at: string | null
           cuota: number | null
+          email: string | null
           estado: string | null
           id: string
           negocio_id: string | null
@@ -531,6 +54,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           cuota?: number | null
+          email?: string | null
           estado?: string | null
           id?: string
           negocio_id?: string | null
@@ -542,6 +66,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           cuota?: number | null
+          email?: string | null
           estado?: string | null
           id?: string
           negocio_id?: string | null
@@ -553,6 +78,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clientes_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cobros: {
+        Row: {
+          cliente_id: string
+          concepto: string | null
+          created_at: string
+          fecha: string
+          id: string
+          medio_pago: string
+          monto: number
+          negocio_id: string
+        }
+        Insert: {
+          cliente_id: string
+          concepto?: string | null
+          created_at?: string
+          fecha: string
+          id?: string
+          medio_pago: string
+          monto: number
+          negocio_id: string
+        }
+        Update: {
+          cliente_id?: string
+          concepto?: string | null
+          created_at?: string
+          fecha?: string
+          id?: string
+          medio_pago?: string
+          monto?: number
+          negocio_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cobros_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cobros_negocio_id_fkey"
             columns: ["negocio_id"]
             isOneToOne: false
             referencedRelation: "negocios"
@@ -675,6 +248,403 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "gastos_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_alumnos: {
+        Row: {
+          altura_cm: number | null
+          cliente_id: string
+          codigo_acceso: string | null
+          created_at: string
+          fecha_nac: string | null
+          negocio_id: string
+          notas: string | null
+          objetivo: string | null
+          portal_token: string
+        }
+        Insert: {
+          altura_cm?: number | null
+          cliente_id: string
+          codigo_acceso?: string | null
+          created_at?: string
+          fecha_nac?: string | null
+          negocio_id: string
+          notas?: string | null
+          objetivo?: string | null
+          portal_token?: string
+        }
+        Update: {
+          altura_cm?: number | null
+          cliente_id?: string
+          codigo_acceso?: string | null
+          created_at?: string
+          fecha_nac?: string | null
+          negocio_id?: string
+          notas?: string | null
+          objetivo?: string | null
+          portal_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_alumnos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: true
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_alumnos_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_asignaciones: {
+        Row: {
+          activa: boolean
+          cliente_id: string
+          fecha_inicio: string
+          id: string
+          negocio_id: string
+          rutina_id: string
+          sesion_actual: number
+        }
+        Insert: {
+          activa?: boolean
+          cliente_id: string
+          fecha_inicio?: string
+          id?: string
+          negocio_id: string
+          rutina_id: string
+          sesion_actual?: number
+        }
+        Update: {
+          activa?: boolean
+          cliente_id?: string
+          fecha_inicio?: string
+          id?: string
+          negocio_id?: string
+          rutina_id?: string
+          sesion_actual?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_asignaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_asignaciones_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_asignaciones_rutina_id_fkey"
+            columns: ["rutina_id"]
+            isOneToOne: false
+            referencedRelation: "gym_rutinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_completados: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          fecha: string
+          id: string
+          negocio_id: string
+          rutina_ejercicio_id: string
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          fecha: string
+          id?: string
+          negocio_id: string
+          rutina_ejercicio_id: string
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          fecha?: string
+          id?: string
+          negocio_id?: string
+          rutina_ejercicio_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_completados_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_completados_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_completados_rutina_ejercicio_id_fkey"
+            columns: ["rutina_ejercicio_id"]
+            isOneToOne: false
+            referencedRelation: "gym_rutina_ejercicios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_ejercicios: {
+        Row: {
+          activo: boolean
+          created_at: string
+          descripcion: string | null
+          grupo_muscular: string | null
+          id: string
+          negocio_id: string | null
+          nombre: string
+          url_video: string | null
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          descripcion?: string | null
+          grupo_muscular?: string | null
+          id?: string
+          negocio_id?: string | null
+          nombre: string
+          url_video?: string | null
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          descripcion?: string | null
+          grupo_muscular?: string | null
+          id?: string
+          negocio_id?: string | null
+          nombre?: string
+          url_video?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_ejercicios_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_progreso: {
+        Row: {
+          bicep_cm: number | null
+          cadera: number | null
+          cintura: number | null
+          cliente_id: string
+          created_at: string
+          fecha: string
+          id: string
+          metrica1_nombre: string | null
+          metrica1_valor: number | null
+          metrica2_nombre: string | null
+          metrica2_valor: number | null
+          negocio_id: string
+          notas: string | null
+          pecho_cm: number | null
+          peso: number
+          porcentaje_grasa: number | null
+        }
+        Insert: {
+          bicep_cm?: number | null
+          cadera?: number | null
+          cintura?: number | null
+          cliente_id: string
+          created_at?: string
+          fecha: string
+          id?: string
+          metrica1_nombre?: string | null
+          metrica1_valor?: number | null
+          metrica2_nombre?: string | null
+          metrica2_valor?: number | null
+          negocio_id: string
+          notas?: string | null
+          pecho_cm?: number | null
+          peso: number
+          porcentaje_grasa?: number | null
+        }
+        Update: {
+          bicep_cm?: number | null
+          cadera?: number | null
+          cintura?: number | null
+          cliente_id?: string
+          created_at?: string
+          fecha?: string
+          id?: string
+          metrica1_nombre?: string | null
+          metrica1_valor?: number | null
+          metrica2_nombre?: string | null
+          metrica2_valor?: number | null
+          negocio_id?: string
+          notas?: string | null
+          pecho_cm?: number | null
+          peso?: number
+          porcentaje_grasa?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_progreso_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_progreso_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_rutina_ejercicios: {
+        Row: {
+          descanso_seg: number | null
+          ejercicio_id: string
+          id: string
+          negocio_id: string
+          notas: string | null
+          orden: number
+          repeticiones: string | null
+          series: number | null
+          sesion_id: string
+        }
+        Insert: {
+          descanso_seg?: number | null
+          ejercicio_id: string
+          id?: string
+          negocio_id: string
+          notas?: string | null
+          orden?: number
+          repeticiones?: string | null
+          series?: number | null
+          sesion_id: string
+        }
+        Update: {
+          descanso_seg?: number | null
+          ejercicio_id?: string
+          id?: string
+          negocio_id?: string
+          notas?: string | null
+          orden?: number
+          repeticiones?: string | null
+          series?: number | null
+          sesion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_rutina_ejercicios_ejercicio_id_fkey"
+            columns: ["ejercicio_id"]
+            isOneToOne: false
+            referencedRelation: "gym_ejercicios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_rutina_ejercicios_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_rutina_ejercicios_sesion_id_fkey"
+            columns: ["sesion_id"]
+            isOneToOne: false
+            referencedRelation: "gym_rutina_sesiones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_rutina_sesiones: {
+        Row: {
+          id: string
+          negocio_id: string
+          numero_sesion: number
+          rutina_id: string
+        }
+        Insert: {
+          id?: string
+          negocio_id: string
+          numero_sesion: number
+          rutina_id: string
+        }
+        Update: {
+          id?: string
+          negocio_id?: string
+          numero_sesion?: number
+          rutina_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_rutina_sesiones_negocio_id_fkey"
+            columns: ["negocio_id"]
+            isOneToOne: false
+            referencedRelation: "negocios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gym_rutina_sesiones_rutina_id_fkey"
+            columns: ["rutina_id"]
+            isOneToOne: false
+            referencedRelation: "gym_rutinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_rutinas: {
+        Row: {
+          activo: boolean
+          created_at: string
+          descripcion: string | null
+          id: string
+          negocio_id: string
+          nombre: string
+          sesiones_total: number
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          negocio_id: string
+          nombre: string
+          sesiones_total: number
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          negocio_id?: string
+          nombre?: string
+          sesiones_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_rutinas_negocio_id_fkey"
             columns: ["negocio_id"]
             isOneToOne: false
             referencedRelation: "negocios"
@@ -859,6 +829,7 @@ export type Database = {
       }
       turnos: {
         Row: {
+          cliente_id: string | null
           cliente_nombre: string
           created_at: string | null
           duracion: number | null
@@ -866,12 +837,14 @@ export type Database = {
           fecha: string
           hora: string
           id: string
+          lugar: string | null
           negocio_id: string | null
           notas: string | null
           servicio: string
           telefono: string | null
         }
         Insert: {
+          cliente_id?: string | null
           cliente_nombre: string
           created_at?: string | null
           duracion?: number | null
@@ -879,12 +852,14 @@ export type Database = {
           fecha: string
           hora: string
           id?: string
+          lugar?: string | null
           negocio_id?: string | null
           notas?: string | null
           servicio: string
           telefono?: string | null
         }
         Update: {
+          cliente_id?: string | null
           cliente_nombre?: string
           created_at?: string | null
           duracion?: number | null
@@ -892,12 +867,20 @@ export type Database = {
           fecha?: string
           hora?: string
           id?: string
+          lugar?: string | null
           negocio_id?: string | null
           notas?: string | null
           servicio?: string
           telefono?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "turnos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "turnos_negocio_id_fkey"
             columns: ["negocio_id"]
@@ -912,6 +895,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      agregar_miembro: {
+        Args: { p_email: string; p_negocio_id: string; p_rol: string }
+        Returns: undefined
+      }
+      avanzar_sesion_portal: { Args: { p_token: string }; Returns: Json }
+      cambiar_rol_miembro: {
+        Args: { p_negocio_id: string; p_rol: string; p_user_id: string }
+        Returns: undefined
+      }
       crear_negocio_con_owner: {
         Args: { p_nombre: string; p_rubro: string; p_slug: string }
         Returns: {
@@ -930,7 +922,33 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      desmarcar_completado_portal: {
+        Args: {
+          p_fecha: string
+          p_rutina_ejercicio_id: string
+          p_token: string
+        }
+        Returns: Json
+      }
       generar_numero_orden: { Args: { p_negocio_id: string }; Returns: string }
+      listar_miembros: {
+        Args: { p_negocio_id: string }
+        Returns: {
+          created_at: string
+          email: string
+          rol: string
+          user_id: string
+        }[]
+      }
+      marcar_completado_portal: {
+        Args: {
+          p_fecha: string
+          p_rutina_ejercicio_id: string
+          p_token: string
+        }
+        Returns: Json
+      }
+      obtener_portal_alumno: { Args: { p_token: string }; Returns: Json }
       obtener_seguimiento_publico: {
         Args: { p_token: string }
         Returns: {
@@ -949,6 +967,10 @@ export type Database = {
           presupuesto: number
           problema_reportado: string
         }[]
+      }
+      quitar_miembro: {
+        Args: { p_negocio_id: string; p_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
