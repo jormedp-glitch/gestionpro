@@ -123,7 +123,11 @@ export function TurnosAgenda({
             >
               <div>
                 <span className="mr-3 font-bold text-accent">{t.hora}</span>
-                <span className="font-medium">{t.cliente_nombre}</span>
+                {/* Sin teléfono el turno es un compromiso interno (#179):
+                    📌; con teléfono hay a quién avisarle: 👤. */}
+                <span className="font-medium">
+                  {telefono ? "👤" : "📌"} {t.cliente_nombre}
+                </span>
                 <span className="ml-2 text-sm text-muted-foreground">
                   · {t.servicio} ({t.duracion}min)
                 </span>

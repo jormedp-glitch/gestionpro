@@ -82,7 +82,9 @@ export function DashboardResumen({
           >
             <div>
               <span className="mr-3 font-bold text-accent">{t.hora}</span>
-              {t.cliente_nombre} · {t.servicio}
+              {/* Mismo criterio que la agenda (#179): 📌 compromiso interno
+                  sin teléfono, 👤 con teléfono para avisar. */}
+              {t.telefono ? "👤" : "📌"} {t.cliente_nombre} · {t.servicio}
             </div>
             <span className="text-xs text-emerald-400">{t.estado}</span>
           </div>

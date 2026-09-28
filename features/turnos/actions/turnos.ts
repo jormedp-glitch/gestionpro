@@ -26,6 +26,8 @@ const crearTurnoSchema = z.object({
   hora: z.string().trim().min(1, "Completá la hora"),
   duracion: z.coerce.number().int().positive().optional(),
   notas: z.string().trim().optional(),
+  // Checkbox HTML: llega "on" cuando está marcado y ausente cuando no.
+  avisar: z.string().optional(),
 });
 
 const completarTurnoSchema = z.object({
@@ -35,8 +37,9 @@ const completarTurnoSchema = z.object({
 
 /**
  * Alta de turno (R9): valida con zod, inserta con estado "confirmado" y
- * revalida la ruta del shell. Si hay teléfono, devuelve el waUrl del mensaje
- * de confirmación (R3/R4) para que el cliente lo abra.
+ * revalida la ruta del shell. El waUrl del mensaje de confirmación (R3/R4)
+ * solo se devuelve si hay teléfono Y el aviso está marcado (#179: en servicio
+ * técnico el turno puede ser un compromiso interno sin notificación).
  */
 export async function crearTurno(
   _prev: TurnoActionResult,
@@ -47,6 +50,7 @@ export async function crearTurno(
     return { ok: false, error: "Completá todos los campos" };
   }
   const input = parsed.data;
+  const avisar = input.avisar === "on";
   const negocio = await requireNegocio(input.slug);
   const supabase = await createClient();
 
@@ -69,7 +73,7 @@ export async function crearTurno(
   revalidatePath(`/${input.slug}`);
 
   let waUrl: string | undefined;
-  if (input.telefono) {
+  if (input.telefono && avisar) {
     waUrl = buildWhatsAppLink(
       input.telefono,
       mensajeTurnoConfirmado(

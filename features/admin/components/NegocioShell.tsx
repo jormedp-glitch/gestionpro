@@ -289,6 +289,7 @@ export function NegocioShell({
       {modal === "turno" && (
         <NuevoTurnoModal
           slug={slug}
+          rubro={negocio.rubro}
           fechaInicial={modalData.fecha || hoy}
           onClose={() => setModal(null)}
           onToast={showToast}
