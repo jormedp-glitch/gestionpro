@@ -42,7 +42,7 @@ export function DashboardResumen({
   const neto = ingresoMes - gastosMes;
   const clientesConAdeuda = clientes.filter((c) => c.estado !== "activo");
   // Issue #187: la card de turnos pasa de "solo hoy" a la semana agrupada por
-  // día (servicio_tecnico no tiene Agenda: este es su único tablero).
+  // día. Desde #189 todos los rubros tienen además la Agenda navegable.
   const gruposSemana = agruparTurnosPorDia(turnosSemana, hoy);
 
   const kpis: Array<[string, string, string, string]> = [

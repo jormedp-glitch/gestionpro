@@ -91,6 +91,8 @@ export function NegocioHeader({
     negocio.rubro === "servicio_tecnico" ? (
       <>
         {tabVista("dashboard", "📊 Dashboard")}
+        {/* Issue #189: el taller también planifica su semana en la Agenda. */}
+        {tabVista("agenda", "📅 Agenda")}
         {/* R6: sub-ruta con guard server-side, fuera del switcher. */}
         <a
           key="reparaciones"
