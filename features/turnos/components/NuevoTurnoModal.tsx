@@ -8,6 +8,11 @@
 // fábrica (REQ-UP-2); cierre por overlay/ESC via onOpenChange; hora con la
 // primitiva Select (teclado, REQ-UP-2); cero estilos inline (REQ-TT-3); el
 // color por prop se eliminó (tokens).
+//
+// #179: el aviso por WhatsApp es optativo y arranca según el rubro
+// (lib/domain/rubros): en servicio técnico viene apagado porque el turno
+// suele ser un compromiso interno. Sin teléfono el checkbox queda
+// deshabilitado y no se envía.
 
 "use client";
 
@@ -15,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import { useActionState } from "react";
 import { crearTurno } from "@/features/turnos/actions/turnos";
 import type { TurnoActionResult } from "@/features/turnos/actions/turnos";
+import { avisoTurnoPorDefecto } from "@/lib/domain/rubros";
 import { Button } from "@/lib/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/lib/ui/dialog";
 import { Input } from "@/lib/ui/input";
@@ -33,6 +39,7 @@ interface FormularioTurno {
   fecha: string;
   hora: string;
   notas: string;
+  avisar: boolean;
 }
 
 const HORAS = [
@@ -65,11 +72,13 @@ const HORAS = [
 
 export function NuevoTurnoModal({
   slug,
+  rubro,
   fechaInicial,
   onClose,
   onToast,
 }: {
   slug: string;
+  rubro: string;
   fechaInicial: string;
   onClose: () => void;
   onToast: (msg: string) => void;
@@ -84,8 +93,13 @@ export function NuevoTurnoModal({
     fecha: fechaInicial,
     hora: "",
     notas: "",
+    // Default por rubro: en servicio técnico el turno no se notifica.
+    avisar: avisoTurnoPorDefecto(rubro),
   });
   const manejado = useRef(false);
+
+  // Sin teléfono no hay a quién avisar: el checkbox queda deshabilitado.
+  const telefonoCargado = form.telefono.trim() !== "";
 
   function setCampo<K extends keyof FormularioTurno>(
     campo: K,
@@ -116,17 +130,28 @@ export function NuevoTurnoModal({
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="hora" value={form.hora} />
           <Input
-            placeholder="Nombre del cliente"
+            placeholder="Cliente o tarea"
             name="cliente_nombre"
             value={form.clienteNombre}
             onChange={(e) => setCampo("clienteNombre", e.target.value)}
           />
           <Input
-            placeholder="Teléfono (WhatsApp)"
+            placeholder="Teléfono (opcional — con teléfono podés avisarle)"
             name="telefono"
             value={form.telefono}
             onChange={(e) => setCampo("telefono", e.target.value)}
           />
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">
+            <input
+              type="checkbox"
+              name="avisar"
+              checked={form.avisar && telefonoCargado}
+              disabled={!telefonoCargado}
+              onChange={(e) => setCampo("avisar", e.target.checked)}
+              className="h-4 w-4 accent-accent"
+            />
+            Avisar al cliente por WhatsApp
+          </label>
           <Input
             placeholder="Servicio"
             name="servicio"
