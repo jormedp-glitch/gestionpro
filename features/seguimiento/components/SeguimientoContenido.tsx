@@ -153,9 +153,9 @@ export function SeguimientoContenido() {
             esListo
               ? "bg-green-500"
               : esSinReparacion
-                ? "bg-red-100"
+                ? "bg-red-100 dark:bg-red-400/15"
                 : esEntregado
-                  ? "bg-green-100"
+                  ? "bg-green-100 dark:bg-green-400/15"
                   : "bg-card",
           )}
         >
@@ -195,8 +195,8 @@ export function SeguimientoContenido() {
             </div>
           )}
           {esSinReparacion && (
-            <div className="mt-4 rounded-xl bg-red-50 p-3">
-              <p className="text-sm text-red-700">
+            <div className="mt-4 rounded-xl bg-red-50 p-3 dark:bg-red-400/10">
+              <p className="text-sm text-red-700 dark:text-red-300">
                 No fue posible realizar la reparación. Puede pasar a retirar su
                 equipo sin costo.
               </p>
@@ -236,7 +236,7 @@ export function SeguimientoContenido() {
                         actual
                           ? "font-bold text-accent"
                           : completado
-                            ? "text-green-700"
+                            ? "text-green-700 dark:text-green-400"
                             : "text-muted-foreground",
                       )}
                     >

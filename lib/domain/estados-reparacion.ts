@@ -33,55 +33,60 @@ export const ESTADOS: EstadoInfo[] = [
   {
     valor: "recibido",
     etiqueta: "Recibido",
-    color: "bg-gray-100 text-gray-700",
+    color: "bg-gray-100 text-gray-700 dark:bg-gray-400/15 dark:text-gray-300",
     icono: "📥",
   },
   {
     valor: "en_diagnostico",
     etiqueta: "En diagnóstico",
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-blue-100 text-blue-700 dark:bg-blue-400/15 dark:text-blue-300",
     icono: "🔍",
   },
   {
     valor: "presupuesto_enviado",
     etiqueta: "Presupuesto enviado",
-    color: "bg-yellow-100 text-yellow-700",
+    color:
+      "bg-yellow-100 text-yellow-700 dark:bg-yellow-400/15 dark:text-yellow-300",
     icono: "💰",
   },
   {
     valor: "esperando_aprobacion",
     etiqueta: "Esperando aprobación",
-    color: "bg-orange-100 text-orange-700",
+    color:
+      "bg-orange-100 text-orange-700 dark:bg-orange-400/15 dark:text-orange-300",
     icono: "⏳",
   },
   {
     valor: "aprobado",
     etiqueta: "Aprobado",
-    color: "bg-cyan-100 text-cyan-700",
+    color: "bg-cyan-100 text-cyan-700 dark:bg-cyan-400/15 dark:text-cyan-300",
     icono: "✅",
   },
   {
     valor: "en_reparacion",
     etiqueta: "En reparación",
-    color: "bg-purple-100 text-purple-700",
+    color:
+      "bg-purple-100 text-purple-700 dark:bg-purple-400/15 dark:text-purple-300",
     icono: "🔧",
   },
   {
     valor: "listo_para_retirar",
     etiqueta: "Listo para retirar",
-    color: "bg-green-100 text-green-700",
+    color:
+      "bg-green-100 text-green-700 dark:bg-green-400/15 dark:text-green-300",
     icono: "🎉",
   },
   {
     valor: "entregado",
     etiqueta: "Entregado",
-    color: "bg-green-200 text-green-800",
+    color:
+      "bg-green-200 text-green-800 dark:bg-green-400/25 dark:text-green-200",
     icono: "✔️",
   },
   {
     valor: "sin_reparacion",
     etiqueta: "Sin reparación",
-    color: "bg-red-100 text-red-700",
+    color: "bg-red-100 text-red-700 dark:bg-red-400/15 dark:text-red-300",
     icono: "❌",
   },
 ];

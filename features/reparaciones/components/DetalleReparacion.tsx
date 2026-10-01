@@ -166,7 +166,7 @@ export function DetalleReparacion({
             href={buildWhatsAppLink(equipo.clientes.telefono, "")}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-green-600 hover:underline"
+            className="text-sm text-green-600 hover:underline dark:text-green-400"
           >
             📱 {equipo.clientes.telefono}
           </a>
@@ -258,9 +258,9 @@ export function DetalleReparacion({
         <h2 className="mb-3 font-semibold">💰 Presupuesto y cobro</h2>
         <div className="flex flex-wrap gap-3">
           {equipo.presupuesto != null && (
-            <div className="rounded-lg bg-yellow-50 px-3 py-2 text-center">
+            <div className="rounded-lg bg-yellow-50 px-3 py-2 text-center dark:bg-yellow-400/10">
               <p className="text-xs text-muted-foreground">Presupuesto</p>
-              <p className="font-bold text-yellow-700">
+              <p className="font-bold text-yellow-700 dark:text-yellow-300">
                 {formatARS(equipo.presupuesto)}
               </p>
             </div>
@@ -274,9 +274,9 @@ export function DetalleReparacion({
             </div>
           )}
           {equipo.precio_final != null && (
-            <div className="rounded-lg bg-green-50 px-3 py-2 text-center">
+            <div className="rounded-lg bg-green-50 px-3 py-2 text-center dark:bg-green-400/10">
               <p className="text-xs text-muted-foreground">Cobrado</p>
-              <p className="font-bold text-green-700">
+              <p className="font-bold text-green-700 dark:text-green-300">
                 {formatARS(equipo.precio_final)}
               </p>
             </div>
@@ -288,7 +288,7 @@ export function DetalleReparacion({
             <button
               type="button"
               onClick={() => setMostrarPresupuesto(!mostrarPresupuesto)}
-              className="rounded-lg bg-yellow-100 px-3 py-1.5 text-sm text-yellow-700 transition-colors hover:bg-yellow-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="rounded-lg bg-yellow-100 px-3 py-1.5 text-sm text-yellow-700 transition-colors hover:bg-yellow-200 dark:bg-yellow-400/15 dark:text-yellow-300 dark:hover:bg-yellow-400/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               + Cargar presupuesto
             </button>
@@ -298,7 +298,7 @@ export function DetalleReparacion({
               <button
                 type="button"
                 onClick={() => setMostrarPrecioFinal(!mostrarPrecioFinal)}
-                className="rounded-lg bg-green-100 px-3 py-1.5 text-sm text-green-700 transition-colors hover:bg-green-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="rounded-lg bg-green-100 px-3 py-1.5 text-sm text-green-700 transition-colors hover:bg-green-200 dark:bg-green-400/15 dark:text-green-300 dark:hover:bg-green-400/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 ✓ Marcar entregado y cobrado
               </button>

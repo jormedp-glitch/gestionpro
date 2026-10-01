@@ -25,10 +25,10 @@ function diasEnTaller(f: string) {
 
 function colorDias(d: number) {
   return d <= 3
-    ? "text-green-600"
+    ? "text-green-600 dark:text-green-400"
     : d <= 7
-      ? "text-yellow-600"
-      : "text-red-600 font-bold";
+      ? "text-yellow-600 dark:text-yellow-400"
+      : "text-red-600 font-bold dark:text-red-400";
 }
 
 export function ReparacionesLista({
@@ -196,7 +196,7 @@ export function ReparacionesLista({
                     )}
                     {equipo.presupuesto != null &&
                       equipo.precio_final == null && (
-                        <div className="mt-1 text-sm text-yellow-600">
+                        <div className="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
                           {formatARS(equipo.presupuesto)}
                         </div>
                       )}
