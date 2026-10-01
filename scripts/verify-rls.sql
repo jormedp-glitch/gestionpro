@@ -1,4 +1,4 @@
--- scripts/verify-rls.sql — Verificación de la matriz RLS (fase 1, WU-2 · fase 7, WU-1)
+-- scripts/verify-rls.sql — Verificación de la matriz RLS (fase 1, WU-2 · fase 7, WU-1 · 0009)
 -- ============================================================================
 -- Verifica:
 --   1. anon: 0 filas visibles en las 7 tablas de datos de la fase 1
@@ -7,6 +7,10 @@
 --      las 8 gym_* y _fase7_migracion_map). 0006 revoca anon explícitamente,
 --      así que la consulta de anon falla con permission denied en lugar de
 --      devolver 0 filas: se verifica el catálogo de grants (lección 0004).
+--   1c. 0009: cierre de la superficie de anon — negocio_orden_contadores con
+--      RLS y sin grants de tabla para anon/authenticated; anon SIN EXECUTE
+--      en los 6 RPCs internos y CON EXECUTE en los 5 públicos por token
+--      (chequeo positivo: un revoke de más rompería seguimiento/portal).
 --   2. cross-tenant: un usuario de otro negocio ve 0 filas del tenant
 --      (incluidas las tablas cobros y gym_* de la fase 7)
 --   3. owner: el owner ve su negocio y su propia membresía (ok)
@@ -86,6 +90,65 @@ begin
       raise exception 'FALLO grants anon: % tiene % grant(s)', t, n;
     end if;
     raise notice 'OK grants anon: % sin grants', t;
+  end loop;
+end $$;
+
+-- 1c) 0009: cierre de la superficie de `anon` (RLS en el contador + EXECUTE
+--     de funciones). Mismo criterio que 1b: se verifica el catálogo, no un
+--     count (anon no tiene grants sobre el contador). El bloque de públicos
+--     es un chequeo POSITIVO: si alguien revoca de más, seguimiento/portal
+--     se rompen y este script debe fallar.
+do $$
+declare
+  f text;
+  v_rls boolean;
+  n bigint;
+  internos text[] := array[
+    'crear_negocio_con_owner(text,text,text)',
+    'generar_numero_orden(uuid)',
+    'listar_miembros(uuid)',
+    'agregar_miembro(uuid,text,text)',
+    'cambiar_rol_miembro(uuid,uuid,text)',
+    'quitar_miembro(uuid,uuid)'
+  ];
+  publicos text[] := array[
+    'obtener_seguimiento_publico(uuid)',
+    'obtener_portal_alumno(uuid)',
+    'marcar_completado_portal(uuid,uuid,date)',
+    'desmarcar_completado_portal(uuid,uuid,date)',
+    'avanzar_sesion_portal(uuid)'
+  ];
+begin
+  select c.relrowsecurity into v_rls
+    from pg_class c join pg_namespace ns on ns.oid = c.relnamespace
+   where ns.nspname = 'public' and c.relname = 'negocio_orden_contadores';
+  if v_rls is distinct from true then
+    raise exception 'FALLO 0009: negocio_orden_contadores sin RLS';
+  end if;
+  raise notice 'OK 0009: negocio_orden_contadores con RLS';
+
+  select count(*) into n
+    from information_schema.role_table_grants g
+   where g.table_schema = 'public'
+     and g.table_name = 'negocio_orden_contadores'
+     and g.grantee in ('anon', 'authenticated');
+  if n <> 0 then
+    raise exception 'FALLO 0009: negocio_orden_contadores con % grant(s) API', n;
+  end if;
+  raise notice 'OK 0009: contador sin grants para anon/authenticated';
+
+  foreach f in array internos loop
+    if has_function_privilege('anon', 'public.' || f, 'execute') then
+      raise exception 'FALLO 0009: anon ejecuta el RPC interno %', f;
+    end if;
+    raise notice 'OK 0009: anon sin EXECUTE en %', f;
+  end loop;
+
+  foreach f in array publicos loop
+    if not has_function_privilege('anon', 'public.' || f, 'execute') then
+      raise exception 'FALLO 0009: anon perdio el RPC publico % (seguimiento/portal roto)', f;
+    end if;
+    raise notice 'OK 0009: anon conserva EXECUTE en %', f;
   end loop;
 end $$;
 
