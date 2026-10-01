@@ -36,8 +36,23 @@ describe("RUBRO_ACCENT (espejo de tokens)", () => {
     expect(globalsCss).toContain("--color-accent: var(--accent)");
   });
 
-  it("no conserva el bloque dark del mundo anterior", () => {
-    expect(globalsCss.toLowerCase()).not.toContain("prefers-color-scheme");
+  it("define dark mode automático con tokens oscuros (prefers-color-scheme)", () => {
+    // Dark mode implementado el 2026-10-01 (follow-up de fase5-ui: los tokens
+    // estaban dark-ready). Reemplaza al guard que excluía el bloque dark del
+    // mundo anterior.
+    const darkBlock = globalsCss.match(
+      /@media\s*\(prefers-color-scheme:\s*dark\)\s*\{[\s\S]*?\}/i,
+    );
+    expect(
+      darkBlock,
+      "bloque @media (prefers-color-scheme: dark)",
+    ).not.toBeNull();
+    const block = darkBlock?.[0] ?? "";
+    expect(block).toContain("--background: #0a0a0a");
+    expect(block).toContain("--card:");
+    expect(block).toContain("--muted:");
+    expect(block).toContain("--border:");
+    expect(block).toContain("color-scheme: dark");
   });
 });
 

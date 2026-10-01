@@ -107,6 +107,8 @@ describe("constantes de flujo", () => {
       expect(estado.valor).toBeTruthy();
       expect(estado.etiqueta).toBeTruthy();
       expect(estado.color).toBeTruthy();
+      // Dark mode (2026-10-01): cada chip define su variante oscura.
+      expect(estado.color).toContain("dark:");
       expect(estado.icono).toBeTruthy();
     }
     const valores = ESTADOS.map((e) => e.valor);
