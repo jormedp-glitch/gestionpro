@@ -286,6 +286,10 @@ Esperado: 404 (no filtra el equipo ajeno).
 Pasos: con usuario B (sin membresía en el negocio de A), abrir `/{slug-de-A}`.
 Esperado: 404.
 
+**TC-SEC-05 · RPCs internos no ejecutables sin sesión · P2** 🤖
+Pasos: con la anon key (sin sesión), invocar los RPCs internos (`crear_negocio_con_owner`, `generar_numero_orden`, `listar_miembros`, `agregar_miembro`, `cambiar_rol_miembro`, `quitar_miembro`).
+Esperado: `permission denied for function` (sin grant de EXECUTE desde 0009); los RPCs públicos por token (seguimiento/portal) siguen funcionando sin sesión. Cubierto por `scripts/verify-rls.sql` (bloque 1c).
+
 ---
 
 ## 11. UX / Responsive (UX)
