@@ -19,6 +19,8 @@ const RUBROS = [
   { value: "peluqueria", label: "Peluquería" },
   { value: "veterinaria", label: "Veterinaria" },
   { value: "servicio_tecnico", label: "Servicio Técnico" },
+  // SDD rubro-profesor (D9): texto libre opcional, exclusivo de este rubro.
+  { value: "profesor", label: "Profesor / Entrenador" },
 ];
 
 function slugSeguro(value: string) {
@@ -38,6 +40,10 @@ export default function CrearNegocioForm() {
   const [nombre, setNombre] = useState("");
   const [slug, setSlug] = useState("");
   const [rubro, setRubro] = useState("gimnasio");
+  // Solo relevante para el rubro profesor (D9): texto libre opcional; el
+  // submit trimea y vacío/whitespace va como null (la normalización
+  // server-side definitiva vive en el RPC, migración 0010).
+  const [disciplina, setDisciplina] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [creando, setCreando] = useState(false);
 
@@ -49,10 +55,16 @@ export default function CrearNegocioForm() {
     setCreando(true);
     setError(null);
 
+    const disciplinaLimpia = disciplina.trim();
     const { error: rpcError } = await supabase.rpc("crear_negocio_con_owner", {
       p_nombre: nombre.trim(),
       p_slug: slug.trim(),
       p_rubro: rubro,
+      // Solo la rama profesor envía disciplina (spec alta-negocio: disciplina
+      // opcional exclusiva); vacía → null. Otros rubros no la envían.
+      ...(rubro === "profesor" && {
+        p_disciplina: disciplinaLimpia === "" ? null : disciplinaLimpia,
+      }),
     });
 
     setCreando(false);
@@ -66,6 +78,7 @@ export default function CrearNegocioForm() {
 
     setNombre("");
     setSlug("");
+    setDisciplina("");
     setRubro("gimnasio");
     router.refresh();
   }
@@ -97,6 +110,15 @@ export default function CrearNegocioForm() {
             ))}
           </SelectContent>
         </Select>
+        {/* Disciplina: texto libre OPCIONAL, solo visible con profesor (D9). */}
+        {rubro === "profesor" && (
+          <Input
+            placeholder="Disciplina (ej: Patín)"
+            value={disciplina}
+            onChange={(e) => setDisciplina(e.target.value)}
+            className="min-w-[150px] flex-1"
+          />
+        )}
         <Button
           onClick={crearNegocio}
           disabled={creando}
