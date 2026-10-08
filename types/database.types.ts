@@ -708,6 +708,7 @@ export type Database = {
         Row: {
           activo: boolean | null
           created_at: string | null
+          disciplina: string | null
           id: string
           nombre: string
           rubro: string
@@ -717,6 +718,7 @@ export type Database = {
         Insert: {
           activo?: boolean | null
           created_at?: string | null
+          disciplina?: string | null
           id?: string
           nombre: string
           rubro: string
@@ -726,6 +728,7 @@ export type Database = {
         Update: {
           activo?: boolean | null
           created_at?: string | null
+          disciplina?: string | null
           id?: string
           nombre?: string
           rubro?: string
