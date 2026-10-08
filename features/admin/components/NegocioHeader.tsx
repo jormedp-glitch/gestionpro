@@ -37,8 +37,34 @@ export function iconoRubro(rubro: string): string {
   if (rubro === "peluqueria") return "✂️";
   if (rubro === "veterinaria") return "🐾";
   if (rubro === "servicio_tecnico") return "🔧";
+  if (rubro === "profesor") return "🏃";
   return "🏋️";
 }
+
+/**
+ * Pestañas del core de gym (SDD rubro-profesor, D4): constante module-level
+ * reutilizada por referencia; la rama `gimnasio` la consume sin overrides
+ * (byte-idéntico al comportamiento previo).
+ */
+const TABS_GYM: Array<[Vista, string]> = [
+  ["dashboard", "📊 Dashboard"],
+  ["agenda", "📅 Agenda"],
+  ["alumnos", "🏋️ Alumnos"],
+  ["rutinas", "🏋️ Rutinas"],
+  ["cobros", "💵 Cobros"],
+  ["gastos", "💸 Caja"],
+];
+
+/** Terminología neutral solo para profesor: overrides mínimos sobre TABS_GYM. */
+const OVERRIDES_PROFESOR: Partial<Record<Vista, string>> = {
+  alumnos: "🏃 Alumnos",
+  rutinas: "🏃 Entrenamientos",
+};
+
+/** Misma estructura que TABS_GYM con labels neutralizados (D4). */
+const TABS_PROFESOR: Array<[Vista, string]> = TABS_GYM.map(
+  ([v, l]) => [v, OVERRIDES_PROFESOR[v] ?? l] as [Vista, string],
+);
 
 /** Clases de tab activa/inactiva (idénticas a las del shell original). */
 function estiloTab(activo: boolean) {
@@ -106,16 +132,10 @@ export function NegocioHeader({
     ) : negocio.rubro === "gimnasio" ? (
       // R1: el gimnasio no usa "Clientes"; su vista de personas es Alumnos
       // (ficha + IMC + acceso al portal).
-      (
-        [
-          ["dashboard", "📊 Dashboard"],
-          ["agenda", "📅 Agenda"],
-          ["alumnos", "🏋️ Alumnos"],
-          ["rutinas", "🏋️ Rutinas"],
-          ["cobros", "💵 Cobros"],
-          ["gastos", "💸 Caja"],
-        ] as Array<[Vista, string]>
-      ).map(([v, l]) => tabVista(v, l))
+      TABS_GYM.map(([v, l]) => tabVista(v, l))
+    ) : negocio.rubro === "profesor" ? (
+      // SDD rubro-profesor (D4): mismo core de gym con labels neutralizados.
+      TABS_PROFESOR.map(([v, l]) => tabVista(v, l))
     ) : (
       (
         [
@@ -130,7 +150,15 @@ export function NegocioHeader({
   return (
     <div className="flex min-h-14 flex-wrap items-center gap-4 border-b border-accent/15 bg-card px-5">
       <span className="text-[1.3rem]">{iconoRubro(negocio.rubro)}</span>
-      <span className="font-bold text-accent">{negocio.nombre}</span>
+      <span className="font-bold text-accent">
+        {negocio.nombre}
+        {/* D5: disciplina inline solo para profesor y solo si existe
+            (DB la normaliza con nullif(btrim()); el guard trim() cubre
+            también strings de whitespace para no renderizar separador vacío). */}
+        {negocio.rubro === "profesor" &&
+          negocio.disciplina?.trim() &&
+          ` — ${negocio.disciplina.trim()}`}
+      </span>
       <nav className="flex flex-1 gap-1 overflow-x-auto">
         {tabs}
         {/* R6 (D3): el link a /usuarios solo lo ve el owner. */}
