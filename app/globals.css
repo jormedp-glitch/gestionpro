@@ -51,6 +51,10 @@ html[data-rubro="peluqueria"] {
   --accent: #a78bfa;
 }
 
+html[data-rubro="profesor"] {
+  --accent: #f472b6;
+}
+
 html[data-rubro="veterinaria"] {
   --accent: #34d399;
 }

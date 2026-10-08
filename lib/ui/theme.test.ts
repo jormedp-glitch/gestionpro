@@ -10,10 +10,11 @@ const globalsCss = readFileSync(
 );
 
 describe("RUBRO_ACCENT (espejo de tokens)", () => {
-  it("define los 4 rubros del dominio", () => {
+  it("define los 5 rubros del dominio (SDD rubro-profesor: + profesor)", () => {
     expect(Object.keys(RUBRO_ACCENT).sort()).toEqual([
       "gimnasio",
       "peluqueria",
+      "profesor",
       "servicio_tecnico",
       "veterinaria",
     ]);
@@ -61,6 +62,10 @@ describe("accentPorRubro", () => {
     expect(accentPorRubro("veterinaria")).toBe(RUBRO_ACCENT.veterinaria);
     expect(accentPorRubro("peluqueria")).toBe(RUBRO_ACCENT.peluqueria);
     expect(accentPorRubro("gimnasio")).toBe(RUBRO_ACCENT.gimnasio);
+  });
+
+  it("acento del rubro profesor: #F472B6 (rosa)", () => {
+    expect(accentPorRubro("profesor")).toBe("#F472B6");
   });
 
   it("cae al default ante rubro desconocido", () => {
