@@ -14,7 +14,7 @@ export async function getNegocioBySlug(slug: string): Promise<Negocio | null> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("negocios")
-    .select("id, nombre, slug, rubro, created_at")
+    .select("id, nombre, slug, rubro, disciplina, created_at")
     .eq("slug", slug)
     .maybeSingle();
   return (data as Negocio | null) ?? null;

@@ -20,6 +20,7 @@ import {
 } from "@/features/gym/data/gym";
 import { totalCobradoDelMes } from "@/lib/domain/ingresos";
 import { proximosTurnos } from "@/lib/domain/agenda";
+import { esRubroGymCore } from "@/lib/domain/rubros";
 import { NegocioShell } from "@/features/admin/components/NegocioShell";
 import type { Vista } from "@/features/admin/components/NegocioHeader";
 
@@ -61,9 +62,11 @@ export default async function NegocioPage({
   const user = await getSessionUser();
   const esOwner = user ? await isOwner(user.id, negocio.id) : false;
 
-  // R1: los datos de gimnasio solo se cargan para el rubro gimnasio; el flag
-  // se resuelve antes del Promise.all para no serializar el segundo fetch.
-  const esGimnasio = negocio.rubro === "gimnasio";
+  // R1 + SDD rubro-profesor (D3): el core de gym (alumnos/rutinas/progreso/
+  // ejercicios) se carga para gimnasio y profesor vía esRubroGymCore (única
+  // fuente de la unión de rubros gym-core); el flag se resuelve antes del
+  // Promise.all para no serializar el segundo fetch.
+  const esGymCore = esRubroGymCore(negocio.rubro);
 
   const [
     clientes,
@@ -80,10 +83,10 @@ export default async function NegocioPage({
     getGastosDeNegocio(negocio.id),
     // R10/R12: el historial de cobros es un dato central de todos los rubros.
     getCobrosDeNegocio(negocio.id),
-    esGimnasio ? getAlumnosDeNegocio(negocio.id) : Promise.resolve([]),
-    esGimnasio ? getProgresoDeNegocio(negocio.id) : Promise.resolve([]),
-    esGimnasio ? getRutinasDeNegocio(negocio.id) : Promise.resolve([]),
-    esGimnasio ? getEjerciciosDeNegocio(negocio.id) : Promise.resolve([]),
+    esGymCore ? getAlumnosDeNegocio(negocio.id) : Promise.resolve([]),
+    esGymCore ? getProgresoDeNegocio(negocio.id) : Promise.resolve([]),
+    esGymCore ? getRutinasDeNegocio(negocio.id) : Promise.resolve([]),
+    esGymCore ? getEjerciciosDeNegocio(negocio.id) : Promise.resolve([]),
   ]);
 
   const hoy = new Date().toISOString().split("T")[0];
