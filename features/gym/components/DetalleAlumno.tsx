@@ -168,7 +168,7 @@ function AsignarRutinaForm({
       {/* Radix Select no participa del <form>: el valor viaja en el hidden. */}
       <input type="hidden" name="rutina_id" value={rutinaId} />
       <Select value={rutinaId} onValueChange={setRutinaId}>
-        <SelectTrigger>
+        <SelectTrigger aria-label="Rutina del alumno">
           <SelectValue placeholder="Elegí una rutina" />
         </SelectTrigger>
         <SelectContent>

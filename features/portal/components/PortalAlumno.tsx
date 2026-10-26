@@ -330,7 +330,7 @@ export function PortalAlumno({
                                     href={actividad.url_video}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="mt-1 inline-block text-xs text-accent underline"
+                                    className="mt-1 inline-block text-xs text-accent-ink underline"
                                   >
                                     ▶ Ver video
                                   </a>

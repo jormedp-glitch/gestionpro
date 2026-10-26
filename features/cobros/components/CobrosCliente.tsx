@@ -40,14 +40,16 @@ export function CobrosCliente({
           <span className="text-xs font-medium">💵 Cobros</span>
           <span className="text-xs text-muted-foreground">
             Total del mes:{" "}
-            <span className="font-bold text-accent">{formatARS(totalMes)}</span>
+            <span className="font-bold text-accent-ink">
+              {formatARS(totalMes)}
+            </span>
           </span>
         </div>
         {onCobrar && (
           <button
             type="button"
             onClick={onCobrar}
-            className="cursor-pointer rounded-lg border border-accent/25 bg-accent/10 px-2.5 py-1 text-xs text-accent"
+            className="cursor-pointer rounded-lg border border-accent/25 bg-accent/10 px-2.5 py-1 text-xs text-accent-ink"
           >
             + Cobrar
           </button>
@@ -71,7 +73,9 @@ export function CobrosCliente({
             <span className="text-muted-foreground">
               {etiquetaMedioPago(c.medio_pago)}
             </span>
-            <span className="font-bold text-accent">{formatARS(c.monto)}</span>
+            <span className="font-bold text-accent-ink">
+              {formatARS(c.monto)}
+            </span>
           </div>
         ))
       )}

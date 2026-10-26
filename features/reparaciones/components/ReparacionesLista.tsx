@@ -156,7 +156,7 @@ export function ReparacionesLista({
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-sm font-bold text-accent">
+                      <span className="font-mono text-sm font-bold text-accent-ink">
                         {equipo.numero_orden}
                       </span>
                       <Badge
@@ -165,7 +165,7 @@ export function ReparacionesLista({
                         {estadoInfo?.etiqueta}
                       </Badge>
                       {equipo.estado === "listo_para_retirar" && (
-                        <span className="animate-pulse rounded-full bg-green-500 px-2 py-0.5 text-xs text-white">
+                        <span className="animate-pulso-halo rounded-full bg-green-700 px-2 py-0.5 text-xs text-white">
                           ¡Listo!
                         </span>
                       )}

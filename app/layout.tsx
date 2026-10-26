@@ -40,7 +40,12 @@ export default function RootLayout({
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      {/* <main> como landmark único de la app: sin él, el contenido no
+          pertenece a ninguna región y los lectores de pantalla no tienen un
+          punto de entrada al documento (WCAG: landmark-one-main / region). */}
+      <body className="min-h-full flex flex-col">
+        <main className="flex-1">{children}</main>
+      </body>
     </html>
   );
 }

@@ -50,7 +50,7 @@ export default async function AdminPanel() {
               <a
                 href={"/" + n.slug}
                 target="_blank"
-                className="inline-flex items-center rounded-lg border border-accent/25 bg-accent/10 px-4 py-2 text-sm text-accent no-underline transition-colors hover:bg-accent/20"
+                className="inline-flex items-center rounded-lg border border-accent/25 bg-accent/10 px-4 py-2 text-sm text-accent-ink no-underline transition-colors hover:bg-accent/20"
               >
                 Abrir app
               </a>

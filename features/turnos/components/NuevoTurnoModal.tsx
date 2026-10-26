@@ -212,6 +212,7 @@ export function NuevoTurnoModal({
           <div className="grid grid-cols-2 gap-3">
             <Input
               type="date"
+              aria-label="Fecha del turno"
               name="fecha"
               value={form.fecha}
               onChange={(e) => setCampo("fecha", e.target.value)}
@@ -220,7 +221,7 @@ export function NuevoTurnoModal({
               value={form.hora}
               onValueChange={(v) => setCampo("hora", v)}
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Hora del turno">
                 <SelectValue placeholder="Hora" />
               </SelectTrigger>
               <SelectContent>
@@ -233,7 +234,7 @@ export function NuevoTurnoModal({
             </Select>
           </div>
           {superpuesto && (
-            <p className="m-0 text-sm text-amber-400">
+            <p className="m-0 text-sm text-amber-700 dark:text-amber-400">
               ⚠️ Ya tenés un turno a esa hora
             </p>
           )}
@@ -245,7 +246,9 @@ export function NuevoTurnoModal({
           />
 
           {!state.ok && state.error && (
-            <p className="m-0 text-sm text-red-400">{state.error}</p>
+            <p className="m-0 text-sm text-red-600 dark:text-red-400">
+              {state.error}
+            </p>
           )}
 
           <div className="mt-5 flex justify-end gap-3">

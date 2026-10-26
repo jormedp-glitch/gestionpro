@@ -140,7 +140,7 @@ export function DetalleReparacion({
         </button>
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono font-bold text-accent">
+            <span className="font-mono font-bold text-accent-ink">
               {equipo.numero_orden}
             </span>
             <Badge className={cn("border-transparent", estadoInfo?.color)}>
@@ -268,7 +268,7 @@ export function DetalleReparacion({
           {totalRepuestos > 0 && (
             <div className="rounded-lg bg-accent/10 px-3 py-2 text-center">
               <p className="text-xs text-muted-foreground">Repuestos</p>
-              <p className="font-bold text-accent">
+              <p className="font-bold text-accent-ink">
                 {formatARS(totalRepuestos)}
               </p>
             </div>
@@ -308,7 +308,7 @@ export function DetalleReparacion({
           <button
             type="button"
             onClick={() => setMostrarAgendar(true)}
-            className="rounded-lg bg-accent/15 px-3 py-1.5 text-sm text-accent transition-colors hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="rounded-lg bg-accent/15 px-3 py-1.5 text-sm text-accent-ink transition-colors hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             📅 Agendar retiro/entrega
           </button>
@@ -347,7 +347,9 @@ export function DetalleReparacion({
           </form>
         )}
         {!presupuestoState.ok && presupuestoState.error && (
-          <p className="mt-2 text-sm text-red-400">{presupuestoState.error}</p>
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            {presupuestoState.error}
+          </p>
         )}
 
         {/* Form precio final */}
@@ -394,7 +396,9 @@ export function DetalleReparacion({
           </form>
         )}
         {!entregadoState.ok && entregadoState.error && (
-          <p className="mt-2 text-sm text-red-400">{entregadoState.error}</p>
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            {entregadoState.error}
+          </p>
         )}
       </div>
 
@@ -405,7 +409,7 @@ export function DetalleReparacion({
           <button
             type="button"
             onClick={() => setMostrarRepuesto(!mostrarRepuesto)}
-            className="rounded-lg bg-accent/15 px-3 py-1 text-sm text-accent transition-colors hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="rounded-lg bg-accent/15 px-3 py-1 text-sm text-accent-ink transition-colors hover:bg-accent/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
             + Agregar
           </button>
@@ -447,7 +451,9 @@ export function DetalleReparacion({
               />
             </div>
             {!repuestoState.ok && repuestoState.error && (
-              <p className="text-sm text-red-400">{repuestoState.error}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">
+                {repuestoState.error}
+              </p>
             )}
             <Button
               type="submit"
@@ -495,7 +501,7 @@ export function DetalleReparacion({
                   <button
                     type="submit"
                     aria-label={"Eliminar repuesto " + r.descripcion}
-                    className="ml-2 text-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="ml-2 text-red-600 dark:text-red-400 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   >
                     ✕
                   </button>

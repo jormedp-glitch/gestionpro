@@ -7,10 +7,10 @@
 // lib/domain/estados-reparacion.ts).
 
 export const ESTADOS_TURNO: Record<string, string> = {
-  confirmado: "text-accent",
-  completado: "text-emerald-400",
+  confirmado: "text-accent-ink",
+  completado: "text-emerald-700 dark:text-emerald-400",
   cancelado: "text-muted-foreground",
-  no_asistio: "text-amber-400",
+  no_asistio: "text-amber-700 dark:text-amber-400",
 };
 
 /** Clase de color del estado; desconocido o null cae a muted. */

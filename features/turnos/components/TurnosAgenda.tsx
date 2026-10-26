@@ -194,7 +194,7 @@ export function TurnosAgenda({
                 className={cn(
                   "relative flex shrink-0 cursor-pointer flex-col items-center rounded-lg px-3 py-1.5 text-xs transition-colors",
                   seleccionado
-                    ? "bg-accent/15 font-medium text-accent"
+                    ? "bg-accent/15 font-medium text-accent-ink"
                     : "text-muted-foreground",
                 )}
               >
@@ -255,7 +255,7 @@ export function TurnosAgenda({
               className="flex items-center justify-between border-b border-border/60 px-4 py-4"
             >
               <div>
-                <span className="mr-3 font-bold text-accent">{t.hora}</span>
+                <span className="mr-3 font-bold text-accent-ink">{t.hora}</span>
                 {/* Sin teléfono el turno es un compromiso interno (#179):
                     📌; con teléfono hay a quién avisarle: 👤. */}
                 <span
@@ -290,7 +290,7 @@ export function TurnosAgenda({
                         "_blank",
                       );
                     }}
-                    className="cursor-pointer rounded-lg border border-amber-400/25 bg-amber-400/10 px-2.5 py-1 text-xs text-amber-400"
+                    className="cursor-pointer rounded-lg border border-amber-400/25 bg-amber-400/10 px-2.5 py-1 text-xs text-amber-700 dark:text-amber-400"
                   >
                     ⏱ Demora
                   </button>
@@ -311,7 +311,7 @@ export function TurnosAgenda({
                         "_blank",
                       )
                     }
-                    className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-500"
+                    className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-700 dark:text-green-500"
                   >
                     📲 Recordar
                   </button>
@@ -325,7 +325,7 @@ export function TurnosAgenda({
                       etiqueta="✓ Listo"
                       toastOk="Completado ✓"
                       showToast={showToast}
-                      className="cursor-pointer rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-400"
+                      className="cursor-pointer rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-700 dark:text-emerald-400"
                     />
                     <button
                       type="button"
@@ -345,7 +345,7 @@ export function TurnosAgenda({
                       confirmar="¿Cancelar este turno?"
                       toastOk="Turno cancelado ✓"
                       showToast={showToast}
-                      className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-400"
+                      className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-600 dark:text-red-400"
                     />
                     <AccionTurnoBoton
                       accion={marcarNoAsistio}
@@ -355,7 +355,7 @@ export function TurnosAgenda({
                       descripcion="Marcar que no vino"
                       toastOk="Marcado: no vino"
                       showToast={showToast}
-                      className="cursor-pointer rounded-lg border border-amber-400/25 bg-amber-400/10 px-2.5 py-1 text-xs text-amber-400"
+                      className="cursor-pointer rounded-lg border border-amber-400/25 bg-amber-400/10 px-2.5 py-1 text-xs text-amber-700 dark:text-amber-400"
                     />
                   </>
                 )}
@@ -369,7 +369,7 @@ export function TurnosAgenda({
                     confirmar="¿Eliminar este turno?"
                     toastOk="Turno eliminado ✓"
                     showToast={showToast}
-                    className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-400"
+                    className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-600 dark:text-red-400"
                   />
                 )}
               </div>

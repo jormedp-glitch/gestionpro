@@ -72,7 +72,7 @@ export function CambiarEstadoForm({
               con el mismo name preserva el contrato de la Server Action. */}
           <input type="hidden" name="nuevo_estado" value={nuevoEstado} />
           <Select value={nuevoEstado} onValueChange={setNuevoEstado}>
-            <SelectTrigger>
+            <SelectTrigger aria-label="Nuevo estado">
               <SelectValue placeholder="Seleccioná el nuevo estado..." />
             </SelectTrigger>
             <SelectContent>
@@ -94,7 +94,9 @@ export function CambiarEstadoForm({
             className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
           {!state.ok && state.error && (
-            <p className="text-sm text-red-400">{state.error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400">
+              {state.error}
+            </p>
           )}
           <Button
             type="submit"
