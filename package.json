@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "audit:a11y": "playwright test e2e/a11y.spec.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
@@ -41,6 +42,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/coverage-v8": "^5.0.0",
+    "axe-core": "^4.13.0",
     "eslint": "^9",
     "eslint-config-next": "^16",
     "eslint-config-prettier": "^10",

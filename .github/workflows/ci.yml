@@ -65,17 +65,19 @@ jobs:
       - run: npm run build
 
   e2e:
-    name: E2E smoke (no bloqueante)
+    name: E2E + a11y (bloqueante)
     runs-on: ubuntu-latest
-    # REQ-E2E-3: job separado y NO bloqueante — un fallo del smoke no impide
-    # el merge; lint/typecheck/test/build determinan. El smoke completo muta
-    # datos y necesita un proyecto Supabase de TEST (credenciales E2E_TEST_*);
-    # sin ellas corre solo el test no destructivo de seguimiento público.
-    # Pasar a bloqueante cuando exista ese entorno.
-    continue-on-error: true
+    # REQ-E2E-3: el job pasa a BLOQUEANTE: ya existe el entorno de test
+    # (sandbox con paridad de esquema, ver docs/sandbox.md). El flujo completo
+    # muta datos, pero solo contra ese sandbox — nunca contra producción.
+    # Además corre la auditoría WCAG (e2e/a11y.spec.ts) en el mismo server.
+    # Sin secrets configurados, el job corre solo el smoke no destructivo.
     env:
-      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy.dummy
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.E2E_SUPABASE_URL || 'https://example.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.E2E_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy.dummy' }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SERVICE_ROLE_KEY || 'dummy' }}
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -95,7 +97,7 @@ jobs:
       - name: Install Playwright system deps (browsers cacheados)
         if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
-      - name: Run smoke e2e (2 viewports)
+      - name: Run smoke e2e + auditoria WCAG (2 viewports)
         run: npx playwright test
       - name: Upload Playwright report
         if: always()
