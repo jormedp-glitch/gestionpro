@@ -90,7 +90,9 @@ describe("crearTurno (#179 · aviso optativo)", () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(result.waUrl).toContain("https://wa.me/541155551234?text=");
+    expect(result.waUrl).toContain(
+      "https://api.whatsapp.com/send/?phone=541155551234&text=",
+    );
     expect(db.consultas("turnos")[0].insert).toHaveBeenCalledWith(
       expect.objectContaining({
         negocio_id: "negocio-1",
@@ -149,7 +151,9 @@ describe("actualizarTurno (#190 · edición)", () => {
     );
 
     expect(result.ok).toBe(true);
-    expect(result.waUrl).toContain("https://wa.me/541155551234?text=");
+    expect(result.waUrl).toContain(
+      "https://api.whatsapp.com/send/?phone=541155551234&text=",
+    );
 
     const consulta = db.consultas("turnos")[0];
     expect(consulta.update).toHaveBeenCalledWith(
