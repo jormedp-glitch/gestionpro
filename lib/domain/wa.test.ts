@@ -19,9 +19,17 @@ describe("normalizarTelefono", () => {
 });
 
 describe("buildWhatsAppLink", () => {
-  it("devuelve wa.me con teléfono normalizado y texto encodeURIComponent", () => {
+  it("devuelve api.whatsapp.com/send con teléfono normalizado y texto encodeURIComponent", () => {
     expect(buildWhatsAppLink("11 5555-1234", "Hola Ana")).toBe(
-      "https://wa.me/541155551234?text=Hola%20Ana",
+      "https://api.whatsapp.com/send/?phone=541155551234&text=Hola%20Ana",
     );
+  });
+
+  it("preserva los emojis en el texto (el redirect de wa.me los rompía)", () => {
+    // El short link wa.me redirigía y su redirector re-codificaba el `text`:
+    // el 👋 llegaba como U+FFFD. Ir directo a api.whatsapp.com lo conserva.
+    const link = buildWhatsAppLink("11 5555-1234", "Hola Ana 👋");
+    expect(link).toContain("text=Hola%20Ana%20%F0%9F%91%8B");
+    expect(link).not.toContain("wa.me");
   });
 });

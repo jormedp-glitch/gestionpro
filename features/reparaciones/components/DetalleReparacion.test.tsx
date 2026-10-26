@@ -126,7 +126,9 @@ describe("DetalleReparacion (#185: reenviar/copiar link de seguimiento)", () => 
     expect(openSpy).toHaveBeenCalledTimes(1);
     const [url, target] = openSpy.mock.calls[0];
     expect(target).toBe("_blank");
-    expect(String(url)).toContain("https://wa.me/5491112345678");
+    expect(String(url)).toContain(
+      "https://api.whatsapp.com/send/?phone=5491112345678",
+    );
     expect(decodeURIComponent(String(url))).toContain(LINK_SEGUIMIENTO);
   });
 
