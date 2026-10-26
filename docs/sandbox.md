@@ -66,6 +66,20 @@ Para volver a producción: `Copy-Item .env.local.prod .env.local`.
 Los dos QA existen para ejercitar la gestión de usuarios (`/{slug}/usuarios`):
 cambiar rol, quitar miembro y el guard de "último owner".
 
+## El job de E2E deja rastro
+
+Con credenciales (`E2E_TEST_EMAIL`/`E2E_TEST_PASSWORD`), el smoke **destructivo** corre de verdad contra el sandbox: crea un negocio `E2E Smoke <timestamp>` con su turno en cada corrida. Es el comportamiento esperado (por eso el entorno es descartable), pero hay que limpiarlo de vez en cuando:
+
+```sql
+begin;
+delete from public.negocio_miembros where negocio_id in (select id from public.negocios where slug like 'e2e-smoke-%');
+delete from public.turnos where negocio_id in (select id from public.negocios where slug like 'e2e-smoke-%');
+delete from public.negocios where slug like 'e2e-smoke-%';
+commit;
+```
+
+La auditoría WCAG (`e2e/a11y.spec.ts`) **no** muta datos: solo lee y audita el DOM.
+
 ## Gotchas operationales
 
 - **El proyecto free se pausa por inactividad.** Si el sandbox deja de
