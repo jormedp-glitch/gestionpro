@@ -116,6 +116,8 @@ test.describe("Auditoría WCAG (axe)", () => {
   test("las pantallas principales no tienen violaciones WCAG", async ({
     page,
   }) => {
+    // 12 rutas × 2 modos = 24 corridas de axe: el default de 30 s no alcanza.
+    test.setTimeout(300_000);
     if (EMAIL && PASSWORD) {
       await page.goto("/login");
       await page.getByLabel("Email").fill(EMAIL);
@@ -136,7 +138,7 @@ test.describe("Auditoría WCAG (axe)", () => {
         .waitForFunction(
           () => !document.body.innerText.includes("Cargando"),
           undefined,
-          { timeout: 20_000 },
+          { timeout: 15_000 },
         )
         .catch(() => {});
       await page.waitForTimeout(400);
