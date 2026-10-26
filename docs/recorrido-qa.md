@@ -20,14 +20,13 @@
 
 ## Los 6 negocios del sandbox
 
-| Negocio             | Rubro                 | Acento            | Qué tiene                                                                                                                     |
-| ------------------- | --------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `gym-el-oso`        | Gimnasio              | naranja `#FF6B35` | 3 clientes, 3 turnos, 4 cobros, 2 gastos, 2 alumnos con portal, 2 rutinas, progresos y completados. Es el más completo.       |
-| `pepe-gym`          | Gimnasio              | naranja           | 1 cliente, 1 alumno, 1 rutina de resistencia, 1 progreso. Para ver el rubro sin ruido.                                        |
-| `peluqueria-lum`    | Peluquería            | violeta `#A78BFA` | 2 clientes, 2 turnos, 1 cobro, 1 gasto. Rubro "Clientes".                                                                     |
-| `qa-ana-profe`      | Profesor / Entrenador | rosa `#F472B6`    | 2 clientes, 1 alumno, 1 rutina de patín, 1 progreso. Header con disciplina.                                                   |
-| `taller-eme`        | Servicio técnico      | azul `#60A5FA`    | 1 cliente, **3 reparaciones** en estados distintos (`recibido`, `listo_para_retirar`, `entregado`) con historial y repuestos. |
-| `veterinaria-patas` | Veterinaria           | verde `#34D399`   | 2 clientes, 1 turno, 1 cobro, 1 gasto. Rubro "Clientes".                                                                      |
+| Negocio          | Rubro                 | Acento            | Qué tiene                                                                                                                     |
+| ---------------- | --------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `gym-el-oso`     | Gimnasio              | naranja `#FF6B35` | 3 clientes, 3 turnos, 4 cobros, 2 gastos, 2 alumnos con portal, 2 rutinas, progresos y completados. Es el más completo.       |
+| `pepe-gym`       | Gimnasio              | naranja           | 1 cliente, 1 alumno, 1 rutina de resistencia, 1 progreso. Para ver el rubro sin ruido.                                        |
+| `peluqueria-lum` | Peluquería            | violeta `#A78BFA` | 2 clientes, 2 turnos, 1 cobro, 1 gasto. Rubro "Clientes".                                                                     |
+| `qa-ana-profe`   | Profesor / Entrenador | rosa `#F472B6`    | 2 clientes, 1 alumno, 1 rutina de patín, 1 progreso. Header con disciplina.                                                   |
+| `taller-eme`     | Servicio técnico      | azul `#60A5FA`    | 1 cliente, **3 reparaciones** en estados distintos (`recibido`, `listo_para_retirar`, `entregado`) con historial y repuestos. |
 
 ## 1. Por rubro (lo primero que hay que ver)
 
@@ -38,7 +37,6 @@
       Entrenamientos · Cobros · Caja** — la de Rutinas dice **"Entrenamientos"**.
 - [ ] **Peluquería** (`peluqueria-lum`): acento **violeta**, ícono ✂️, pestañas
       **Dashboard · Agenda · Clientes · Caja** — sin Alumnos ni Cobros.
-- [ ] **Veterinaria** (`veterinaria-patas`): acento **verde**, ícono 🐾, mismas
       pestañas que peluquería.
 - [ ] **Servicio técnico** (`taller-eme`): acento **azul**, ícono 🔧, pestañas
       **Dashboard · Agenda · Reparaciones · Caja** — sin Clientes.
@@ -64,7 +62,7 @@
 - [ ] El aviso por WhatsApp es un **checkbox** que arranca **encendido** en todos
       los rubros salvo servicio técnico (arranca apagado a propósito).
 
-## 4. Clientes (gimnasio no tiene; peluquería, veterinaria y servicio técnico sí)
+## 4. Clientes (gimnasio no tiene; peluquería y servicio técnico sí)
 
 - [ ] Lista con nombre, teléfono, plan, cuota y **estado** (Activo / Vence
       pronto / Vencido / Moroso).
