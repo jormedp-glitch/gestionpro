@@ -19,6 +19,7 @@ const NEGOCIO: Negocio = {
   nombre: "Taller Test",
   slug: "taller-test",
   rubro: "peluqueria",
+  disciplina: null,
   created_at: "2026-01-01T00:00:00Z",
 };
 
@@ -27,16 +28,18 @@ function renderHeader({
   esOwner = false,
   activa = "dashboard",
   onVista,
+  negocioOverride,
 }: {
   rubro?: string;
   esOwner?: boolean;
   activa?: SeccionNav;
   onVista?: (v: Vista) => void;
+  negocioOverride?: Partial<Negocio>;
 } = {}) {
   return render(
     <NegocioHeader
       slug={NEGOCIO.slug}
-      negocio={{ ...NEGOCIO, rubro }}
+      negocio={{ ...NEGOCIO, rubro, ...negocioOverride }}
       esOwner={esOwner}
       activa={activa}
       onVista={onVista}
@@ -130,5 +133,69 @@ describe("NegocioHeader (issue #183: sección activa y vuelta)", () => {
     const usuarios = screen.getByRole("link", { name: /Usuarios/ });
     expect(usuarios).toHaveAttribute("href", "/taller-test/usuarios");
     expect(usuarios).toHaveClass("bg-accent/15", "text-accent");
+  });
+});
+
+describe("NegocioHeader (SDD rubro-profesor: disciplina + icono + tabs)", () => {
+  it("profesor: 'Nombre — Disciplina' solo con profesor y disciplina no vacía", () => {
+    renderHeader({
+      rubro: "profesor",
+      negocioOverride: { nombre: "Ana", disciplina: "Patín" },
+    });
+
+    expect(screen.getByText("Ana — Patín")).toBeInTheDocument();
+  });
+
+  it("profesor sin disciplina: solo el nombre, sin separador ni texto vacío", () => {
+    renderHeader({
+      rubro: "profesor",
+      negocioOverride: { nombre: "Ana", disciplina: null },
+    });
+
+    expect(screen.getByText("Ana")).toBeInTheDocument();
+    expect(screen.queryByText(/—/)).not.toBeInTheDocument();
+  });
+
+  it("profesor con disciplina whitespace/vacía: solo el nombre", () => {
+    renderHeader({
+      rubro: "profesor",
+      negocioOverride: { nombre: "Ana", disciplina: "" },
+    });
+
+    expect(screen.getByText("Ana")).toBeInTheDocument();
+    expect(screen.queryByText(/—/)).not.toBeInTheDocument();
+  });
+
+  it("rubro no profesor: la disciplina nunca se muestra aunque exista", () => {
+    renderHeader({
+      rubro: "gimnasio",
+      negocioOverride: { nombre: "El Oso", disciplina: "CrossFit" },
+    });
+
+    expect(screen.getByText("El Oso")).toBeInTheDocument();
+    expect(screen.queryByText(/CrossFit/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/—/)).not.toBeInTheDocument();
+  });
+
+  it("profesor: icono del rubro 🏃", () => {
+    renderHeader({ rubro: "profesor" });
+
+    expect(screen.getByText("🏃")).toBeInTheDocument();
+  });
+
+  it("profesor sin onVista: tabs links 'Alumnos' y 'Entrenamientos' con ?vista= de vista gym", () => {
+    renderHeader({ rubro: "profesor" });
+
+    expect(screen.getByRole("link", { name: /Alumnos/ })).toHaveAttribute(
+      "href",
+      "/taller-test?vista=alumnos",
+    );
+    expect(
+      screen.getByRole("link", { name: /Entrenamientos/ }),
+    ).toHaveAttribute("href", "/taller-test?vista=rutinas");
+    // Terminología de gym no aparece para profesor.
+    expect(
+      screen.queryByRole("link", { name: /Rutinas/ }),
+    ).not.toBeInTheDocument();
   });
 });

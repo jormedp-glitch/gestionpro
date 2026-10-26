@@ -1,0 +1,38 @@
+# GestiónPro — SDD config (bootstrap 2026-10-07)
+# Fuente del contexto: sdd-init/gestionpro (Engram, actualizado 2026-09-25).
+# Convención del proyecto: artefactos SDD en español neutro profesional.
+schema: spec-driven
+
+context: |
+  Tech stack: Next.js 16.2.2 (App Router) + React 19 + TypeScript 5 + Tailwind CSS 4 + Supabase (@supabase/ssr, Auth email+password, RLS por membresía owner/editor)
+  Architecture: features/<dominio> + lib/{domain,server,ui,auth,supabase}; Server Components para lecturas, Server Actions con zod para escrituras
+  Testing: Vitest (projects node + jsdom) — npm test; cobertura ≥80 en lib/domain y lib/ui; Playwright smoke E2E
+  Style: español neutro profesional; cero any; server-first; commits convencionales en español
+
+rules:
+  proposal:
+    - Artefacto en español neutro profesional
+    - Incluir plan de rollback y criterios de éxito concretos
+  specs:
+    - Artefacto en español neutro profesional
+    - Escenarios en formato Given/When/Then con palabras RFC 2119
+  design:
+    - Artefacto en español neutro profesional
+    - Documentar cada decisión de arquitectura con su rationale
+  tasks:
+    - Artefacto en español neutro profesional
+    - Numeración jerárquica agrupada por fase; tasks completables en una sesión
+    - Tests en el mismo work unit que el comportamiento (convención del repo)
+  apply:
+    guidelines:
+      - Seguir los patrones existentes (server-first; tests junto al código)
+      - Leer node_modules/next/dist/docs/ antes de escribir código Next.js
+      - Cero any en código nuevo
+    tdd: false
+    test_command: "npm test"
+  verify:
+    test_command: "npm test"
+    build_command: "npm run build"
+    coverage_threshold: 80
+  archive:
+    - Avisar antes de mergear deltas destructivos

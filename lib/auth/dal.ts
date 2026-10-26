@@ -16,7 +16,7 @@ import type { Tables } from "@/types/database.types";
  */
 export type Negocio = Pick<
   Tables<"negocios">,
-  "id" | "nombre" | "slug" | "rubro" | "created_at"
+  "id" | "nombre" | "slug" | "rubro" | "disciplina" | "created_at"
 >;
 
 /** Usuario de la sesión actual (server), o null si no hay sesión. */
@@ -86,7 +86,7 @@ export async function getOwnNegocios(): Promise<Negocio[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("negocios")
-    .select("id, nombre, slug, rubro, created_at")
+    .select("id, nombre, slug, rubro, disciplina, created_at")
     .order("created_at", { ascending: false });
 
   return (data ?? []) as Negocio[];

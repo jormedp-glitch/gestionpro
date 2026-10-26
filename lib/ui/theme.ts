@@ -8,6 +8,7 @@
 export const RUBRO_ACCENT = {
   gimnasio: "#FF6B35",
   peluqueria: "#A78BFA",
+  profesor: "#F472B6",
   veterinaria: "#34D399",
   servicio_tecnico: "#60A5FA",
 } as const;

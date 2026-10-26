@@ -58,6 +58,7 @@ function renderShell(rubro: string, esOwner = true, vistaInicial?: Vista) {
         nombre: "Gym Test",
         slug: "gym-test",
         rubro,
+        disciplina: null,
         created_at: "2026-01-01T00:00:00Z",
       }}
       clientes={[]}
@@ -159,5 +160,52 @@ describe("NegocioShell (R1 · escenario 1: tabs por rubro)", () => {
 
     expect(screen.getByTestId("seccion-cobros")).toBeInTheDocument();
     expect(screen.queryByTestId("seccion-dashboard")).not.toBeInTheDocument();
+  });
+});
+
+describe("NegocioShell (SDD rubro-profesor: tabs neutral + core gym)", () => {
+  it("profesor: tabs Dashboard/Agenda/Alumnos/Entrenamientos/Cobros/Caja e icono 🏃", () => {
+    renderShell("profesor");
+
+    for (const tab of [
+      /Dashboard/,
+      /Agenda/,
+      /Alumnos/,
+      /Entrenamientos/,
+      /Cobros/,
+      /Caja/,
+    ]) {
+      expect(screen.getByRole("button", { name: tab })).toBeInTheDocument();
+    }
+    // Terminología de gym no aparece para profesor.
+    expect(
+      screen.queryByRole("button", { name: /Rutinas/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("🏃")).toBeInTheDocument();
+  });
+
+  it("profesor: la navegación renderiza las secciones del core gym sin error", async () => {
+    const user = userEvent.setup();
+    renderShell("profesor");
+
+    await user.click(screen.getByRole("button", { name: /Alumnos/ }));
+    expect(screen.getByTestId("seccion-alumnos")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Entrenamientos/ }));
+    expect(screen.getByTestId("seccion-rutinas")).toBeInTheDocument();
+    expect(screen.getByTestId("seccion-biblioteca")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Cobros/ }));
+    expect(screen.getByTestId("seccion-cobros")).toBeInTheDocument();
+  });
+
+  it("regresión gimnasio: mismas tabs del core gym sin terminología neutral", () => {
+    renderShell("gimnasio");
+
+    expect(screen.getByRole("button", { name: /Rutinas/ })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Entrenamientos/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("🏋️")).toBeInTheDocument();
   });
 });
