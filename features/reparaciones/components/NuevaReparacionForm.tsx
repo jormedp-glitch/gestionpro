@@ -196,7 +196,7 @@ export function NuevaReparacionForm({
           {/* Si es cliente nuevo, mostrar campo teléfono */}
           {clienteBusqueda && !form.cliente_id && (
             <div className="mt-3">
-              <p className="mb-2 text-xs text-accent">
+              <p className="mb-2 text-xs text-accent-ink">
                 ✨ Cliente nuevo — se creará automáticamente
               </p>
               <Input
@@ -227,14 +227,14 @@ export function NuevaReparacionForm({
           {/* Cliente seleccionado */}
           {form.cliente_id && (
             <div className="mt-2 flex items-center justify-between rounded-lg bg-accent/10 px-3 py-2">
-              <span className="text-sm font-medium text-accent">
+              <span className="text-sm font-medium text-accent-ink">
                 ✓ {form.cliente_nombre} · {form.cliente_telefono}
               </span>
               <button
                 type="button"
                 onClick={limpiarCliente}
                 aria-label="Cambiar cliente"
-                className="text-xs text-accent/80 hover:text-accent"
+                className="text-xs text-accent-ink/80 hover:text-accent-ink"
               >
                 cambiar
               </button>
@@ -421,7 +421,7 @@ export function NuevaReparacionForm({
 
         {/* Error de la acción */}
         {!state.ok && state.error && (
-          <p className="rounded-lg border border-red-400/25 bg-red-400/10 px-3 py-2 text-sm text-red-400">
+          <p className="rounded-lg border border-red-400/25 bg-red-400/10 px-3 py-2 text-sm text-red-600 dark:text-red-400">
             {state.error}
           </p>
         )}

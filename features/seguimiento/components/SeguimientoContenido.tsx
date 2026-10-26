@@ -234,7 +234,7 @@ export function SeguimientoContenido() {
                       className={cn(
                         "text-sm",
                         actual
-                          ? "font-bold text-accent"
+                          ? "font-bold text-accent-ink"
                           : completado
                             ? "text-green-700 dark:text-green-400"
                             : "text-muted-foreground",
@@ -243,7 +243,7 @@ export function SeguimientoContenido() {
                       {est.etiqueta}
                     </span>
                     {actual && (
-                      <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs text-accent">
+                      <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs text-accent-ink">
                         Actual
                       </span>
                     )}

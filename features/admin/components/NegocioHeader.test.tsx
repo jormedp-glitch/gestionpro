@@ -85,7 +85,7 @@ describe("NegocioHeader (issue #183: sección activa y vuelta)", () => {
 
     expect(screen.getByRole("button", { name: /Agenda/ })).toHaveClass(
       "bg-accent/15",
-      "text-accent",
+      "text-accent-ink",
     );
     expect(screen.getByRole("button", { name: /Dashboard/ })).toHaveClass(
       "bg-transparent",
@@ -98,7 +98,7 @@ describe("NegocioHeader (issue #183: sección activa y vuelta)", () => {
 
     expect(screen.getByRole("link", { name: /Reparaciones/ })).toHaveClass(
       "bg-accent/15",
-      "text-accent",
+      "text-accent-ink",
     );
     expect(screen.getByRole("link", { name: /Dashboard/ })).toHaveClass(
       "bg-transparent",
@@ -132,7 +132,7 @@ describe("NegocioHeader (issue #183: sección activa y vuelta)", () => {
 
     const usuarios = screen.getByRole("link", { name: /Usuarios/ });
     expect(usuarios).toHaveAttribute("href", "/taller-test/usuarios");
-    expect(usuarios).toHaveClass("bg-accent/15", "text-accent");
+    expect(usuarios).toHaveClass("bg-accent/15", "text-accent-ink");
   });
 });
 

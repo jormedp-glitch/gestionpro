@@ -1,4 +1,4 @@
-﻿-- ============================================================================
+-- ============================================================================
 -- Schema base de GestionPro (DDL puro, sin datos)
 -- Generado desde el catalogo de PostgreSQL de qjawdjzaokffhiqnixcx.
 -- Fecha: 2026-10-26

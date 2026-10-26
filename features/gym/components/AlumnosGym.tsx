@@ -35,9 +35,9 @@ const ETIQUETA_CATEGORIA: Record<CategoriaImc, string> = {
 
 /** Categoría OMS → color token (bajo/sobrepeso ámbar, normal verde, obesidad rojo). */
 function claseColorImc(categoria: CategoriaImc): string {
-  if (categoria === "normal") return "text-emerald-400";
-  if (categoria === "obesidad") return "text-red-400";
-  return "text-amber-400";
+  if (categoria === "normal") return "text-emerald-700 dark:text-emerald-400";
+  if (categoria === "obesidad") return "text-red-600 dark:text-red-400";
+  return "text-amber-700 dark:text-amber-400";
 }
 
 function claseFondoImc(categoria: CategoriaImc): string {
@@ -155,7 +155,7 @@ function EliminarAlumnoBoton({
         disabled={pending}
         title="Eliminar alumno"
         aria-label="Eliminar alumno"
-        className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-400"
+        className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-600 dark:text-red-400"
       >
         🗑️
       </button>
@@ -243,7 +243,7 @@ export function AlumnosGym({
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="font-serif text-[1.6rem]">🏋️ Alumnos</h2>
+        <h1 className="font-serif text-[1.6rem]">🏋️ Alumnos</h1>
         <Button
           variant="accent"
           onClick={abrirAlta}

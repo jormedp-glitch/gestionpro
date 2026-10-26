@@ -40,10 +40,12 @@ export function CobrosNegocio({
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-serif text-[1.6rem]">💵 Cobros</h2>
+        <h1 className="font-serif text-[1.6rem]">💵 Cobros</h1>
         <span className="text-sm text-muted-foreground">
           Total del mes:{" "}
-          <span className="font-bold text-accent">{formatARS(totalMes)}</span>
+          <span className="font-bold text-accent-ink">
+            {formatARS(totalMes)}
+          </span>
         </span>
       </div>
       <Card className="overflow-hidden p-0">
@@ -53,8 +55,16 @@ export function CobrosNegocio({
           </p>
         ) : (
           /* En pantallas angostas la fila scrollea en horizontal en vez de
-             desbordar la tarjeta. */
-          <div className="overflow-x-auto">
+             desbordar la tarjeta. La región scrolleable necesita ser
+             focusable (WCAG: scrollable-region-focusable) para que se pueda
+             recorrer con el teclado: la tabla no tiene elementos focusables
+             dentro. */
+          <div
+            className="overflow-x-auto"
+            role="region"
+            aria-label="Cobros (desplazamiento horizontal)"
+            tabIndex={0}
+          >
             {cobros.map((cobro) => (
               <div
                 key={cobro.id}
@@ -72,7 +82,7 @@ export function CobrosNegocio({
                 <span className="whitespace-nowrap text-xs text-muted-foreground">
                   {etiquetaMedioPago(cobro.medio_pago)}
                 </span>
-                <span className="whitespace-nowrap font-bold text-accent">
+                <span className="whitespace-nowrap font-bold text-accent-ink">
                   {formatARS(cobro.monto)}
                 </span>
               </div>

@@ -1,4 +1,4 @@
-﻿-- supabase/seed-sandbox.sql — Datos de QA para el entorno de pruebas (sandbox)
+-- supabase/seed-sandbox.sql — Datos de QA para el entorno de pruebas (sandbox)
 -- ============================================================================
 -- PROPOSITO: dejar el sandbox con datos en TODOS los dominios de la app
 -- (negocios por rubro, clientes, turnos, cobros, gastos, reparaciones, core de

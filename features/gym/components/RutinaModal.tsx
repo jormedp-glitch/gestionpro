@@ -110,7 +110,9 @@ export function RutinaModal({
           )}
 
           {!state.ok && state.error && (
-            <p className="m-0 text-sm text-red-400">{state.error}</p>
+            <p className="m-0 text-sm text-red-600 dark:text-red-400">
+              {state.error}
+            </p>
           )}
 
           <div className="mt-5 flex justify-end gap-3">

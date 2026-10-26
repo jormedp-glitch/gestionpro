@@ -47,22 +47,34 @@ export function DashboardResumen({
   const gruposSemana = agruparTurnosPorDia(turnosSemana, hoy);
 
   const kpis: Array<[string, string, string, string]> = [
-    [String(activos), "✅", "Activos", "text-emerald-400"],
-    [String(turnosHoy.length), "📅", "Turnos hoy", "text-accent"],
-    [formatARS(ingresoMes), "💰", "Ingreso mes", "text-blue-400"],
+    [
+      String(activos),
+      "✅",
+      "Activos",
+      "text-emerald-700 dark:text-emerald-400",
+    ],
+    [String(turnosHoy.length), "📅", "Turnos hoy", "text-accent-ink"],
+    [
+      formatARS(ingresoMes),
+      "💰",
+      "Ingreso mes",
+      "text-blue-600 dark:text-blue-400",
+    ],
     [
       formatARS(neto),
       "📊",
       "Neto mes",
-      neto >= 0 ? "text-emerald-400" : "text-red-400",
+      neto >= 0
+        ? "text-emerald-700 dark:text-emerald-400"
+        : "text-red-600 dark:text-red-400",
     ],
   ];
 
   return (
     <div>
-      <h2 className="mb-5 font-serif text-[1.6rem]">
+      <h1 className="mb-5 font-serif text-[1.6rem]">
         Resumen — {formatFecha(hoy)}
-      </h2>
+      </h1>
       <div className="mb-5 grid grid-cols-4 gap-4">
         {kpis.map(([v, i, l, c]) => (
           <Card key={l} className="p-5 text-center">
@@ -94,7 +106,9 @@ export function DashboardResumen({
                 className="flex items-center justify-between border-b border-border/60 py-2.5"
               >
                 <div>
-                  <span className="mr-3 font-bold text-accent">{t.hora}</span>
+                  <span className="mr-3 font-bold text-accent-ink">
+                    {t.hora}
+                  </span>
                   {/* Mismo criterio que la agenda (#179): 📌 compromiso interno
                       sin teléfono, 👤 con teléfono para avisar. */}
                   {t.telefono ? "👤" : "📌"} {t.cliente_nombre} · {t.servicio}
@@ -117,7 +131,7 @@ export function DashboardResumen({
       </Card>
       {clientesConAdeuda.length > 0 && (
         <Card className="border-amber-400/25 p-6">
-          <div className="mb-4 text-xs uppercase tracking-wider text-amber-400">
+          <div className="mb-4 text-xs uppercase tracking-wider text-amber-700 dark:text-amber-400">
             ⚡ Alertas de cobro
           </div>
           {clientesConAdeuda.map((c) => {
@@ -131,7 +145,7 @@ export function DashboardResumen({
                   {c.nombre} · {c.plan}
                 </span>
                 <div className="flex items-center gap-3">
-                  <span className="font-bold text-accent">
+                  <span className="font-bold text-accent-ink">
                     {formatARS(c.cuota)}
                   </span>
                   {telefono && (
@@ -145,7 +159,7 @@ export function DashboardResumen({
                           "_blank",
                         )
                       }
-                      className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-500"
+                      className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-700 dark:text-green-500"
                     >
                       📲 WA
                     </button>

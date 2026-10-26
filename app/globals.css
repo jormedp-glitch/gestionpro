@@ -6,7 +6,9 @@
   --card: #ffffff;
   --card-foreground: #171717;
   --muted: #f4f4f5;
-  --muted-foreground: #71717a;
+  /* Oscurecido vs el #71717a original: sobre el fondo `--muted` (#f4f4f5) el
+     original daba 4.39:1 y WCAG AA pide 4.5:1 para texto normal. */
+  --muted-foreground: #6b6b74;
   --border: #e4e4e7;
   --input: #e4e4e7;
   --ring: #18181b;
@@ -14,6 +16,13 @@
   --primary-foreground: #fafafa;
   --accent: #ff6b35;
   --accent-foreground: #0a0a0a;
+  /* Tinta de acento: color de acento legible como TEXTO sobre fondos claros
+     (WCAG AA ≥ 4.5:1). El color de acento puro (#FF6B35 y compañía) se queda
+     como identidad (fondos, favicon, tintes) pero no alcanza el contraste
+     como texto sobre blanco. Se deriva con color-mix del propio acento y del
+     foreground, así que se adapta solo al modo claro/oscuro: en claro se
+     oscurece, en oscuro se aclara. */
+  --accent-ink: color-mix(in oklab, var(--accent) 62%, var(--foreground));
   --destructive: #dc2626;
   --destructive-foreground: #fafafa;
   color-scheme: light;
@@ -35,7 +44,9 @@
     --ring: #d4d4d8;
     --primary: #fafafa;
     --primary-foreground: #18181b;
-    --destructive: #ef4444;
+    /* #dc2626 en vez de #ef4444: con texto #fafafa el rojo anterior daba
+       3.61:1 y WCAG AA pide 4.5:1. */
+    --destructive: #dc2626;
     --destructive-foreground: #fafafa;
     color-scheme: dark;
   }
@@ -77,6 +88,7 @@ html[data-rubro="servicio_tecnico"] {
   --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-ink: var(--accent-ink);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --font-sans: var(--font-geist-sans);
@@ -87,4 +99,23 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Pulso SIN cambiar la opacidad del elemento. `animate-pulse` de Tailwind
+   anima opacity 1 → 0.5 → 1: a mitad de ciclo el texto queda al 50 % de
+   opacidad sobre su fondo y el contraste real cae por debajo de 4.5:1
+   (WCAG AA). Esta variante anima solo el halo, así el texto mantiene su
+   opacidad plena. */
+@keyframes pulso-halo {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(21 128 61 / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgb(21 128 61 / 0);
+  }
+}
+
+.animate-pulso-halo {
+  animation: pulso-halo 2s ease-in-out infinite;
 }

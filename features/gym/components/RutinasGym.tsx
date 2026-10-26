@@ -68,7 +68,7 @@ function EliminarRutinaBoton({
         disabled={pending}
         title="Eliminar rutina"
         aria-label="Eliminar rutina"
-        className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-400"
+        className="cursor-pointer rounded-lg border border-red-400/25 bg-red-400/10 px-2.5 py-1 text-xs text-red-600 dark:text-red-400"
       >
         🗑️
       </button>
@@ -106,7 +106,7 @@ export function RutinasGym({
   return (
     <div>
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="font-serif text-[1.6rem]">🏋️ Rutinas</h2>
+        <h1 className="font-serif text-[1.6rem]">🏋️ Rutinas</h1>
         <Button
           variant="accent"
           onClick={abrirAlta}
@@ -140,7 +140,7 @@ export function RutinasGym({
                 <a
                   href={"/" + slug + "/gym/rutinas/" + rutina.id}
                   title="Ver detalle"
-                  className="hover:text-accent"
+                  className="hover:text-accent-ink"
                 >
                   {rutina.nombre}
                 </a>
@@ -148,7 +148,7 @@ export function RutinasGym({
               <div className="min-w-0 truncate text-xs text-muted-foreground">
                 {rutina.descripcion ?? "—"}
               </div>
-              <div className="whitespace-nowrap text-xs text-accent">
+              <div className="whitespace-nowrap text-xs text-accent-ink">
                 {rutina.sesiones_total} sesiones
               </div>
               <div>
@@ -156,7 +156,7 @@ export function RutinasGym({
                   className={cn(
                     "border-transparent",
                     rutina.activo
-                      ? "bg-emerald-400/15 text-emerald-400"
+                      ? "bg-emerald-400/15 text-emerald-700 dark:text-emerald-400"
                       : "bg-muted text-muted-foreground",
                   )}
                 >

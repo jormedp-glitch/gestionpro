@@ -86,7 +86,9 @@ function CambiarRolForm({
         {pending ? "..." : "Guardar"}
       </Button>
       {!state.ok && state.error && (
-        <span className="text-xs text-red-400">{state.error}</span>
+        <span className="text-xs text-red-600 dark:text-red-400">
+          {state.error}
+        </span>
       )}
     </form>
   );
@@ -128,7 +130,9 @@ function QuitarMiembroForm({
         {pending ? "..." : "Quitar"}
       </Button>
       {!state.ok && state.error && (
-        <span className="text-xs text-red-400">{state.error}</span>
+        <span className="text-xs text-red-600 dark:text-red-400">
+          {state.error}
+        </span>
       )}
     </form>
   );
@@ -216,7 +220,9 @@ export function UsuariosPage({
           </Button>
         </form>
         {!state.ok && state.error && (
-          <p className="mt-3 text-sm text-red-400">{state.error}</p>
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+            {state.error}
+          </p>
         )}
 
         {contrasena && (

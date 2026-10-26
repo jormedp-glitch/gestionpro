@@ -65,7 +65,7 @@ function estiloTab(activo: boolean) {
   return cn(
     "cursor-pointer rounded-lg border-none px-3.5 py-2 text-xs transition-colors",
     activo
-      ? "bg-accent/15 font-medium text-accent"
+      ? "bg-accent/15 font-medium text-accent-ink"
       : "bg-transparent text-muted-foreground",
   );
 }
@@ -144,7 +144,7 @@ export function NegocioHeader({
   return (
     <div className="flex min-h-14 flex-wrap items-center gap-4 border-b border-accent/15 bg-card px-5">
       <span className="text-[1.3rem]">{iconoRubro(negocio.rubro)}</span>
-      <span className="font-bold text-accent">
+      <span className="font-bold text-accent-ink">
         {negocio.nombre}
         {/* D5: disciplina inline solo para profesor y solo si existe
             (DB la normaliza con nullif(btrim()); el guard trim() cubre

@@ -117,7 +117,7 @@ export function RegistrarCobroModal({
             value={form.medioPago}
             onValueChange={(v) => setCampo("medioPago", v)}
           >
-            <SelectTrigger>
+            <SelectTrigger aria-label="Medio de pago">
               <SelectValue placeholder="Medio de pago" />
             </SelectTrigger>
             <SelectContent>
@@ -130,13 +130,16 @@ export function RegistrarCobroModal({
           </Select>
           <Input
             type="date"
+            aria-label="Fecha del cobro"
             name="fecha"
             value={form.fecha}
             onChange={(e) => setCampo("fecha", e.target.value)}
           />
 
           {!state.ok && state.error && (
-            <p className="m-0 text-sm text-red-400">{state.error}</p>
+            <p className="m-0 text-sm text-red-600 dark:text-red-400">
+              {state.error}
+            </p>
           )}
 
           <div className="mt-5 flex justify-end gap-3">

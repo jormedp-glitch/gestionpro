@@ -83,15 +83,18 @@ test.describe("Smoke flujos clave (REQ-E2E-2)", () => {
     await pasoLimpio(page, errores, "crear negocio");
 
     // 3. Turno (tab Agenda → modal → Server Action crearTurno → toast)
+    //    Los campos se localizan por `name` (no por placeholder): el copy de
+    //    los placeholders cambia y el smoke se pudrió sin que nadie lo viera
+    //    (nunca corrió con credenciales de un entorno de test).
     await page.goto(`/${SLUG_NEGOCIO}`);
     await page.getByRole("button", { name: "📅 Agenda" }).click();
     await page.getByRole("button", { name: "+ Nuevo turno" }).first().click();
     await page
-      .getByPlaceholder("Nombre del cliente")
+      .locator('input[name="cliente_nombre"]')
       .fill(`Cliente ${Date.now()}`);
-    await page.getByPlaceholder("Teléfono (WhatsApp)").fill("11 5555 5555");
-    await page.getByPlaceholder("Servicio").fill("Smoke e2e");
-    await page.getByRole("combobox", { name: "Hora" }).click();
+    await page.locator('input[name="telefono"]').fill("11 5555 5555");
+    await page.locator('input[name="servicio"]').fill("Smoke e2e");
+    await page.getByRole("combobox", { name: "Hora del turno" }).click();
     await page.getByRole("option", { name: "10:00", exact: true }).click();
     await page.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText("Turno creado ✓")).toBeVisible();

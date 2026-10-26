@@ -53,7 +53,7 @@ function EliminarGastoBoton({
       <input type="hidden" name="gasto_id" value={gastoId} />
       <button
         type="submit"
-        className="cursor-pointer rounded-lg border-none bg-red-400/10 px-2 py-1 text-xs text-red-400"
+        className="cursor-pointer rounded-lg border-none bg-red-400/10 px-2 py-1 text-xs text-red-600 dark:text-red-400"
       >
         ✕
       </button>
@@ -93,14 +93,24 @@ export function GastosCaja({
 
   const neto = ingresoMes - gastosMes;
   const kpis: Array<[string, string, string]> = [
-    [formatARS(ingresoMes), "Ingresos", "text-emerald-400"],
-    [formatARS(gastosMes), "Gastos", "text-red-400"],
-    [formatARS(neto), "Neto", neto >= 0 ? "text-emerald-400" : "text-red-400"],
+    [
+      formatARS(ingresoMes),
+      "Ingresos",
+      "text-emerald-700 dark:text-emerald-400",
+    ],
+    [formatARS(gastosMes), "Gastos", "text-red-600 dark:text-red-400"],
+    [
+      formatARS(neto),
+      "Neto",
+      neto >= 0
+        ? "text-emerald-700 dark:text-emerald-400"
+        : "text-red-600 dark:text-red-400",
+    ],
   ];
 
   return (
     <div>
-      <h2 className="mb-5 font-serif text-[1.6rem]">💸 Caja</h2>
+      <h1 className="mb-5 font-serif text-[1.6rem]">💸 Caja</h1>
       <div className="mb-5 grid grid-cols-3 gap-4">
         {kpis.map(([valor, etiqueta, c], i) => (
           <Card key={i} className="p-5 text-center">
@@ -117,9 +127,23 @@ export function GastosCaja({
           className="grid grid-cols-[1fr_140px_120px_auto] items-end gap-3"
         >
           <input type="hidden" name="slug" value={slug} />
-          <Input placeholder="Descripción" name="descripcion" />
-          <Input type="number" placeholder="Monto $" name="monto" />
-          <Input type="date" name="fecha" defaultValue={hoy} />
+          <Input
+            placeholder="Descripción"
+            name="descripcion"
+            aria-label="Descripción del gasto"
+          />
+          <Input
+            type="number"
+            placeholder="Monto $"
+            name="monto"
+            aria-label="Monto del gasto"
+          />
+          <Input
+            type="date"
+            name="fecha"
+            defaultValue={hoy}
+            aria-label="Fecha del gasto"
+          />
           <Button
             type="submit"
             variant="accent"
@@ -129,7 +153,9 @@ export function GastosCaja({
           </Button>
         </form>
         {!state.ok && state.error && (
-          <p className="mt-3 text-sm text-red-400">{state.error}</p>
+          <p className="mt-3 text-sm text-red-600 dark:text-red-400">
+            {state.error}
+          </p>
         )}
       </Card>
       <Card className="overflow-hidden p-0">
@@ -146,7 +172,7 @@ export function GastosCaja({
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <span className="font-bold text-red-400">
+              <span className="font-bold text-red-600 dark:text-red-400">
                 - {formatARS(g.monto)}
               </span>
               <EliminarGastoBoton

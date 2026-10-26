@@ -99,7 +99,7 @@ export default function CrearNegocioForm() {
           className="min-w-[150px] flex-1"
         />
         <Select value={rubro} onValueChange={setRubro}>
-          <SelectTrigger className="w-auto">
+          <SelectTrigger className="w-auto" aria-label="Rubro del negocio">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -128,7 +128,7 @@ export default function CrearNegocioForm() {
           {creando ? "Creando..." : "Crear"}
         </Button>
       </div>
-      {error && <p className="mt-3 text-sm text-accent">{error}</p>}
+      {error && <p className="mt-3 text-sm text-accent-ink">{error}</p>}
     </Card>
   );
 }

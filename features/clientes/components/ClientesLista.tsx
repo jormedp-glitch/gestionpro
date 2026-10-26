@@ -40,9 +40,9 @@ function etiquetaEstado(estado: string) {
 
 /** Color del estado → clase token (discovery #200: mapeo exacto a Tailwind 4). */
 function claseColorEstado(estado: string) {
-  if (estado === "activo") return "text-emerald-400";
-  if (estado === "vence_pronto") return "text-amber-400";
-  return "text-red-400";
+  if (estado === "activo") return "text-emerald-700 dark:text-emerald-400";
+  if (estado === "vence_pronto") return "text-amber-700 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 function claseFondoEstado(estado: string) {
@@ -82,7 +82,7 @@ function PagarClienteBoton({
       <input type="hidden" name="cliente_id" value={clienteId} />
       <button
         type="submit"
-        className="cursor-pointer rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-400"
+        className="cursor-pointer rounded-lg border border-emerald-400/25 bg-emerald-400/10 px-2.5 py-1 text-xs text-emerald-700 dark:text-emerald-400"
       >
         ✓ Pagó
       </button>
@@ -121,7 +121,7 @@ function EliminarClienteBoton({
       <input type="hidden" name="cliente_id" value={clienteId} />
       <button
         type="submit"
-        className="cursor-pointer rounded-lg border-none bg-red-400/10 px-2 py-1 text-xs text-red-400"
+        className="cursor-pointer rounded-lg border-none bg-red-400/10 px-2 py-1 text-xs text-red-600 dark:text-red-400"
       >
         ✕
       </button>
@@ -190,7 +190,7 @@ export function ClientesLista({
                   )}
                 </div>
                 <div className="text-sm text-muted-foreground">{c.plan}</div>
-                <div className="text-sm font-bold text-accent">
+                <div className="text-sm font-bold text-accent-ink">
                   {formatARS(c.cuota)}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -218,7 +218,7 @@ export function ClientesLista({
                   <button
                     type="button"
                     onClick={() => setCobrando(c)}
-                    className="cursor-pointer rounded-lg border border-accent/25 bg-accent/10 px-2.5 py-1 text-xs text-accent"
+                    className="cursor-pointer rounded-lg border border-accent/25 bg-accent/10 px-2.5 py-1 text-xs text-accent-ink"
                   >
                     💵 Cobrar
                   </button>
@@ -240,7 +240,7 @@ export function ClientesLista({
                           "_blank",
                         )
                       }
-                      className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-500"
+                      className="cursor-pointer rounded-lg border border-green-500/25 bg-green-500/10 px-2.5 py-1 text-xs text-green-700 dark:text-green-500"
                     >
                       📲
                     </button>

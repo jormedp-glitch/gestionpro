@@ -27,6 +27,11 @@ export default defineConfig({
     trace: "on-first-retry",
     navigationTimeout: 60_000,
   },
+  // El smoke (login → crear negocio → turno → seguimiento) y la auditoría WCAG
+  // (12 rutas × 2 modos) superan el default de 30 s por test: en CI el primer
+  // request de cada ruta compila la página (Next dev) y la auditoría corre axe
+  // 24 veces.
+  timeout: 180_000,
   projects: [
     {
       name: "desktop",

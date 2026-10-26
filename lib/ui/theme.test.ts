@@ -43,6 +43,22 @@ describe("RUBRO_ACCENT (espejo de tokens)", () => {
     expect(globalsCss).toContain("--color-accent: var(--accent)");
   });
 
+  it("define la tinta de acento (--accent-ink) para texto accesible", () => {
+    // Auditoría WCAG del 2026-10-26: el color de acento puro (#FF6B35 y
+    // compañía) da 2.4-2.8:1 sobre blanco y no alcanza el 4.5:1 de WCAG AA
+    // como texto. La tinta se deriva con color-mix del acento y del
+    // foreground, así se adapta sola al modo claro/oscuro. Si alguien borra
+    // el token, el texto de acento vuelve a fallar el contraste.
+    expect(globalsCss).toContain(
+      "--accent-ink: color-mix(in oklab, var(--accent)",
+    );
+    expect(globalsCss).toContain("--color-accent-ink: var(--accent-ink)");
+    // La mezcla se define UNA vez en :root (no por rubro): si se duplica por
+    // rubro, los rubros se desincronizan del acento que los define.
+    const mezclas = globalsCss.match(/--accent-ink:\s*color-mix/g) ?? [];
+    expect(mezclas).toHaveLength(1);
+  });
+
   it("define dark mode automático con tokens oscuros (prefers-color-scheme)", () => {
     // Dark mode implementado el 2026-10-01 (follow-up de fase5-ui: los tokens
     // estaban dark-ready). Reemplaza al guard que excluía el bloque dark del

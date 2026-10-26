@@ -99,13 +99,16 @@ export function NuevoClienteModal({
           />
           <Input
             type="date"
+            aria-label="Fecha de vencimiento"
             name="vence"
             value={form.vence}
             onChange={(e) => setCampo("vence", e.target.value)}
           />
 
           {!state.ok && state.error && (
-            <p className="m-0 text-sm text-red-400">{state.error}</p>
+            <p className="m-0 text-sm text-red-600 dark:text-red-400">
+              {state.error}
+            </p>
           )}
 
           <div className="mt-5 flex justify-end gap-3">
