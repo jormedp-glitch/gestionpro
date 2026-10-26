@@ -10,6 +10,7 @@ import {
   mensajeAprobado,
   mensajeCobro,
   mensajeDemora,
+  mensajePortal,
   mensajeIngreso,
   mensajeListo,
   mensajePresupuesto,
@@ -117,5 +118,12 @@ describe("mensajes de turnos y cobro (5 eventos)", () => {
     const msg = mensajeCobro("Taller X", "Juan");
     expect(msg).toContain("desde *Taller X*");
     expect(msg).toContain("cuota está pendiente");
+  });
+
+  it("mensajePortal: saludo con el nombre y el link del portal", () => {
+    const msg = mensajePortal("Jorge", "https://app.test/portal/abc");
+    expect(msg).toContain("Hola Jorge");
+    expect(msg).toContain("https://app.test/portal/abc");
+    expect(msg).toContain("tu plan");
   });
 });

@@ -18,6 +18,8 @@ import {
 } from "@/features/gym/actions/alumnos";
 import { AlumnoModal } from "@/features/gym/components/AlumnoModal";
 import { categoriaImc, imc, type CategoriaImc } from "@/lib/domain/imc";
+import { mensajePortal } from "@/lib/domain/mensajes";
+import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { Badge } from "@/lib/ui/badge";
 import { Button } from "@/lib/ui/button";
 import { Card } from "@/lib/ui/card";
@@ -50,6 +52,90 @@ function claseFondoImc(categoria: CategoriaImc): string {
 function contactoDe(alumno: GymAlumno): string {
   if (alumno.cliente?.telefono) return `📱 ${alumno.cliente.telefono}`;
   return alumno.cliente?.email ?? "—";
+}
+
+/**
+ * Link público del portal del alumno. El `portal_token` es la capacidad de
+ * acceso (AD-2): el link armado acá es lo que el alumno abre (sin cuenta ni
+ * contraseña). Se arma dentro del handler (y no en el render) porque `window`
+ * no existe en el servidor (SSR) — mismo patrón que el link de seguimiento de
+ * reparaciones (issue #185).
+ */
+function armarLinkPortal(slug: string, portalToken: string): string {
+  return `${window.location.origin}/${slug}/portal/${portalToken}`;
+}
+
+/** Botón "🔗": copia el link COMPLETO del portal para mandárselo al alumno. */
+function CopiarLinkPortalBoton({
+  slug,
+  portalToken,
+  showToast,
+}: {
+  slug: string;
+  portalToken: string;
+  showToast: (msg: string) => void;
+}) {
+  const copiar = async () => {
+    try {
+      await navigator.clipboard.writeText(armarLinkPortal(slug, portalToken));
+      showToast("Link del portal copiado ✓");
+    } catch {
+      showToast("No se pudo copiar el link.");
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copiar}
+      title="Copiar el link del portal para el alumno"
+      aria-label="Copiar el link del portal para el alumno"
+      className="cursor-pointer rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-xs"
+    >
+      🔗
+    </button>
+  );
+}
+
+/** Botón "📲": manda el link del portal al alumno por WhatsApp. */
+function EnviarPortalBoton({
+  slug,
+  portalToken,
+  nombre,
+  telefono,
+  showToast,
+}: {
+  slug: string;
+  portalToken: string;
+  nombre: string;
+  telefono: string | null | undefined;
+  showToast: (msg: string) => void;
+}) {
+  const enviar = () => {
+    if (!telefono) {
+      showToast("El alumno no tiene teléfono cargado.");
+      return;
+    }
+    window.open(
+      buildWhatsAppLink(
+        telefono,
+        mensajePortal(nombre, armarLinkPortal(slug, portalToken)),
+      ),
+      "_blank",
+    );
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={enviar}
+      title="Enviar el link del portal por WhatsApp"
+      aria-label="Enviar el link del portal por WhatsApp"
+      className="cursor-pointer rounded-lg border border-border bg-muted/40 px-2.5 py-1 text-xs"
+    >
+      📲
+    </button>
+  );
 }
 
 /** Botón "🔑 Código": regenera el `portal_token` vía Server Action (R3). */
@@ -338,6 +424,19 @@ export function AlumnosGym({
                   />
                   <CopiarCodigoBoton
                     portalToken={alumno.portal_token}
+                    showToast={showToast}
+                  />
+                  {/* Link completo del portal: es lo que el alumno abre. */}
+                  <CopiarLinkPortalBoton
+                    slug={slug}
+                    portalToken={alumno.portal_token}
+                    showToast={showToast}
+                  />
+                  <EnviarPortalBoton
+                    slug={slug}
+                    portalToken={alumno.portal_token}
+                    nombre={alumno.cliente?.nombre ?? "alumno"}
+                    telefono={alumno.cliente?.telefono}
                     showToast={showToast}
                   />
                   <EliminarAlumnoBoton
