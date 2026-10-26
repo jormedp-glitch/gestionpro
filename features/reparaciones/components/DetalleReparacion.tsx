@@ -30,6 +30,7 @@ import { NuevoTurnoModal } from "@/features/turnos/components/NuevoTurnoModal";
 import { ESTADOS } from "@/lib/domain/estados-reparacion";
 import { formatARS, formatFechaHora } from "@/lib/domain/formato";
 import { mensajeSeguimiento } from "@/lib/domain/mensajes";
+import { linkDeApp } from "@/lib/domain/origen";
 import { valoresTurnoDesdeEquipo } from "@/lib/domain/turnos";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { Badge } from "@/lib/ui/badge";
@@ -98,7 +99,7 @@ export function DetalleReparacion({
   // Link público de seguimiento (#185): se arma dentro del handler (y no en
   // el render) porque `window` no existe en el servidor (SSR).
   function armarLinkSeguimiento(): string {
-    return `${window.location.origin}/${slug}/seguimiento/${equipo.numero_orden}?token=${equipo.acceso_token}`;
+    return `${linkDeApp(`/${slug}/seguimiento/${equipo.numero_orden}`)}?token=${equipo.acceso_token}`;
   }
 
   // Reenvío del WhatsApp de ingreso (#185): el envío original al crear la

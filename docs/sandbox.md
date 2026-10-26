@@ -80,6 +80,27 @@ commit;
 
 La auditoría WCAG (`e2e/a11y.spec.ts`) **no** muta datos: solo lee y audita el DOM.
 
+## Links mandables a terceros (portal del alumno, seguimiento)
+
+Los links que se copian para mandarle a un alumno o a un cliente se arman con
+`NEXT_PUBLIC_APP_URL` (la URL pública del deployment que atiende la **misma**
+base de datos); si no está definida, cae al origen de la página actual.
+
+En local eso importa: sin la variable, el link sale como `http://localhost:3000/...`
+y **el destinatario no puede abrirlo** (localhost en su celular es su propio
+teléfono). Para probar desde el celu en la misma wifi:
+
+```bash
+# en .env.local
+NEXT_PUBLIC_APP_URL=http://<tu-ip-de-red>:3000
+```
+
+(la IP se ve en la red del dev server: `Network: http://10.1.1.5:3000`).
+
+En Vercel: definila solo para **Production** con el dominio público
+(`https://gestionpro-three.vercel.app`); en preview no hace falta (cae al
+origen del propio preview, que atiende la misma base).
+
 ## Gotchas operationales
 
 - **El proyecto free se pausa por inactividad.** Si el sandbox deja de
