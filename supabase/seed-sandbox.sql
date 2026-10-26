@@ -236,3 +236,50 @@ insert into public.gym_progreso (id, negocio_id, cliente_id, fecha, peso, notas,
 values
   ('9a870000-0000-4000-8000-000000000004', '9a000000-0000-4000-8000-000000000002', '9a100000-0000-4000-8000-000000000004', '2026-10-19', 72.3, 'Primera clase', '2026-10-19 19:00:00+00')
 on conflict (id) do nothing;
+
+-- ---------------------------------------------------------------------------
+-- 9) Core de gym — Pepe GYM (segundo gimnasio): un alumno con su rutina, para
+--    que el rubro gimnasio se pueda recorrer en un negocio sin alumnos.
+-- ---------------------------------------------------------------------------
+insert into public.gym_alumnos (cliente_id, negocio_id, objetivo, notas, altura_cm, fecha_nac, portal_token, codigo_acceso)
+values
+  ('9a100000-0000-4000-8000-000000000011', '9a000000-0000-4000-8000-000000000006', 'Mejorar resistencia', null, 180, '1992-02-14', '9a810000-0000-4000-8000-000000000004', 'PEPE-0001')
+on conflict (cliente_id) do nothing;
+
+insert into public.gym_ejercicios (id, negocio_id, nombre, grupo_muscular, descripcion, url_video, activo)
+values
+  ('9a820000-0000-4000-8000-000000000008', '9a000000-0000-4000-8000-000000000006', 'Burpee',       'Cardio',   'Saltos con flexión', null, true),
+  ('9a820000-0000-4000-8000-000000000009', '9a000000-0000-4000-8000-000000000006', 'Plancha',      'Core',     'Mantener la posición', null, true)
+on conflict (id) do nothing;
+
+insert into public.gym_rutinas (id, negocio_id, nombre, descripcion, sesiones_total, activo)
+values
+  ('9a830000-0000-4000-8000-000000000004', '9a000000-0000-4000-8000-000000000006', 'Resistencia', 'Rutina de cardio para 1 sesión', 1, true)
+on conflict (id) do nothing;
+
+insert into public.gym_rutina_sesiones (id, negocio_id, rutina_id, numero_sesion)
+values
+  ('9a840000-0000-4000-8000-000000000004', '9a000000-0000-4000-8000-000000000006', '9a830000-0000-4000-8000-000000000004', 1)
+on conflict (id) do nothing;
+
+insert into public.gym_rutina_ejercicios (id, negocio_id, sesion_id, ejercicio_id, series, repeticiones, descanso_seg, notas, orden)
+values
+  ('9a850000-0000-4000-8000-000000000008', '9a000000-0000-4000-8000-000000000006', '9a840000-0000-4000-8000-000000000004', '9a820000-0000-4000-8000-000000000008', 3, '12', 60, null, 1),
+  ('9a850000-0000-4000-8000-000000000009', '9a000000-0000-4000-8000-000000000006', '9a840000-0000-4000-8000-000000000004', '9a820000-0000-4000-8000-000000000009', 3, '40s', 45, null, 2)
+on conflict (id) do nothing;
+
+insert into public.gym_asignaciones (id, negocio_id, cliente_id, rutina_id, sesion_actual, fecha_inicio, activa)
+values
+  ('9a860000-0000-4000-8000-000000000004', '9a000000-0000-4000-8000-000000000006', '9a100000-0000-4000-8000-000000000011', '9a830000-0000-4000-8000-000000000004', 1, '2026-10-22', true)
+on conflict (id) do nothing;
+
+insert into public.gym_progreso (id, negocio_id, cliente_id, fecha, peso, notas, created_at)
+values
+  ('9a870000-0000-4000-8000-000000000005', '9a000000-0000-4000-8000-000000000006', '9a100000-0000-4000-8000-000000000011', '2026-10-22', 79.8, 'Toma inicial', '2026-10-22 18:00:00+00')
+on conflict (id) do nothing;
+
+-- Gasto de veterinaria: para que la Caja no arranque vacía en ese rubro.
+insert into public.gastos (id, negocio_id, descripcion, monto, fecha)
+values
+  ('9a300000-0000-4000-8000-000000000007', '9a000000-0000-4000-8000-000000000004', 'Insumos veterinarios', 32000, '2026-10-11')
+on conflict (id) do nothing;

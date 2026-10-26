@@ -99,6 +99,9 @@ jobs:
         run: npx playwright install-deps chromium
       - name: Run smoke e2e + auditoria WCAG (2 viewports)
         run: npx playwright test
+      - name: Limpiar los negocios que deja el smoke en el sandbox
+        if: always()
+        run: node scripts/cleanup-sandbox-e2e.mjs
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
