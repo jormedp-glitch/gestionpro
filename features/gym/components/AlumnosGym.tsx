@@ -19,6 +19,7 @@ import {
 import { AlumnoModal } from "@/features/gym/components/AlumnoModal";
 import { categoriaImc, imc, type CategoriaImc } from "@/lib/domain/imc";
 import { mensajePortal } from "@/lib/domain/mensajes";
+import { linkDeApp } from "@/lib/domain/origen";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
 import { Badge } from "@/lib/ui/badge";
 import { Button } from "@/lib/ui/button";
@@ -62,7 +63,7 @@ function contactoDe(alumno: GymAlumno): string {
  * reparaciones (issue #185).
  */
 function armarLinkPortal(slug: string, portalToken: string): string {
-  return `${window.location.origin}/${slug}/portal/${portalToken}`;
+  return linkDeApp(`/${slug}/portal/${portalToken}`);
 }
 
 /** Botón "🔗": copia el link COMPLETO del portal para mandárselo al alumno. */
