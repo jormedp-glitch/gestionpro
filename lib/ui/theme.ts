@@ -15,7 +15,32 @@ export const RUBRO_ACCENT = {
 
 export type Rubro = keyof typeof RUBRO_ACCENT;
 
+/**
+ * Emoji por rubro (identidad visual). Fuente ÚNICA: el header del negocio, el
+ * shell y el panel de administración (`/`) consumen este mapa. Antes el panel
+ * tenía su propia copia (`rubroIcon` en `app/page.tsx`) que se quedó atrás al
+ * sumar el rubro `profesor` (issue #205): el negocio se veía con 🏃 y en la
+ * lista aparecía sin ícono.
+ */
+export const RUBRO_ICON = {
+  gimnasio: "🏋️",
+  peluqueria: "✂️",
+  profesor: "🏃",
+  veterinaria: "🐾",
+  servicio_tecnico: "🔧",
+} as const;
+
 export const DEFAULT_RUBRO: Rubro = "gimnasio";
+
+/**
+ * Emoji del rubro; ante rubro desconocido cae al default (gimnasio).
+ * Mismo criterio permisivo que `accentPorRubro`.
+ */
+export function iconoRubro(rubro: string): string {
+  return (
+    RUBRO_ICON[rubro as keyof typeof RUBRO_ICON] ?? RUBRO_ICON[DEFAULT_RUBRO]
+  );
+}
 
 /** Acento de un rubro; ante rubro desconocido cae al default (gimnasio). */
 export function accentPorRubro(rubro: string): string {

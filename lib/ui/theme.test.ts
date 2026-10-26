@@ -1,7 +1,13 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { DEFAULT_RUBRO, RUBRO_ACCENT, accentPorRubro } from "./theme";
+import {
+  DEFAULT_RUBRO,
+  RUBRO_ACCENT,
+  RUBRO_ICON,
+  accentPorRubro,
+  iconoRubro,
+} from "./theme";
 
 // Vitest corre desde la raíz del repo; process.cwd() es estable en node y jsdom.
 const globalsCss = readFileSync(
@@ -70,5 +76,48 @@ describe("accentPorRubro", () => {
 
   it("cae al default ante rubro desconocido", () => {
     expect(accentPorRubro("restaurante")).toBe(RUBRO_ACCENT[DEFAULT_RUBRO]);
+  });
+});
+
+describe("RUBRO_ICON (fuente unica de iconos)", () => {
+  it("define un icono para cada rubro del dominio (sync con RUBRO_ACCENT)", () => {
+    // Issue #205: el panel de administracion tenia su propio mapa de iconos y
+    // quedo sin la rama `profesor` -> los negocios de profesor se listaban sin
+    // icono. Este test ata los dos mapas para que el proximo rubro no repita
+    // el bug.
+    expect(Object.keys(RUBRO_ICON).sort()).toEqual(
+      Object.keys(RUBRO_ACCENT).sort(),
+    );
+    for (const [rubro, icono] of Object.entries(RUBRO_ICON)) {
+      expect(icono.trim(), `icono de ${rubro}`).not.toBe("");
+    }
+  });
+
+  it("devuelve el icono del rubro", () => {
+    expect(iconoRubro("veterinaria")).toBe(RUBRO_ICON.veterinaria);
+    expect(iconoRubro("peluqueria")).toBe(RUBRO_ICON.peluqueria);
+    expect(iconoRubro("gimnasio")).toBe(RUBRO_ICON.gimnasio);
+    expect(iconoRubro("servicio_tecnico")).toBe(RUBRO_ICON.servicio_tecnico);
+  });
+
+  it("icono del rubro profesor: 🏃 (runner)", () => {
+    expect(iconoRubro("profesor")).toBe("🏃");
+  });
+
+  it("cae al default ante rubro desconocido (nunca queda sin icono)", () => {
+    // El valor legacy `reparaciones` del seed viejo y cualquier rubro
+    // desconocido muestran el default en vez de un hueco en la UI.
+    expect(iconoRubro("restaurante")).toBe(RUBRO_ICON[DEFAULT_RUBRO]);
+    expect(iconoRubro("reparaciones")).toBe(RUBRO_ICON[DEFAULT_RUBRO]);
+  });
+
+  it("el panel de administracion consume el mapa compartido (sin copia local)", () => {
+    // Issue #205: `app/page.tsx` declaraba su propio `rubroIcon` y quedo
+    // desincronizado con el shell. Este meta-test falla si alguien vuelve a
+    // duplicar el mapa en el panel.
+    const panel = readFileSync(resolve(process.cwd(), "app/page.tsx"), "utf8");
+    expect(panel).toContain('from "@/lib/ui/theme"');
+    expect(panel).toMatch(/iconoRubro\(n\.rubro\)/);
+    expect(panel).not.toMatch(/const\s+rubroIcon\b/);
   });
 });

@@ -17,6 +17,7 @@
 import { logout } from "@/lib/auth/actions";
 import { Button } from "@/lib/ui/button";
 import { cn } from "@/lib/ui/utils";
+import { iconoRubro } from "@/lib/ui/theme";
 import type { Negocio } from "@/lib/auth/dal";
 
 /** Vistas del shell (switcher por estado, sin cambio de ruta). */
@@ -33,13 +34,6 @@ export type Vista =
 export type SeccionNav = Vista | "reparaciones" | "usuarios";
 
 /** Emoji del rubro (mismo mapa que usaba el shell). */
-export function iconoRubro(rubro: string): string {
-  if (rubro === "peluqueria") return "✂️";
-  if (rubro === "veterinaria") return "🐾";
-  if (rubro === "servicio_tecnico") return "🔧";
-  if (rubro === "profesor") return "🏃";
-  return "🏋️";
-}
 
 /**
  * Pestañas del core de gym (SDD rubro-profesor, D4): constante module-level
