@@ -115,3 +115,11 @@ export function mensajeRecordatorioTurno(
 export function mensajeCobro(negocio: string, cliente: string): string {
   return `Hola ${cliente}, te contactamos desde *${negocio}*. Tu cuota está pendiente. ¿Cuándo podés pasar? 😊`;
 }
+
+/**
+ * Portal del alumno: link público de acceso (el token es la capacidad).
+ * Se lo manda el profe al alumno por WhatsApp.
+ */
+export function mensajePortal(nombre: string, link: string): string {
+  return `Hola ${nombre} 👋 Te dejo tu link del portal: ${link}\n\nAhí ves tu plan, marcás lo que hiciste y ves tu progreso. ¡Cualquier duda me escribís!`;
+}

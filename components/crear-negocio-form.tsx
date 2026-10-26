@@ -17,10 +17,12 @@ import {
 const RUBROS = [
   { value: "gimnasio", label: "Gimnasio" },
   { value: "peluqueria", label: "Peluquería" },
-  { value: "veterinaria", label: "Veterinaria" },
   { value: "servicio_tecnico", label: "Servicio Técnico" },
   // SDD rubro-profesor (D9): texto libre opcional, exclusivo de este rubro.
   { value: "profesor", label: "Profesor / Entrenador" },
+  // El rubro `veterinaria` ya no se ofrece en el alta (decisión del
+  // maintainer, 2026-10-26): el dominio lo conserva para los negocios ya
+  // existentes (acento, ícono y pestañas siguen funcionando).
 ];
 
 function slugSeguro(value: string) {

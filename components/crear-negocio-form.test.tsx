@@ -59,6 +59,20 @@ describe("CrearNegocioForm (spec alta-negocio: rubro y disciplina)", () => {
     ).not.toBeInTheDocument(); // cerrado: solo el trigger
   });
 
+  it("ofrece los rubros vigentes (veterinaria ya no se ofrece, 2026-10-26)", async () => {
+    const user = userEvent.setup();
+    render(<CrearNegocioForm />);
+
+    await user.click(screen.getByRole("combobox"));
+    const opciones = screen.getAllByRole("option").map((o) => o.textContent);
+    expect(opciones).toEqual([
+      "Gimnasio",
+      "Peluquería",
+      "Servicio Técnico",
+      "Profesor / Entrenador",
+    ]);
+  });
+
   it("opción 'Profesor / Entrenador' queda seleccionada válidamente", async () => {
     const user = userEvent.setup();
     render(<CrearNegocioForm />);
