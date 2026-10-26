@@ -7,18 +7,22 @@
 // acumular negocios basura lo vuelve ruidoso para la prueba manual.
 //
 // Uso (en CI, después de `npx playwright test`):
-//   E2E_SUPABASE_URL=https://<ref>.supabase.co \
-//   E2E_SERVICE_ROLE_KEY=... \
 //   node scripts/cleanup-sandbox-e2e.mjs
+//
+// Lee las variables que el job de E2E ya define: NEXT_PUBLIC_SUPABASE_URL y
+// SUPABASE_SERVICE_ROLE_KEY (acepta también los alias E2E_* por si se corre
+// a mano).
 //
 // Las membresías y los turnos del negocio se van por ON DELETE CASCADE.
 
-const url = process.env.E2E_SUPABASE_URL;
-const key = process.env.E2E_SERVICE_ROLE_KEY;
+const url =
+  process.env.E2E_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key =
+  process.env.E2E_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!url || !key) {
   console.log(
-    "[cleanup-sandbox] sin E2E_SUPABASE_URL/E2E_SERVICE_ROLE_KEY: nada que hacer.",
+    "[cleanup-sandbox] sin URL o service_role: nada que hacer (¿el job de E2E define NEXT_PUBLIC_SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY?).",
   );
   process.exit(0);
 }
