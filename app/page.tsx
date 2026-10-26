@@ -3,13 +3,7 @@ import { logout } from "@/lib/auth/actions";
 import CrearNegocioForm from "@/components/crear-negocio-form";
 import { Card, CardContent } from "@/lib/ui/card";
 import { Button } from "@/lib/ui/button";
-
-const rubroIcon: Record<string, string> = {
-  gimnasio: "🏋️",
-  peluqueria: "✂️",
-  veterinaria: "🐾",
-  servicio_tecnico: "🔧",
-};
+import { iconoRubro } from "@/lib/ui/theme";
 
 /**
  * Panel de administración: lista los negocios del usuario (membresía vía DAL)
@@ -49,7 +43,7 @@ export default async function AdminPanel() {
             <CardContent className="flex items-center justify-between p-5">
               <div>
                 <div className="font-semibold">
-                  {rubroIcon[n.rubro]} {n.nombre}
+                  {iconoRubro(n.rubro)} {n.nombre}
                 </div>
                 <div className="text-xs text-muted-foreground">/{n.slug}</div>
               </div>

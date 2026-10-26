@@ -13,9 +13,9 @@
 import { useState } from "react";
 import {
   NegocioHeader,
-  iconoRubro,
   type Vista,
 } from "@/features/admin/components/NegocioHeader";
+import { iconoRubro } from "@/lib/ui/theme";
 import { DashboardResumen } from "@/features/admin/components/DashboardResumen";
 import { TurnosAgenda } from "@/features/turnos/components/TurnosAgenda";
 import { NuevoTurnoModal } from "@/features/turnos/components/NuevoTurnoModal";
