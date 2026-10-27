@@ -67,10 +67,13 @@ function medidasDe(medicion: GymProgreso): string {
 function AvanzarSesionBoton({
   slug,
   asignacionId,
+  completada,
   showToast,
 }: {
   slug: string;
   asignacionId: string;
+  /** La rutina ya está completa: no hay a dónde avanzar. */
+  completada: boolean;
   showToast: (msg: string) => void;
 }) {
   const [state, formAction, pending] = useActionState(avanzarSesion, {
@@ -88,7 +91,15 @@ function AvanzarSesionBoton({
         type="submit"
         variant="accent"
         size="sm"
-        disabled={pending}
+        // Con la rutina completa el botón no tiene sentido: el server action
+        // rechaza con "El alumno ya completó todas las sesiones." y el profe
+        // queda sin salida. Se deshabilita y se explica por qué.
+        disabled={pending || completada}
+        title={
+          completada
+            ? "El alumno ya completó todas las sesiones de esta rutina: asignale otra rutina para seguir."
+            : undefined
+        }
         className="rounded-[10px] font-bold"
       >
         {pending ? "Avanzando..." : "Avanzar sesión"}
@@ -141,11 +152,14 @@ function AsignarRutinaForm({
   clienteId,
   rutinas,
   showToast,
+  onCancel,
 }: {
   slug: string;
   clienteId: string;
   rutinas: GymRutina[];
   showToast: (msg: string) => void;
+  /** Cierra el formulario (usado cuando se estaba reemplazando una rutina). */
+  onCancel?: () => void;
 }) {
   const [state, formAction, pending] = useActionState(asignarRutina, {
     ok: false,
@@ -179,7 +193,12 @@ function AsignarRutinaForm({
           ))}
         </SelectContent>
       </Select>
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        {onCancel && (
+          <Button type="button" variant="outline" size="sm" onClick={onCancel}>
+            Cancelar
+          </Button>
+        )}
         <Button
           type="submit"
           variant="accent"
@@ -213,6 +232,9 @@ export function DetalleAlumno({
 }) {
   const showToast = (msg: string) => toast(msg, { duration: 3000 });
   const [modalMedicion, setModalMedicion] = useState(false);
+  // Reemplazar la rutina vigente sin pasar por "Desasignar": el server action
+  // `asignarRutina` ya desactiva la anterior (AD-4: una sola activa por alumno).
+  const [cambiarRutina, setCambiarRutina] = useState(false);
 
   // R7: la última medición es la primera fila (`progreso` viene por fecha desc).
   const ultima = progreso[0];
@@ -220,6 +242,14 @@ export function DetalleAlumno({
     ultima && alumno.altura_cm != null
       ? imc(ultima.peso, alumno.altura_cm)
       : null;
+
+  // Rutina agotada: el alumno llegó a la última sesión. No hay a dónde
+  // avanzar, así que la salida es asignarle la siguiente rutina.
+  const sesionesTotal = asignacion?.rutina?.sesiones_total ?? null;
+  const completada =
+    !!asignacion &&
+    sesionesTotal != null &&
+    asignacion.sesion_actual >= sesionesTotal;
 
   return (
     <div className="mx-auto max-w-2xl p-4 pb-16">
@@ -237,32 +267,73 @@ export function DetalleAlumno({
           : "IMC pendiente"}
       </p>
       <Card className="mt-5 p-5">
-        <h3 className="m-0 font-serif text-[1.15rem]">Rutina asignada</h3>
+        <h3 className="m-0 font-serif text-[1.15rem]">
+          {asignacion ? "Rutina asignada" : "Asignar una rutina"}
+        </h3>
         {asignacion ? (
-          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="m-0 text-sm font-medium">
-                {asignacion.rutina?.nombre ?? "Rutina"}
-              </p>
-              <p className="m-0 text-xs text-muted-foreground">
-                Sesión {asignacion.sesion_actual} de{" "}
-                {asignacion.rutina?.sesiones_total ?? "?"} · Desde{" "}
-                {formatFecha(asignacion.fecha_inicio)}
-              </p>
+          <>
+            <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="m-0 text-sm font-medium">
+                  {asignacion.rutina?.nombre ?? "Rutina"}
+                </p>
+                <p className="m-0 text-xs text-muted-foreground">
+                  Sesión {asignacion.sesion_actual} de{" "}
+                  {asignacion.rutina?.sesiones_total ?? "?"} · Desde{" "}
+                  {formatFecha(asignacion.fecha_inicio)}
+                </p>
+                {completada && (
+                  <p className="mt-1 m-0 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                    ✅ Completó todas las sesiones de esta rutina
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-1.5">
+                <AvanzarSesionBoton
+                  slug={slug}
+                  asignacionId={asignacion.id}
+                  completada={completada}
+                  showToast={showToast}
+                />
+                <DesasignarRutinaBoton
+                  slug={slug}
+                  asignacionId={asignacion.id}
+                  showToast={showToast}
+                />
+              </div>
             </div>
-            <div className="flex gap-1.5">
-              <AvanzarSesionBoton
-                slug={slug}
-                asignacionId={asignacion.id}
-                showToast={showToast}
-              />
-              <DesasignarRutinaBoton
-                slug={slug}
-                asignacionId={asignacion.id}
-                showToast={showToast}
-              />
+            {/* Salida del callejón: con la rutina terminada (o si se quiere
+                cambiar a mitad de ciclo) se puede asignar la siguiente sin
+                pasar por "Desasignar" — el server action desactiva la
+                anterior (AD-4). */}
+            <div className="mt-4">
+              {cambiarRutina ? (
+                <>
+                  <p className="m-0 mb-2 text-xs text-muted-foreground">
+                    {completada
+                      ? "Asignale la siguiente rutina para seguir con el plan."
+                      : "Al asignar otra rutina, la actual queda desactivada."}
+                  </p>
+                  <AsignarRutinaForm
+                    slug={slug}
+                    clienteId={alumno.cliente_id}
+                    rutinas={rutinas}
+                    showToast={showToast}
+                    onCancel={() => setCambiarRutina(false)}
+                  />
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCambiarRutina(true)}
+                >
+                  {completada ? "+ Asignar otra rutina" : "Cambiar rutina"}
+                </Button>
+              )}
             </div>
-          </div>
+          </>
         ) : (
           <div className="mt-3">
             <AsignarRutinaForm
