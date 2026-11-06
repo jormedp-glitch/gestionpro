@@ -64,10 +64,10 @@ describe("NuevoTurnoModal (lugar + recurrencia semanal)", () => {
     expect(
       screen.getByLabelText("Repetir cada semana por cuántas semanas"),
     ).toBeInTheDocument();
-    // El texto de ayuda aclara qué hace la repetición.
-    expect(
-      screen.getByText("Cada semana se crea un turno nuevo"),
-    ).toBeInTheDocument();
+    // El texto de ayuda aclara qué hace la repetición (match por regex: el
+    // texto incluye el tope dinámico y el copy puede ajustarse).
+    expect(screen.getByText(/Repetir cada semana/)).toBeInTheDocument();
+    expect(screen.getByText(/1 = un solo turno/)).toBeInTheDocument();
   });
 
   it("la repetición arranca en 1 (turno único)", () => {
