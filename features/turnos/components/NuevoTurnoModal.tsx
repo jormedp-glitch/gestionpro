@@ -26,6 +26,7 @@ import { actualizarTurno, crearTurno } from "@/features/turnos/actions/turnos";
 import type { TurnoActionResult } from "@/features/turnos/actions/turnos";
 import type { Turno } from "@/features/turnos/data/turnos";
 import { avisoTurnoPorDefecto } from "@/lib/domain/rubros";
+import { fechasRecurrentes, MAX_REPETICIONES } from "@/lib/domain/agenda";
 import { Button } from "@/lib/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/lib/ui/dialog";
 import { Input } from "@/lib/ui/input";
@@ -44,6 +45,9 @@ interface FormularioTurno {
   fecha: string;
   hora: string;
   notas: string;
+  lugar: string;
+  /** Semanas a repetir (string: es un input numérico controlado; zod coerce). */
+  repetir: string;
   avisar: boolean;
 }
 
@@ -126,15 +130,33 @@ export function NuevoTurnoModal({
     fecha: turno?.fecha ?? fechaInicial,
     hora: turno?.hora ?? "",
     notas: turno?.notas ?? valoresIniciales?.notas ?? "",
+    lugar: turno?.lugar ?? "",
+    // 1 = turno único; la recurrencia semanal solo aplica al alta.
+    repetir: "1",
     // Default por rubro: en servicio técnico el turno no se notifica.
     avisar: avisoTurnoPorDefecto(rubro),
   });
   const manejado = useRef(false);
 
+  // Fechas que va a generar la serie (rubro profesor). Se acotan al máximo
+  // permitido para que un número tipeado a mano no congele el navegador.
+  const veces = Math.min(
+    Math.max(Number(form.repetir) || 1, 1),
+    MAX_REPETICIONES,
+  );
+  const fechasSerie = fechasRecurrentes(form.fecha, veces);
+
   // Aviso no bloqueante (#190): ya hay otro turno a la misma fecha y hora.
   // En edición el turno se excluye a sí mismo para no alertar siempre.
+  // Con recurrencia se comparan TODAS las fechas de la serie: el choque
+  // puede caer en cualquiera de las ocurrencias, no solo en la primera.
   const superpuesto = (turnosExistentes ?? []).some(
-    (t) => t.id !== turno?.id && t.fecha === form.fecha && t.hora === form.hora,
+    (t) =>
+      t.id !== turno?.id &&
+      t.hora === form.hora &&
+      (fechasSerie.length > 0
+        ? fechasSerie.includes(t.fecha)
+        : t.fecha === form.fecha),
   );
 
   // Sin teléfono no hay a quién avisar: el checkbox queda deshabilitado.
@@ -154,7 +176,13 @@ export function NuevoTurnoModal({
     }
     if (manejado.current) return;
     manejado.current = true;
-    onToast(editando ? "Turno actualizado ✓" : "Turno creado ✓");
+    onToast(
+      editando
+        ? "Turno actualizado ✓"
+        : state.creados && state.creados > 1
+          ? `Se crearon ${state.creados} turnos ✓`
+          : "Turno creado ✓",
+    );
     onClose();
     if (state.waUrl) window.open(state.waUrl, "_blank");
   }, [state, editando, onToast, onClose]);
@@ -209,6 +237,12 @@ export function NuevoTurnoModal({
             value={form.servicio}
             onChange={(e) => setCampo("servicio", e.target.value)}
           />
+          <Input
+            placeholder="Lugar (opcional — ej: Sala 2, Centro Natación)"
+            name="lugar"
+            value={form.lugar}
+            onChange={(e) => setCampo("lugar", e.target.value)}
+          />
           <div className="grid grid-cols-2 gap-3">
             <Input
               type="date"
@@ -233,6 +267,25 @@ export function NuevoTurnoModal({
               </SelectContent>
             </Select>
           </div>
+          {/* Recurrencia semanal (rubro profesor): solo en el alta. Editar un
+              turno nunca crea turnos nuevos. */}
+          {!editando && (
+            <div className="flex flex-col gap-1">
+              <Input
+                type="number"
+                name="repetir"
+                min={1}
+                max={MAX_REPETICIONES}
+                aria-label="Repetir cada semana por cuántas semanas"
+                value={form.repetir}
+                onChange={(e) => setCampo("repetir", e.target.value)}
+              />
+              <p className="m-0 text-xs text-muted-foreground">
+                Repetir cada semana · 1 = un solo turno · máximo{" "}
+                {MAX_REPETICIONES}
+              </p>
+            </div>
+          )}
           {superpuesto && (
             <p className="m-0 text-sm text-amber-700 dark:text-amber-400">
               ⚠️ Ya tenés un turno a esa hora

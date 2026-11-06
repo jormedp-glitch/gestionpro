@@ -245,6 +245,7 @@ export function TurnosAgenda({
         )}
         {turnosDelDia.map((t) => {
           const telefono = t.telefono;
+          const lugar = t.lugar?.trim() ?? "";
           // Demora/Recordar son avisos de un turno vigente: en un turno ya
           // resuelto (completado/cancelado/no vino) no aplican.
           const vigente = t.estado === "confirmado";
@@ -269,6 +270,13 @@ export function TurnosAgenda({
                 <span className="ml-2 text-sm text-muted-foreground">
                   · {t.servicio} ({t.duracion}min)
                 </span>
+                {/* Lugar de la clase/prestación (rubro profesor): solo si
+                    tiene texto. */}
+                {lugar && (
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    · 📍 {lugar}
+                  </span>
+                )}
                 {/* Estado visible (#190): cancelado / no vino quedan en la
                     agenda y el color los distingue de un vistazo. */}
                 <span

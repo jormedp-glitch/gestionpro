@@ -93,13 +93,13 @@ describe("crearTurno (#179 · aviso optativo)", () => {
     expect(result.waUrl).toContain(
       "https://api.whatsapp.com/send/?phone=541155551234&text=",
     );
-    expect(db.consultas("turnos")[0].insert).toHaveBeenCalledWith(
+    expect(db.consultas("turnos")[0].insert).toHaveBeenCalledWith([
       expect.objectContaining({
         negocio_id: "negocio-1",
         telefono: "11 5555-1234",
         estado: "confirmado",
       }),
-    );
+    ]);
     expect(mockRevalidatePath).toHaveBeenCalledWith("/taller-test");
   });
 
@@ -133,6 +133,135 @@ describe("crearTurno (#179 · aviso optativo)", () => {
     expect(result.ok).toBe(true);
     expect(result.waUrl).toBeUndefined();
     expect(db.consultas("turnos")[0].insert).toHaveBeenCalled();
+  });
+});
+
+describe("crearTurno (recurrencia semanal + lugar)", () => {
+  it("con repetir=4 inserta UNA vez un array de 4 filas con las fechas de la serie", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await crearTurno(
+      { ok: false },
+      fd({
+        ...TURNO_BASE,
+        fecha: "2026-09-28",
+        lugar: "Sala 2",
+        repetir: "4",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.creados).toBe(4);
+
+    const consultas = db.consultas("turnos");
+    expect(consultas).toHaveLength(1);
+    expect(consultas[0].insert).toHaveBeenCalledTimes(1);
+    expect(consultas[0].insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        negocio_id: "negocio-1",
+        cliente_nombre: "Retiro de máquinas",
+        telefono: "",
+        servicio: "Retiro a domicilio",
+        fecha: "2026-09-28",
+        hora: "09:00",
+        duracion: 60,
+        estado: "confirmado",
+        notas: "",
+        lugar: "Sala 2",
+      }),
+      expect.objectContaining({
+        fecha: "2026-10-05",
+        estado: "confirmado",
+        lugar: "Sala 2",
+      }),
+      expect.objectContaining({ fecha: "2026-10-12", lugar: "Sala 2" }),
+      expect.objectContaining({ fecha: "2026-10-19", lugar: "Sala 2" }),
+    ]);
+    expect(mockRevalidatePath).toHaveBeenCalledWith("/taller-test");
+  });
+
+  it("sin repetir: inserta una sola fila (sin regresión del alta simple)", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await crearTurno({ ok: false }, fd(TURNO_BASE));
+
+    expect(result.ok).toBe(true);
+    expect(result.creados).toBe(1);
+    const consultas = db.consultas("turnos");
+    expect(consultas[0].insert).toHaveBeenCalledTimes(1);
+    expect(consultas[0].insert).toHaveBeenCalledWith([
+      expect.objectContaining({
+        fecha: "2026-09-28",
+        estado: "confirmado",
+        lugar: null,
+      }),
+    ]);
+  });
+
+  it("con repetir vacío: inserta una sola fila (el campo vacío no es 0)", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await crearTurno(
+      { ok: false },
+      fd({ ...TURNO_BASE, repetir: "" }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.creados).toBe(1);
+    expect(db.consultas("turnos")[0].insert).toHaveBeenCalledWith([
+      expect.objectContaining({ fecha: "2026-09-28" }),
+    ]);
+  });
+
+  it("con repetir=61 (más que el máximo) falla y NO inserta nada", async () => {
+    const result = await crearTurno(
+      { ok: false },
+      fd({ ...TURNO_BASE, repetir: "61" }),
+    );
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toBeTruthy();
+    expect(db.consultas("turnos")).toHaveLength(0);
+  });
+
+  it("con teléfono y avisar: el waUrl se arma con la PRIMERA fecha de la serie", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await crearTurno(
+      { ok: false },
+      fd({
+        ...TURNO_BASE,
+        fecha: "2026-09-28",
+        telefono: "11 5555-1234",
+        avisar: "on",
+        repetir: "3",
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.waUrl).toContain(
+      "https://api.whatsapp.com/send/?phone=541155551234&text=",
+    );
+    // 28/09/2026 es la primera fecha; la serie sigue 05/10 y 12/10.
+    expect(decodeURIComponent(result.waUrl ?? "")).toContain("28/09/2026");
+    expect(decodeURIComponent(result.waUrl ?? "")).not.toContain("12/10/2026");
+  });
+
+  it("actualizarTurno ignora `repetir`: no crea turnos nuevos", async () => {
+    db.encolar("turnos", { data: null, error: null });
+
+    const result = await actualizarTurno(
+      { ok: false },
+      fd({ ...TURNO_BASE, turno_id: "turno-1", repetir: "8", lugar: "Sala 1" }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(result.creados).toBeUndefined();
+    const consultas = db.consultas("turnos");
+    expect(consultas[0].insert).not.toHaveBeenCalled();
+    expect(consultas[0].update).toHaveBeenCalledWith(
+      expect.objectContaining({ lugar: "Sala 1" }),
+    );
   });
 });
 

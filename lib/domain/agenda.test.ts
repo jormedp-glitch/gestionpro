@@ -8,6 +8,8 @@ import { describe, expect, it } from "vitest";
 import {
   agruparTurnosPorDia,
   diasDeLaSemana,
+  fechasRecurrentes,
+  MAX_REPETICIONES,
   proximosTurnos,
   sumarDias,
 } from "./agenda";
@@ -153,6 +155,64 @@ describe("sumarDias (#189 · navegación semanal)", () => {
   it("con fecha base inválida la devuelve sin cambios", () => {
     expect(sumarDias("no-es-fecha", 7)).toBe("no-es-fecha");
     expect(sumarDias("2026-02-30", 1)).toBe("2026-02-30");
+  });
+});
+
+describe("fechasRecurrentes (recurrencia semanal)", () => {
+  it("con veces=1 devuelve solo la fecha base", () => {
+    expect(fechasRecurrentes("2026-09-28", 1)).toEqual(["2026-09-28"]);
+  });
+
+  it("con veces=4 devuelve 4 fechas separadas 7 días", () => {
+    expect(fechasRecurrentes("2026-09-28", 4)).toEqual([
+      "2026-09-28",
+      "2026-10-05",
+      "2026-10-12",
+      "2026-10-19",
+    ]);
+  });
+
+  it("cruza el mes", () => {
+    expect(fechasRecurrentes("2026-09-30", 3)).toEqual([
+      "2026-09-30",
+      "2026-10-07",
+      "2026-10-14",
+    ]);
+  });
+
+  it("cruza el año", () => {
+    expect(fechasRecurrentes("2026-12-28", 3)).toEqual([
+      "2026-12-28",
+      "2027-01-04",
+      "2027-01-11",
+    ]);
+  });
+
+  it("con fecha base inválida no hay serie calculable: devuelve []", () => {
+    expect(fechasRecurrentes("2026-02-30", 4)).toEqual([]);
+    expect(fechasRecurrentes("xx", 4)).toEqual([]);
+    expect(fechasRecurrentes("no-es-fecha", 1)).toEqual([]);
+  });
+
+  it("con veces inválido devuelve []", () => {
+    expect(fechasRecurrentes("2026-09-28", 0)).toEqual([]);
+    expect(fechasRecurrentes("2026-09-28", -1)).toEqual([]);
+    expect(fechasRecurrentes("2026-09-28", 1.5)).toEqual([]);
+  });
+
+  it("respeta el 29 de febrero bisiesto", () => {
+    expect(fechasRecurrentes("2028-02-22", 3)).toEqual([
+      "2028-02-22",
+      "2028-02-29",
+      "2028-03-07",
+    ]);
+  });
+
+  it("el máximo público permite ≈1 año de repeticiones", () => {
+    expect(MAX_REPETICIONES).toBe(60);
+    expect(fechasRecurrentes("2026-09-28", MAX_REPETICIONES)).toHaveLength(
+      MAX_REPETICIONES,
+    );
   });
 });
 
