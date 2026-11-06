@@ -18,8 +18,15 @@ import { requireNegocio } from "@/lib/server/negocio";
 import { mensajeTurnoConfirmado } from "@/lib/domain/mensajes";
 import { formatFecha } from "@/lib/domain/formato";
 import { buildWhatsAppLink } from "@/lib/domain/wa";
+import { fechasRecurrentes, MAX_REPETICIONES } from "@/lib/domain/agenda";
 
-export type TurnoActionResult = { ok: boolean; error?: string; waUrl?: string };
+export type TurnoActionResult = {
+  ok: boolean;
+  error?: string;
+  waUrl?: string;
+  /** Cantidad de turnos materializados por el alta (recurrencia semanal). */
+  creados?: number;
+};
 
 const crearTurnoSchema = z.object({
   slug: z.string().min(1),
@@ -30,6 +37,17 @@ const crearTurnoSchema = z.object({
   hora: z.string().trim().min(1, "Completá la hora"),
   duracion: z.coerce.number().int().positive().optional(),
   notas: z.string().trim().optional(),
+  // Lugar de la clase/prestación (rubro profesor): la columna ya existe en la
+  // DB y es nullable, así que sin lugar se guarda null (no "").
+  lugar: z.string().trim().optional(),
+  // Recurrencia semanal: cuántas semanas se repite el turno (1 = turno solo).
+  // El preprocess es obligatorio: el form manda "" cuando el campo está vacío
+  // y z.coerce.number() convertiría "" en 0, rompiendo el alta de un turno
+  // único.
+  repetir: z.preprocess(
+    (v) => (v === "" || v === undefined || v === null ? undefined : v),
+    z.coerce.number().int().min(1).max(MAX_REPETICIONES).optional(),
+  ),
   // Checkbox HTML: llega "on" cuando está marcado y ausente cuando no.
   avisar: z.string().optional(),
 });
@@ -41,6 +59,8 @@ const completarTurnoSchema = z.object({
 
 // Edición (#190): mismos campos y validaciones que el alta + el ancla del
 // turno. `duracion` viaja oculta desde el modal para no pisar la original.
+// `repetir` se hereda pero se IGNORA: editar un turno nunca crea turnos
+// nuevos ("editar serie" queda fuera de alcance).
 const actualizarTurnoSchema = crearTurnoSchema.extend({
   turno_id: z.string().min(1),
 });
@@ -56,6 +76,12 @@ const turnoIdSchema = z.object({
  * revalida la ruta del shell. El waUrl del mensaje de confirmación (R3/R4)
  * solo se devuelve si hay teléfono Y el aviso está marcado (#179: en servicio
  * técnico el turno puede ser un compromiso interno sin notificación).
+ *
+ * Recurrencia semanal (rubro profesor): la serie se MATERIALIZA en N filas
+ * reales —no hay entidad "serie"— así cada ocurrencia se ve en la agenda, se
+ * puede editar/cancelar por separado y los recordatorios funcionan sin
+ * cambios. Todas las filas van en UNA sola llamada a insert (una sentencia,
+ * atómica): N inserts sueltos dejarían turnos a medio crear si falla uno.
  */
 export async function crearTurno(
   _prev: TurnoActionResult,
@@ -70,17 +96,26 @@ export async function crearTurno(
   const negocio = await requireNegocio(input.slug);
   const supabase = await createClient();
 
-  const { error } = await supabase.from("turnos").insert({
+  const veces = input.repetir ?? 1;
+  const fechas = fechasRecurrentes(input.fecha, veces);
+  // Fecha inválida: se mantiene el comportamiento de siempre (un solo insert
+  // y que sea la DB la que rechace la fecha).
+  const fechasSerie = fechas.length > 0 ? fechas : [input.fecha];
+
+  const filas = fechasSerie.map((fecha) => ({
     negocio_id: negocio.id,
     cliente_nombre: input.cliente_nombre,
     telefono: input.telefono || "",
     servicio: input.servicio,
-    fecha: input.fecha,
+    fecha,
     hora: input.hora,
     duracion: input.duracion ?? 60,
     estado: "confirmado",
     notas: input.notas || "",
-  });
+    lugar: input.lugar || null,
+  }));
+
+  const { error } = await supabase.from("turnos").insert(filas);
   if (error) {
     console.error("[crearTurno] insert:", error.message);
     return { ok: false, error: "No se pudo guardar el turno." };
@@ -90,18 +125,19 @@ export async function crearTurno(
 
   let waUrl: string | undefined;
   if (input.telefono && avisar) {
+    // Solo la PRIMERA fecha: una serie de N turnos no genera N mensajes.
     waUrl = buildWhatsAppLink(
       input.telefono,
       mensajeTurnoConfirmado(
         negocio.nombre,
         input.cliente_nombre,
-        formatFecha(input.fecha),
+        formatFecha(fechasSerie[0]),
         input.hora,
       ),
     );
   }
 
-  return { ok: true, waUrl };
+  return { ok: true, waUrl, creados: filas.length };
 }
 
 /** Marca el turno como completado (R9) y revalida la ruta del shell. */
@@ -160,6 +196,7 @@ export async function actualizarTurno(
       hora: input.hora,
       duracion: input.duracion ?? 60,
       notas: input.notas || "",
+      lugar: input.lugar || null,
     })
     .eq("id", input.turno_id)
     .eq("negocio_id", negocio.id);

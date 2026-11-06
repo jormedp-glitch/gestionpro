@@ -79,6 +79,31 @@ export function sumarDias(fecha: string, n: number): string {
   return sumarDiasUTC(fecha, n) ?? fecha;
 }
 
+/** Máximo de repeticiones semanales permitidas en un alta (≈1 año). */
+export const MAX_REPETICIONES = 60;
+
+/**
+ * Fechas de una serie semanal: [fecha, fecha+7d, fecha+14d, ...] (veces
+ * fechas). Devuelve [] si `veces` no es un entero positivo o si `fecha` no es
+ * una fecha real (YYYY-MM-DD).
+ *
+ * OJO: no se usa `sumarDias` para esto — devuelve la misma fecha cuando la
+ * base es inválida y duplicaría turnos en el mismo día.
+ */
+export function fechasRecurrentes(fecha: string, veces: number): string[] {
+  if (!Number.isInteger(veces) || veces <= 0) return [];
+  if (aDiasUTC(fecha) === null) return [];
+  if (veces === 1) return [fecha];
+  const fechas: string[] = [];
+  for (let i = 0; i < veces; i++) {
+    const dia = sumarDiasUTC(fecha, i * 7);
+    // Con base válida nunca falla; el guard evita fechas incompletas.
+    if (dia === null) return [];
+    fechas.push(dia);
+  }
+  return fechas;
+}
+
 /**
  * Los 7 días de la semana (lunes a domingo) que contiene `fecha`, con etiqueta
  * corta en español y número de día (issue #189: strip semanal de la agenda).
