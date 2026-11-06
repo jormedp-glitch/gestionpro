@@ -149,6 +149,44 @@ describe("TurnosAgenda (#189 · agenda navegable)", () => {
   });
 });
 
+describe("TurnosAgenda (lugar del turno)", () => {
+  it("un turno con lugar muestra el 📍 con el texto del lugar", () => {
+    renderAgenda([
+      turno({
+        id: "t1",
+        fecha: HOY,
+        hora: "10:00",
+        cliente_nombre: "Ana",
+        lugar: "Sala 2",
+      }),
+    ]);
+
+    expect(screen.getByText(/📍 Sala 2/)).toBeInTheDocument();
+  });
+
+  it("un turno sin lugar no muestra el 📍", () => {
+    renderAgenda([
+      turno({ id: "t1", fecha: HOY, hora: "10:00", cliente_nombre: "Ana" }),
+    ]);
+
+    expect(screen.queryByText(/📍/)).not.toBeInTheDocument();
+  });
+
+  it("un lugar con solo espacios no muestra el 📍", () => {
+    renderAgenda([
+      turno({
+        id: "t1",
+        fecha: HOY,
+        hora: "10:00",
+        cliente_nombre: "Ana",
+        lugar: "   ",
+      }),
+    ]);
+
+    expect(screen.queryByText(/📍/)).not.toBeInTheDocument();
+  });
+});
+
 describe("TurnosAgenda (#190 · ABM por estado)", () => {
   it("un turno confirmado muestra Listo, Editar, Cancelar y No vino", () => {
     renderAgenda([
